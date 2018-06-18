@@ -83,7 +83,7 @@
 	        	        	        	        }else{
 	        	        	        	        	content+="<span class=\"label label-default radius\">已停用</span>";
 	        	        	        	        }
-	        	        	         	        content+="<td>"+o.uid+"</td>";
+	        	        	         	        content+="<td>"+o.resUserName+"</td>";
 	        	        	         	        content+="<td>"+o.updateDate+"</td>";
 	        	        	        content+="<td class=\"td-manage\">";	        
 	        content+="<a title=\"编辑\" href=\"javascript:;\" onclick=\"pub_edit('编辑','/ShopUser/ShopUserView.do?id="+o.id+"')\" class=\"ml-5\" style=\"text-decoration:none\"><i class=\"Hui-iconfont\">&#xe6df;</i></a>"; 
