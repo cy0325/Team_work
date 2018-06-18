@@ -67,6 +67,8 @@ public class FoodsOrderController extends BaseController {
 				new Page<FoodsOrder>(page,pagesizes),
 				wrapper.orderBy("id", false)//根据id倒序输出
 				).getRecords();	
+		
+		
 		Map<String, Object> result = new HashMap<String, Object>();		
 		int total=this_FoodsOrderService.selectList(wrapper).size();		
 		result.put("total", total);

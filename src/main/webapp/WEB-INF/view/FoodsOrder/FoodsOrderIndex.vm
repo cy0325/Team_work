@@ -22,18 +22,12 @@
 			</tr>
 			<tr class="text-c">
 				<th width="25"><input type="checkbox" value="all" name="ckall" id="ckall"></th>
-								 								 				<th width="100">订单编号</th>
-												 				<th width="100">商铺户主id</th>
+								 								<th width="100">订单编号</th>
+												 				
 												 				<th width="100">总金额</th>
-												 				<th width="100">下单时间</th>
-												 				<th width="100">支付方式</th>
-												 				<th width="100">支付状态操作员id</th>
-												 				<th width="100">支付状态操作时间</th>
-												 				<th width="100">订单状态</th>
-												 				<th width="100">订单状态操作员id</th>
-												 				<th width="100">订单状态操作时间</th>
-												 				<th width="100">订单操作员id</th>
-												 				<th width="100">订单操作时间</th>
+												 				<th width="200">下单时间</th>
+												 				<th width="100">订单操作员</th>
+												 				<th width="200">订单操作时间</th>
 												<th>操作</th>
 			</tr>
 		</thead>
@@ -81,15 +75,8 @@
 	        content+="<tr class=\"text-c\"><td >";
 	        content+="<input type=\"checkbox\" value=\""+o.id+"\" name=\"ck\"/></td>";
 	        	         	        	         	        content+="<td>"+o.ordernum+"</td>";
-	        	        	         	        content+="<td>"+o.usid+"</td>";
 	        	        	         	        content+="<td>"+o.tmoney+"</td>";
 	        	        	         	        content+="<td>"+o.updateDate+"</td>";
-	        	        	         	        content+="<td>"+o.payway+"</td>";
-	        	        	         	        content+="<td>"+o.pid+"</td>";
-	        	        	         	        content+="<td>"+o.poptime+"</td>";
-	        	        	         	        content+="<td>"+o.orderstatus+"</td>";
-	        	        	         	        content+="<td>"+o.sid+"</td>";
-	        	        	         	        content+="<td>"+o.suptime+"</td>";
 	        	        	         	        content+="<td>"+o.uid+"</td>";
 	        	        	         	        content+="<td>"+o.optime+"</td>";
 	        	        	        content+="<td class=\"td-manage\">";	        

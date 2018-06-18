@@ -3,8 +3,13 @@ package org.nwnu.system.controller;
 
 import com.baomidou.mybatisplus.mapper.EntityWrapper;
 import com.baomidou.mybatisplus.plugins.Page;
+
 import org.nwnu.system.entity.ShopUser;
+import org.nwnu.system.entity.SysRole;
+import org.nwnu.system.entity.SysUser;
 import org.nwnu.system.service.ShopUserService;
+import org.nwnu.system.service.SysRoleService;
+import org.nwnu.system.service.SysUserService;
 import org.nwnu.base.controller.BaseController;//基础包
 import org.nwnu.pub.util.StringUtil;//自定义字符串处理类，如果没有就取掉
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,12 +19,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
+
 import javax.servlet.http.HttpSession;
+
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
-
 import java.util.Map;
 
 /**
@@ -35,6 +41,10 @@ import java.util.Map;
 public class ShopUserController extends BaseController {
 	@Autowired
 	private ShopUserService this_ShopUserService;	
+	@Autowired
+	private SysRoleService sysRoleService;	
+	@Autowired
+	private SysUserService sysUserService;	
 	
 	/***
 	 * 每个controller的首页
@@ -67,6 +77,27 @@ public class ShopUserController extends BaseController {
 				new Page<ShopUser>(page,pagesizes),
 				wrapper.orderBy("id", false)//根据id倒序输出
 				).getRecords();	
+		for(ShopUser sp :ShopUserList){
+			if (sp.getRolecode().equals("0004")&& sp.getUid() != null) {
+				SysUser sdu=sysUserService.selectById(sp.getUid());
+				if(sdu!=null){
+					sp.setResUserName(sdu.getName());
+				}
+			}
+			else  {
+				ShopUser rdu=this_ShopUserService.selectById(sp.getUid());
+				if(rdu!=null){
+					sp.setResUserName(rdu.getName());
+				}
+			}
+			if(sp.getRolecode()!=null){
+		        SysRole sysRole=sysRoleService.selectOne(new EntityWrapper<SysRole>().eq("rolecode", sp.getRolecode()));
+		        if(sysRole!=null){
+					sp.setRolename(sysRole.getRolename());
+		        }
+			}
+		}
+		
 		Map<String, Object> result = new HashMap<String, Object>();		
 		int total=this_ShopUserService.selectList(wrapper).size();		
 		result.put("total", total);
@@ -82,12 +113,16 @@ public class ShopUserController extends BaseController {
 	 */
 	@RequestMapping(value = "/ShopUserView", method = RequestMethod.GET)
 	public ModelAndView view(ModelAndView modelAndView, ShopUser this_ShopUser, @RequestParam(value = "id", required = false) Integer id) {	
+		List<SysRole> sysRoles=sysRoleService.selectList(new EntityWrapper<SysRole>()
+				//.eq("rolecode","0004")
+				.eq("status", "a"));
 		if (id != null) {
             modelAndView.addObject("ShopUser", this_ShopUserService.selectById(id));
         }else
         {        	
         	modelAndView.addObject("ShopUser",this_ShopUser);
         }
+		modelAndView.addObject("SysRoleList", sysRoles);
 	     return modelAndView;
 	}
 

@@ -73,7 +73,8 @@ public class ShopUser implements Serializable {
 
 	@TableField(exist = false)
 	private String resUserName;
-
+	 @TableField(exist = false)
+		private String rolename;
 	public Integer getId() {
 		return id;
 	}
@@ -152,6 +153,22 @@ public class ShopUser implements Serializable {
 
 	public void setUpdateDate(Date updateDate) {
 		this.updateDate = updateDate;
+	}
+
+	public String getResUserName() {
+		return resUserName;
+	}
+
+	public void setResUserName(String resUserName) {
+		this.resUserName = resUserName;
+	}
+
+	public String getRolename() {
+		return rolename;
+	}
+
+	public void setRolename(String rolename) {
+		this.rolename = rolename;
 	}
 
 }
