@@ -1,0 +1,33 @@
+package org.nwnu.system.service.impl;
+
+import org.nwnu.system.entity.GoodsPref;
+import org.nwnu.system.mapper.GoodsPrefMapper;
+import org.nwnu.system.service.GoodsPrefService;
+
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ * <p>
+ * 商品优惠 服务实现类
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-21
+ */
+@Service
+public class GoodsPrefServiceImpl extends ServiceImpl<GoodsPrefMapper, GoodsPref> implements GoodsPrefService {
+
+	
+	@Autowired
+	private GoodsPrefMapper this_GoodsPrefMapper;
+	
+	@Override
+	public GoodsPref getPrefPrice(Integer id, Integer num) {
+		// TODO Auto-generated method stub
+		return this_GoodsPrefMapper.getPrefPrice(id, num);
+	}
+	
+}

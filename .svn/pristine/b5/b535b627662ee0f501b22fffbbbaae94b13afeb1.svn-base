@@ -1,0 +1,20 @@
+package org.nwnu.system.service.impl;
+
+import org.nwnu.system.entity.ShopGoodsdiscuss;
+import org.nwnu.system.mapper.ShopGoodsdiscussMapper;
+import org.nwnu.system.service.ShopGoodsdiscussService;
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import org.springframework.stereotype.Service;
+
+/**
+ * <p>
+ * 商户商品评价 服务实现类
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+@Service
+public class ShopGoodsdiscussServiceImpl extends ServiceImpl<ShopGoodsdiscussMapper, ShopGoodsdiscuss> implements ShopGoodsdiscussService {
+	
+}

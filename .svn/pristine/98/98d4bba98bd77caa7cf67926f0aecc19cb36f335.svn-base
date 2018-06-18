@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="format-detection" content="telephone=no" />
+    <title>天鲜易购-支付状态</title>
+
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loaders.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loading.css"/>
+    <link href="/static/app/css/mui.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/app/css/base.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/style.css"/>
+
+</head>
+<!--loading页开始-->
+<div class="loading">
+	<div class="loader">
+        <div class="loader-inner pacman">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+	</div>
+</div>
+<!--loading页结束-->
+<body style="background-color:#fff;">
+	<header class="top-header fixed-header">
+		<a class="icona" href="javascript:window.location.href = 'index.html';">
+            <img src="/static/app/images/left.png"/>
+        </a>
+		<h3>支付状态</h3>
+	</header>
+	
+	<div class="container" style="margin-top: 13%">
+		<section class="go-order">
+			<h3>
+                <!--如果是失败的话，图片就是fail.png-->
+                #if($!type == "a")
+					<img src="/static/app/images/suc.png"/>
+					<span style="color: #00CC66;">交易成功</span>
+				#else
+					<img src="/static/app/images/fail.png"/>
+					<span style="color: #00CC66;">交易失败</span>
+				#end
+				<a class="vj-back" href="/App/index.do">返回首页</a>
+			</h3>
+		</section>
+	</div>
+</body>
+
+<script src="/static/app/js/fastclick.js"></script>
+<script src="/static/app/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+    $(window).load(function(){
+        $(".loading").addClass("loader-chanage").fadeOut(300);
+    })
+</script>
+
+</html>

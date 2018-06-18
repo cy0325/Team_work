@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>天鲜易购-评价</title>
+
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loaders.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loading.css"/>
+	<link href="/static/app/css/mui.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/app/css/base.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/style.css"/>
+
+</head>
+<!--loading页开始-->
+<div class="loading">
+	<div class="loader">
+        <div class="loader-inner pacman">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+	</div>
+</div>
+<!--loading页结束-->
+<body>
+	<header class="top-header fixed-header">
+		<a class="icona" href="javascript:history.go(-1)">
+            <img src="/static/app/images/left.png"/>
+        </a>
+		<h3>去评价</h3>
+	</header>
+	
+	<div class="container" id="main">
+		<section class="assess">
+				<p>	
+					<span id="gid" hidden>$!{good.id}</span>
+					<span id="oid" hidden>$!{good.oid}</span>
+					<img src="$!{good.pic1}"/>
+					<textarea id="discontent" rows="7" placeholder="请写下对产品的感受吧，对他人帮助很大哦" ></textarea>
+				</p>	
+				<ul>
+					<li>
+						商品评价
+					</li>
+					<li class="assess-right">
+						<img onclick="level(1)" src="/static/app/images/detail-icon01.png" class='starImg'/>
+						<img onclick="level(2)" src="/static/app/images/detail-icon01.png" class='starImg'/>
+						<img onclick="level(3)" src="/static/app/images/detail-icon01.png" class='starImg'/>
+						<img onclick="level(4)" src="/static/app/images/detail-icon01.png" class='starImg'/>
+						<img onclick="level(5)" src="/static/app/images/detail-icon01.png" class='starImg'/>
+					</li>
+				</ul>
+		</section>
+	</div>
+	
+	<footer class="assess-footer fixed-footer ">
+		<ul>
+			<li>
+				<input type="checkbox" id="ass"/>
+				<label for="ass" onselectstart="return false">匿名评价</label>
+				
+			</li>
+			<input type="button" value="发表评论" onclick="submitDiscuss()" />
+		</ul>
+	</footer>
+</body>
+
+<script src="/static/app/js/fastclick.js"></script>
+<script src="/static/app/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/app/js/alert.js"></script>
+<script type="text/javascript">
+	function submitDiscuss(){
+		var starNum = $('.starImg').length;
+		var discontent = $('#discontent').val();
+		var anon = 0;
+		var gid = $('#gid').text();
+		var oid = $('#oid').text();
+		if($('#ass').attr('checked')){
+			anon = 1;
+		}
+		if(discontent == null){
+			$.toast("请填写您的评价");
+		}
+		$.ajax({
+	        url: '/App/commentSave.do',
+	        type: 'POST',
+	        dataType:'json',
+	        data:{starNum:starNum, content:discontent, anon:anon, gId:gid, oId:oid},
+	        success:function(result){
+	            if(result.success)
+	            {
+	                //以下为关闭当前frame，并刷新父页面
+	                $.toast(result.msg);
+	                setTimeout(function(){
+	                	location.href = "/App/comment_list.do"
+	                }, 500)
+	            }else
+	            {
+	            	$.toast(result.msg);
+	            }
+	        },
+	        error:function(data) {
+	            $.toast("服务器错误");
+	        }
+	    }); 
+	}
+    $(window).load(function(){
+        $(".loading").addClass("loader-chanage").fadeOut(300);
+        compatible();
+    });
+
+    $(window).resize(function() {
+        compatible();
+	});
+
+    function compatible() {
+        var h3 = $("header").outerHeight(true);
+        var h4 = $("footer").outerHeight(true);
+        $("#main").css("marginTop", h3 + "px").css("marginBottom", h4 + "px");
+	}
+
+    $(".assess-footer ul li label").on('touchstart',function(){
+        if($(this).hasClass('assd')){
+            $(this).removeClass("assd").siblings("input").removeAttr("checked");
+        }else{
+            $(this).addClass("assd").siblings("input").attr("checked", true);
+        }
+    });
+    function level(s)
+    {
+
+        var str = '';
+
+        var k = 6-s;
+
+        for(i=1;i<s+1;i++)
+        {
+            str += "<img onclick='level("+i+")' src='/static/app/images/detail-icon01.png' class='starImg'/>";
+        }
+        for(j=1;j<k;j++)
+        {
+            var d=j+s;
+            str += "<img onclick='level("+d+")' src='/static/app/images/detail-icon001.png'/>";
+        }
+
+
+        $('.assess-right').html(str);
+    }
+    
+    
+</script>
+
+</html>

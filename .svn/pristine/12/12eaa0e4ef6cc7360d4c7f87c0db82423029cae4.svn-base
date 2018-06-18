@@ -1,0 +1,19 @@
+package org.nwnu.system.mapper;
+
+import org.nwnu.system.entity.GoodsDetail;
+
+import aj.org.objectweb.asm.Type;
+
+import com.baomidou.mybatisplus.mapper.BaseMapper;
+
+/**
+ * <p>
+  * 商品 Mapper 接口
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+public interface GoodsDetailMapper extends BaseMapper<GoodsDetail> {
+	String getCode();
+}

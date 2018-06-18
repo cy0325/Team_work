@@ -1,0 +1,43 @@
+package org.nwnu.system.service.impl;
+
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import org.nwnu.system.entity.GoodsDetail;
+import org.nwnu.system.mapper.GoodsDetailMapper;
+import org.nwnu.system.service.GoodsDetailService;
+
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ * <p>
+ * 商品 服务实现类
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+@Service
+public class GoodsDetailServiceImpl extends ServiceImpl<GoodsDetailMapper, GoodsDetail> implements GoodsDetailService {
+	
+	@Autowired
+	private GoodsDetailMapper this_GoodsDetailMapper;
+	
+	
+	@Override
+	public String getGoodsCode() {
+		// TODO Auto-generated method stub
+		Date date = new Date();
+		SimpleDateFormat outFormat = new SimpleDateFormat("yyMM");
+		String s = outFormat.format(date);
+		String code = this_GoodsDetailMapper.getCode();
+		if(code == null){
+			code = "0001";
+		}
+		return s + code;
+	}
+	
+}

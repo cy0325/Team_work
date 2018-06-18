@@ -1,0 +1,33 @@
+package org.nwnu.system.service.impl;
+
+import org.nwnu.system.entity.GoodsDisc;
+import org.nwnu.system.mapper.GoodsDiscMapper;
+import org.nwnu.system.service.GoodsDiscService;
+
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ * <p>
+ * 商品运费和自提优惠 服务实现类
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-21
+ */
+@Service
+public class GoodsDiscServiceImpl extends ServiceImpl<GoodsDiscMapper, GoodsDisc> implements GoodsDiscService {
+
+	
+	@Autowired 
+	private GoodsDiscMapper this_GoodsDiscMapper;
+	
+	@Override
+	public GoodsDisc getDiscPrice(String type, float sum) {
+		// TODO Auto-generated method stub
+		return this_GoodsDiscMapper.getDiscPrice(type, sum);
+	}
+	
+}

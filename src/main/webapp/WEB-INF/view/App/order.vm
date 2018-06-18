@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>天鲜易购-订单</title>
+
+	<!--CSS-->
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loaders.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loading.css"/>
+	<link href="/static/app/css/mui.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/app/css/base.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/style.css"/>
+
+</head>
+<!--loading页开始-->
+<div class="loading">
+	<div class="loader">
+        <div class="loader-inner pacman">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+	</div>
+</div>
+<!--loading页结束-->
+<body>
+	<header class="top-header fixed-header">
+		<a class="icona" href="javascript:history.go(-1)">
+				<img src="/static/app/images/left.png"/>
+			</a>
+		<h3>
+			#if($!type == "nopay")
+			待付款
+			#elseif($!type == "nogetgoods")
+			待收货
+			#else
+			全部订单
+			#end
+		</h3>
+	</header>
+	
+	<div id="main" class="container">
+		<section class="order">
+		
+			#if($orders.size() == 0)
+				<div class="noorder">
+	                <div>
+	                    <img src="/static/app/img/notorder.png">
+	                </div>
+	                <div>
+	                                        您还没有相关的订单
+	                </div>
+	            </div>
+	        #else
+	           #foreach($item in $orders)
+				<dl>
+					<dt>
+						<time>$!{utils.getDateTime($item.uptime)}</time>
+						<span>
+							$!item.orderstatusName
+						</span>
+					</dt>
+					<ul>
+						<a href="/App/order-detail?id=$!{item.id}">
+							<figure><img src="$!{item.pic}"/></figure>
+							<li>
+								<p>订单编号：$!item.ordernum</p>
+	                            <br/>
+	                            <small>配货方式：#if($!item.carrytype == "a")配送#else自提#end</small>
+	                            <br/>
+	                            <small>支付状态：$!item.paystatusName #if($item.payway == "b")(货到付款)#end</small>
+	                            <br/>
+	                            #if(($item.paystatus == "b" && $item.payway == "a") || ($item.paystatus == "a" && $item.payway == "b"))
+	                            <small>发货状态：$!item.carrystatusName</small>
+	                            <br/>
+	                            #end
+	                            <small>共 $!{item.goodsCount} 件商品</small>
+	                            <br/>
+							</li>
+						</a>
+					</ul>
+					<dd>
+						<h3> #if($item.paystatus == "a") 待付款 #else 实付款 #end </h3>
+						<i>￥$!{item.tmoney}</i>
+					</dd>
+					<dd>
+						#if($item.orderstatus == "a")
+							#if($item.paystatus == "a")
+								#if($item.payway == "a")
+								<input type="button" data-vj-href="/App/pay.do?oid=$!{item.id}" style="background-color: #00cc66; color: #fff; border-color:#00cc66;" value="去付款" />
+								#end
+								<input data-vj-href="/App/reason?oId=$!{item.id}&type=a" type="button" value="取消订单" />
+							#else
+								<input data-vj-href="/App/reason?oId=$!{item.id}&type=b" type="button" value="申请退款" />
+							#end
+						#end
+					</dd>
+				</dl>
+				#end
+	        #end
+
+		</section>
+	</div>
+
+</body>
+
+<script src="/static/app/js/fastclick.js"></script>
+<script src="/static/app/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/app/js/vj-validate.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+    $(window).load(function(){
+        $(".loading").addClass("loader-chanage").fadeOut(300);
+        compatible();
+        new VjValidate().init();
+    });
+
+    $(window).resize(function() {
+        compatible();
+    });
+
+    function compatible() {
+        var h = $("header").outerHeight(true);
+        $("#main").css("marginTop", h + 0 + "px");
+    }
+</script>
+
+</html>

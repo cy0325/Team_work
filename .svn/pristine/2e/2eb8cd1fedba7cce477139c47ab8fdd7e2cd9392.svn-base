@@ -1,0 +1,17 @@
+package org.nwnu.system.mapper;
+
+import org.nwnu.system.entity.UserCredit;
+
+import com.baomidou.mybatisplus.mapper.BaseMapper;
+
+/**
+ * <p>
+  * 用户信用值 Mapper 接口
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-22
+ */
+public interface UserCreditMapper extends BaseMapper<UserCredit> {
+	UserCredit getCreditPrice(float sum);
+}

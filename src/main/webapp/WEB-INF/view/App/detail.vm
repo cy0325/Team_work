@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>天鲜易购-详情</title>
+
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loaders.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loading.css"/>
+    <link href="/static/app/css/mui.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/app/css/base.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/style.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/swiper.min.css"/>
+
+</head>
+<!--loading页开始-->
+<div class="loading">
+	<div class="loader">
+        <div class="loader-inner pacman">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+	</div>
+</div>
+<!--loading页结束-->
+<body>
+	<header class="detail-header fixed-header">
+		<a href="javascript:history.go(-1)">
+		<img src="/static/app/images/detail-left.png"/></a>
+		<a href="javascript:;" class="right" onclick="cart_list()">
+            <img src="/static/app/images/shopbar.png"/>
+            <span id="cart_num" class="mui-badge mui-badge-primary">$!{cartCount}</span>
+        </a>
+	</header>
+	
+	<div id="main" class="container">
+		<section class="detail">
+			<figure class="swiper-container">
+				<ul class="swiper-wrapper">
+					<li class="swiper-slide">
+						<a href="#">
+							<img src="$!{good.pic1}"/>
+						</a>
+					</li>
+					<li class="swiper-slide">
+						<a href="#">
+							<img src="$!{good.pic2}"/>
+						</a>
+					</li>
+					<li class="swiper-slide">
+						<a href="#">
+							<img src="$!{good.pic3}"/>
+						</a>
+					</li>
+				</ul>
+				<div class="swiper-pagination">
+				</div>
+			</figure>
+			<dl class="jiage">
+				<dt>
+					<div class="d-title">
+                        <h3>$!{good.goodsname}</h3>
+                    </div>
+					<dd class="gid" hidden>$!{good.id}</dd>
+				</dt>
+                <dd>
+                    <p>$!{good.psdesc}</p>
+                </dd>
+				<dd>
+					<b>￥$!{good.price}</b>
+				</dd>
+			</dl>
+			
+			<div class="chose">
+				<ul>
+					<h3>规格：</h3>
+					<li>
+						$!{good.specStr}
+					</li>
+				</ul>
+				<ul>
+					<h3>库存：</h3>
+					<li id="kucun">$!{good.kucun}</li>
+				</ul>
+				#if($!{goodPrefList})
+				<ul>
+					<h3>商品促销：</h3>
+					#foreach($pref in $goodPrefList)
+					<li style="padding:0;margin-left:17%;" class="pref">凡购买数量满<span style="color:red;">$!{pref.num}</span>件，每件售价
+					<span style="color:red;">$!{pref.price}</span>元</li>
+					#end
+				</ul>
+				#end
+				<ul>
+					<h3>数量：</h3>
+					<button onclick="setNum('-')">-</button>
+                    <input  class="gnum" type="number" id="goods-num" name="num" value="1">
+					<button onclick="setNum('+')">+</button>
+				</ul>
+			</div>
+			
+			<article class="detail-article">
+				<nav>
+					<ul class="article">
+						<li id="talkbox1" class="article-active">商品详情</li>
+						<li id="talkbox2">评价</li>
+					</ul>
+				</nav>
+
+				<section class="talkbox1 talkbox">
+					$!{good.desc}
+				</section>
+
+				<section class="talkbox2 talkbox" style="display: none;">
+					<ul class="talk">
+						#foreach($sd in $sdList)
+						<li>
+							<figure>
+							#if($!{sd.suid} == 0)
+								<img src="/static/app/img/touxiang.png"/>
+							#else
+								<img src="$!{sd.userImg}"/>
+							#end
+							</figure>
+							<dl>
+								<dt>
+									<p>$!{sd.userName}</p>
+									<time>$!{sd.date}</time>
+									<div class="star">
+									#foreach($i in [1..$!{sd.star}])
+										<span><img src="/static/app/images/detail-icon01.png"/></span>
+                                    #end
+									</div>
+								</dt>
+								<dd>$!{sd.discontent}</dd>
+							</dl>
+						</li>
+						#end
+					</ul>
+				</section>
+			</article>
+		</section>
+	</div>
+
+	<footer class="detail-footer fixed-footer">
+		<a href="javascript: void 0;" class="go-car">
+			<input type="button" id="add_cart" value="加入购物车"/>
+		</a>
+		<a href="javascript:;" class="buy" onclick="gobuy()">
+			立即购买
+		</a>
+	</footer>
+</body>
+
+<!--JS-->
+<script src="/static/app/js/fastclick.js"></script>
+<script src="/static/app/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/app/js/swiper.min.js"></script>
+<script src="/static/app/js/alert.js"></script>
+<script type="text/javascript">
+    $(window).load(function(){
+        $(".loading").addClass("loader-chanage").fadeOut(300);
+        compatible();
+    });
+    $(window).scroll(function() {
+        if ($(".detail-header").offset().top > 50) {
+            $(".detail-header").addClass("change");
+        } else {
+            $(".detail-header").removeClass("change");
+        }
+    });
+    function compatible() {
+        var h = $("footer").outerHeight(true);
+        $("#main").css("marginBottom", h + 0 + "px");
+    }
+    $(function(){
+    	var prefs = $('.pref')
+        if(prefs.length == 1){
+        	prefs.eq(0).css("margin-left", "0")
+        }
+        if(prefs.length >= 2){
+        	prefs.eq(0).css("margin-left", "0")
+        	prefs.eq(1).css("margin-left", "0")
+        }
+        prefs.eq(0).css("margin-top", "4%")
+    })
+</script>
+<script type="text/javascript">
+    $(document).ready(function () {
+        var mySwiper = new Swiper('.swiper-container', {
+            loop: true,
+            speed: 1000,
+            autoplay: 3000,
+            pagination: '.swiper-pagination',
+        });
+        
+        var cart_num = $('#cart_num').text();
+        if(cart_num === "0"){
+        	$('#cart_num').hide()
+        }else{
+        	$('#cart_num').show()
+        }
+        
+    })
+</script>
+<script type="text/javascript">
+    function setNum(op) {
+        elem = $('#goods-num');
+        if (op === "-") {
+            if (elem.val() > 1) {
+                elem.val(elem.val()-1);
+            }
+        } else {
+        	var kucun = parseInt($('#kucun').text())
+        	if(elem.val() >= kucun){
+        		elem.val(kucun)
+        	} else{
+        		elem.val(parseInt(elem.val()) + 1);
+        	}
+        }
+    }
+
+    $(function(){
+
+        $('.article li').click(function(){
+
+            $(this).addClass('article-active').siblings().removeClass('article-active');
+            if($(this).attr("id")=="talkbox1"){
+                $('.talkbox1').show();
+                $('.talkbox2').hide();
+            }else{
+                $('.talkbox2').show();
+                $('.talkbox1').hide();
+            }
+        });
+
+        $('#goods-num').blur(function() {
+            if ($(this).val() < 1) {
+                $(this).val(1);
+            }else {
+                $(this).val(parseInt($(this).val()));
+            }
+        });
+        
+        $(".detail-footer .go-car").click(function() {
+        	#if($!{login_flag} == 0)
+        		var flag = true;
+        	#else
+        		var flag = false;
+        	#end
+        	if(flag){
+        		$.toast("请您先登录");
+        		return;
+        	}
+            var elem = $(".detail-header a:eq(1)");
+            var x = elem[0].offsetLeft + elem.width() / 2;
+            var padding = window.document.defaultView.getComputedStyle($(this).children('input')[0], null)['paddingLeft'];
+            padding = parseFloat(padding.substr(0, padding.length - 2));
+            var dom = $("<div><img src='/static/app/images/shopbar-blue.png'></div>");
+            dom.css({
+                "position": "fixed",
+                "left": (parseFloat($(this).get(0).offsetLeft) + padding) + "px",
+                "bottom": $(this).height(),
+                "z-index": "999"
+            }).appendTo("body");
+            dom.animate({
+                "left": x + "px",
+                "top": "0px",
+                "opacity": 0
+            }, 1000, 'swing', function() {
+                dom.remove();
+            });
+            var cartNum = parseInt($("#goods-num").val());
+            var last_num = parseInt($("#cart_num").text());
+            var count = last_num + cartNum;
+            $("#cart_num").show()
+            $("#cart_num").text(count)
+            var gid = $('.gid').text()
+            
+            $.ajax({
+                url: '/App/cart_add.do',
+                type: 'POST',
+                dataType:'json',
+                data: {gId:gid,count:cartNum},
+                success:function(result){
+                    if(result.success)
+                    {
+                    	$.toast("添加成功");
+                    	$('#cart_num').text(result.obj)
+                    }else
+                    {
+                    	$.toast(result.msg);
+                    }
+                },
+                error:function(data) {
+                    $.toast("对不起，服务请求错误！");
+                }
+            }); 
+        });
+    });
+    function gobuy(){
+    	#if($!{login_flag} == 0)
+    		var flag = true;
+    	#else
+    		var flag = false;
+    	#end
+    	if(flag){
+    		$.toast("请您先登录");
+    		return;
+    	}
+    	var gidarr = $('.gid')
+    	var countarr = $('.gnum')
+    	var gids = gidarr.map(function(){
+    		return $(this).text()
+		}).get().join(",")
+		var counts = countarr.map(function(){
+			return this.value
+		}).get().join(",")
+    	location.href = '/App/buy.do?ids='+gids+'&counts='+counts
+    }
+    
+    function cart_list(){
+    	#if($!{login_flag} == 0)
+    		var flag = true;
+    	#else
+    		var flag = false;
+    	#end
+    	if(flag){
+    		$.toast("请您先登录");
+    		return;
+    	}
+    	location.href = "/App/cart_list.do";
+    }
+   
+</script>
+</html>

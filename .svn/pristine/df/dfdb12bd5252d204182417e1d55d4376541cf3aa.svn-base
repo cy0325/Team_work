@@ -1,0 +1,56 @@
+package org.nwnu.system.weixin;
+
+import me.chanjar.weixin.common.api.WxConsts;
+import me.chanjar.weixin.common.exception.WxErrorException;
+import me.chanjar.weixin.mp.api.WxMpInMemoryConfigStorage;
+import me.chanjar.weixin.mp.api.WxMpService;
+import me.chanjar.weixin.mp.api.impl.WxMpServiceImpl;
+import me.chanjar.weixin.mp.bean.result.WxMpOAuth2AccessToken;
+import me.chanjar.weixin.mp.bean.result.WxMpUser;
+
+import org.junit.Test;
+import org.nwnu.pub.util.WeixinUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+
+public class WeixinAuth {
+
+	
+	@Autowired
+    private WxMpService wxService;
+	
+	public void init(){
+		WxMpInMemoryConfigStorage config = new WxMpInMemoryConfigStorage();
+		config.setAppId(WeixinUtil.AppID); // 设置微信公众号的appid
+		config.setSecret(WeixinUtil.AppSecret); // 设置微信公众号的app corpSecret
+		config.setToken(WeixinUtil.TOKEN); // 设置微信公众号的token
+		config.setAesKey(WeixinUtil.AESKey); // 设置微信公众号的EncodingAESKey
+
+		wxService = new WxMpServiceImpl();
+		wxService.setWxMpConfigStorage(config);
+	}
+	
+	
+	public WxMpUser getAuth(String code) throws WxErrorException{
+		init();
+		
+		WxMpOAuth2AccessToken wxMpOAuth2AccessToken = wxService.oauth2getAccessToken(code);
+		WxMpUser wxMpUser = wxService.oauth2getUserInfo(wxMpOAuth2AccessToken, null);
+		return wxMpUser;
+	}
+	
+	
+	public void getRedirctUrl(String url){
+		String reUrl = wxService.oauth2buildAuthorizationUrl(url, WxConsts.OAUTH2_SCOPE_USER_INFO, "1");
+		System.out.println(reUrl);
+	}
+	
+/*	public static void main(String[] args) {
+		WeixinAuth weixinAuth = new WeixinAuth();
+		weixinAuth.init();
+		weixinAuth.getRedirctUrl("http://www.bravedawn.cn/App/index.do");
+	}*/
+	
+	//https://open.weixin.qq.com/connect/oauth2/authorize?appid=wxaccb6821e1fd111e&redirect_uri=http%3A%2F%2Fwww.bravedawn.cn%2FApp%2Findex.do&response_type=code&scope=snsapi_userinfo&state=1#wechat_redirect
+
+	
+}

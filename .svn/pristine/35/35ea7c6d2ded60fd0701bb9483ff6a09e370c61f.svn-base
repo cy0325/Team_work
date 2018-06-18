@@ -1,0 +1,138 @@
+package org.nwnu.system.entity;
+
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableName;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * <p>
+ * 微信推送消息
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+
+@TableName("wexin_content")
+public class WexinContent implements Serializable {
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
+
+	/**
+	 * 主键
+	 */
+	private Integer id;
+
+	/**
+	 * 标题
+	 */
+	private String title;
+
+	/**
+	 * 图片
+	 */
+	private String pic;
+	
+	/**
+	 * 描述
+	 */
+	private String digest;
+
+	/**
+	 * 内容
+	 */
+	private String cont;
+
+	/**
+	 * 操作员id
+	 */
+	private Integer uid;
+	
+	@TableField(exist = false)
+	private String uName;
+
+	/**
+	 * 操作时间
+	 */
+	private Date uptime;
+
+	/**
+	 * 是否推送
+	 */
+	private String status;
+
+	public String getuName() {
+		return uName;
+	}
+
+	public void setuName(String uName) {
+		this.uName = uName;
+	}
+
+	public String getDigest() {
+		return digest;
+	}
+
+	public void setDigest(String digest) {
+		this.digest = digest;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getPic() {
+		return pic;
+	}
+
+	public void setPic(String pic) {
+		this.pic = pic;
+	}
+
+	public String getCont() {
+		return cont;
+	}
+
+	public void setCont(String cont) {
+		this.cont = cont;
+	}
+
+	public Integer getUid() {
+		return uid;
+	}
+
+	public void setUid(Integer uid) {
+		this.uid = uid;
+	}
+
+	public Date getUptime() {
+		return uptime;
+	}
+
+	public void setUptime(Date uptime) {
+		this.uptime = uptime;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+}

@@ -1,0 +1,39 @@
+#override("content")
+<article class="page-container">
+	<form class="form form-horizontal" id="form-view">
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>：編輯內容</label>
+			<div class="formControls col-xs-8 col-sm-9">
+			     <textarea name="myeditor" rows="5" cols="30" ></textarea>
+			
+			</div>
+		</div>
+		<div class="row cl">
+			<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-2">				
+				<button onClick="getcontent();" type="submit" class="btn btn-danger radius" ><i class="Hui-iconfont">&#xe632;</i> 提交</button>
+				<button onClick="layer_close();" class="btn btn-default radius" type="button">&nbsp;&nbsp;取消&nbsp;&nbsp;</button>
+			</div>
+		</div>
+	</form>
+</article>
+#end
+#override("js")
+<script type="text/javascript" src="/static/lib/jquery.validation/1.14.0/jquery.validate.js"></script> 
+<script type="text/javascript" src="/static/lib/jquery.validation/1.14.0/validate-methods.js"></script> 
+<script type="text/javascript" src="/static/lib/jquery.validation/1.14.0/messages_zh.js"></script>
+<script type="text/javascript" src="/static/assets/ckeditor/ckeditor.js"></script>
+<script type="text/javascript" src="/static/assets/ckfinder/ckfinder.js"></script>
+
+<script type="text/javascript">
+	$(function(){
+		var editor = CKEDITOR.replace('myeditor');
+		 CKFinder.setupCKEditor(editor, '/static/assets/ckfinder/');
+	})
+	function getcontent()
+	{
+	  var text=CKEDITOR.instances.content.getData();
+		alert(text);
+	}
+</script>
+#end
+#extends("/Home/Layout.vm")

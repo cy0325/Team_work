@@ -1,0 +1,16 @@
+package org.nwnu.system.mapper;
+
+import org.nwnu.system.entity.ShopUser;
+import com.baomidou.mybatisplus.mapper.BaseMapper;
+
+/**
+ * <p>
+  * 用户 Mapper 接口
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-22
+ */
+public interface ShopUserMapper extends BaseMapper<ShopUser> {
+
+}

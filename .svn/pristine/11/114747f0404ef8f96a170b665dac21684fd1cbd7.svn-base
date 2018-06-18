@@ -1,0 +1,122 @@
+#override("content")
+<div class="page-container">
+	<table id="tablelist" class="table table-border table-bordered table-hover table-bg">
+		<thead>
+			<tr>
+				<th scope="col" colspan="22"><span class="l">商品列表<span class="pipe">|</span>共 <span id="total"></span> 条</span>					
+				</th>
+				<th id="ordernum" hidden>$!{orderNum}</th>
+			</tr>
+			<tr class="text-c">
+ 				<th width="100">商品编号</th>
+ 				<th width="100">商品名称</th>
+ 				<th width="100">规格</th>
+ 				<th width="100">原价格</th>
+ 				<th width="100">数量</th>
+ 				<th width="100">参与活动名称</th>
+ 				<th width="100">成交价</th>
+			</tr>
+		</thead>
+		<tbody id="pagecontent">
+		</tbody>		
+	</table>
+	<div id="mypage" class="mt-10 text-r"></div>
+</div>
+#end
+#override("js")
+<!--请在下方写此页面业务相关的脚本,首先需要引入laypage插件-->
+<script type="text/javascript" src="/static/lib/laypage/1.2/laypage.js"></script>
+<script type="text/javascript">
+	$(function(){
+		var num = $('#ordernum').text()
+		getpage(num);//调用分页        
+	})
+	function getpage(num)//分页函数
+	{	
+		//如果有查询，请在此处获取查询参数，并传入下方的参数部分，例如 var condition=$('#condition').val();
+		$.getJSON('/CarryShopOrder/getOrderList.do',{orderNum:num}, function(res){ //从第1页开始请求。返回的json格式可以任意定义
+		     $('#total').html(res.total);//显示总数
+		     $('#pagecontent').html(PackagData(res));//附加翻页内容
+		});
+	}
+	function PackagData(res){//分页内容展示
+		var content="";
+	    $.each(res.data,function(i,o){
+	        content+="<tr class=\"text-c\">";
+   	        content+="<td>"+o.goodsDetail.goodscode+"</td>";
+   	        content+="<td>"+o.goodsDetail.goodsname+"</td>";
+   	        content+="<td>"+o.goodSpec+"</td>";
+   	     	content+="<td>"+o.goodsDetail.price+"</td>";
+   	        content+="<td>"+o.gnum+"</td>";
+   	     	content+="<td>"+o.activityname+"</td>";
+   	     	content+="<td>"+o.realprice+"</td>";
+	        content+="</tr>";
+	         
+	    });
+	    return content;
+	}
+
+/*添加*/
+function pub_add(title,url){
+	layer_maxshow(title,url);
+}
+/*编辑*/
+function pub_edit(title,url){
+	layer_maxshow(title,url);
+}
+/*删除*/
+function pub_del(obj,id){
+	layer.confirm('删除须谨慎，确认要删除吗？',function(){
+		$.ajax({
+			type: 'POST',
+			url: '/GoodsDetail/Delete.do?id='+id,
+			dataType: 'json',
+			success: function(result){
+				if(result.success)
+				{
+					$(obj).parents("tr").remove();				
+					layer.msg(result.msg,{icon:1,time:1500});
+				}else
+				{
+					layer.msg(result.msg,{icon:2,time:1500});
+				}
+			},
+			error:function(data) {
+				layer.msg("对不起，服务请求错误！",{icon:2,time:1500});
+			}
+		});		
+	});
+}
+/*批量删除*/
+function BatchDelete()
+{	
+	var ids = '';
+	$('table input[type="checkbox"]:checked').each(function(){		
+		ids += $(this).val() + ',';
+	});
+	layer.confirm('删除须谨慎，确认要删除吗？',function(){
+		$.ajax({
+			type: 'POST',
+			url: '/GoodsDetail/BatchDelete.do?ids='+ids,
+			dataType: 'json',
+			success: function(result){
+				if(result.success)
+				{					    
+					getpage(1);//批量删除成功后重新加载第一页							
+					layer.msg(result.msg,{icon:1,time:1500});
+				}else
+				{
+					layer.msg(result.msg,{icon:2,time:1500});
+				}
+			},
+			error:function(data) {
+				layer.msg("对不起，服务请求错误！",{icon:2,time:1500});
+			}
+		});		
+	});
+	
+}
+
+</script>
+#end
+#extends("/Home/Layout.vm")

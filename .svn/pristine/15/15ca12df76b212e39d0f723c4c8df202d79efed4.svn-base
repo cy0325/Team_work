@@ -1,0 +1,163 @@
+package org.nwnu.front.controller;
+
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.bouncycastle.jce.provider.JDKGOST3410Signer.gost3410;
+import org.nwnu.base.controller.BaseController;
+import org.nwnu.pub.util.Const;
+import org.nwnu.pub.util.CookiesUtil;
+import org.nwnu.system.entity.GoodsDetail;
+import org.nwnu.system.entity.ShopGoodsdiscuss;
+import org.nwnu.system.entity.ShopOrder;
+import org.nwnu.system.entity.ShopOrderdetail;
+import org.nwnu.system.entity.ShopUser;
+import org.nwnu.system.service.GoodsDetailService;
+import org.nwnu.system.service.ShopGoodsdiscussService;
+import org.nwnu.system.service.ShopOrderService;
+import org.nwnu.system.service.ShopOrderdetailService;
+import org.nwnu.system.service.ShopUserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.alibaba.druid.stat.TableStat.Mode;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+
+
+@Controller
+@RequestMapping("/App")
+public class OrderCommentController extends BaseController{
+	
+	@Autowired
+	private HttpServletRequest request;
+	
+	@Autowired
+	private ShopOrderService this_ShopOrderService;
+	
+	@Autowired
+	private ShopUserService this_ShopUserService;
+	
+	@Autowired
+	private ShopOrderdetailService this_ShopOrderdetailService;
+	
+	@Autowired
+	private GoodsDetailService this_GoodsDetailService;
+	
+	@Autowired
+	private ShopGoodsdiscussService this_ShopGoodsdiscussService;
+	
+	/**
+	 * 用户带评论商品列表
+	 * @param modelAndView
+	 * @return
+	 * @throws ParseException
+	 */
+	@RequestMapping("/comment_list")
+	public ModelAndView commentList(ModelAndView modelAndView) throws ParseException{
+		// 查询条件：用户id，订单状态：已完成
+		// 用户id
+		String suidStr = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_USER_ID).getValue();
+		Integer suid = Integer.parseInt(suidStr);
+		//Integer suid = 4;
+		ShopUser user = this_ShopUserService.selectById(suid);
+		
+		List<ShopOrder> shopOrderList = this_ShopOrderService.selectList(
+				new EntityWrapper<ShopOrder>().eq("openid", user.getOpenid()).eq("orderstatus", "b"));
+		// 获取订单id,取出订单的所有商品
+		List<ShopOrderdetail> shopOrderdetailList = new ArrayList<ShopOrderdetail>();
+		for(ShopOrder order : shopOrderList){
+			System.out.println("***********orderId***********"+order.getId());
+			shopOrderdetailList.addAll(this_ShopOrderdetailService
+					.selectList(new EntityWrapper<ShopOrderdetail>().eq("oid", order.getId())
+							.eq("commentstatus", "a")));
+		}
+		// 获取商品id,获取所有商品
+		List<GoodsDetail> goodList = new ArrayList<GoodsDetail>();
+		for(ShopOrderdetail sd : shopOrderdetailList){
+			System.out.println();
+			GoodsDetail good = new GoodsDetail();
+			good = this_GoodsDetailService.selectById(sd.getGid());
+			good.setPlacetime(recover(this_ShopOrderService.selectById(sd.getOid()).getUptime().toString()));
+			good.setOid(sd.getOid());
+			goodList.add(good);
+			
+		}
+		// 为每件商品设置下单时间
+		modelAndView.addObject("goodList", goodList);
+		return modelAndView;
+	}
+	
+	
+	/**
+	 * 商品评论视图
+	 * @param modelAndView
+	 * @param gId
+	 * @return
+	 * @throws Exception
+	 */
+	@RequestMapping("/comment")
+	public ModelAndView comment(ModelAndView modelAndView, Integer gId, Integer oId) throws Exception{
+		if (gId == null || oId == null) {
+			throw new Exception("parameter error");
+		}
+		GoodsDetail good = this_GoodsDetailService.selectById(gId);
+		good.setOid(oId);
+		modelAndView.addObject("good", good);
+		return modelAndView;
+	}
+	
+	
+	/**
+	 * 评论保存
+	 * @param gId
+	 * @param starNum
+	 * @param content
+	 * @param anon
+	 * @param oId
+	 * @return
+	 * @throws Exception 
+	 */
+	@RequestMapping("/commentSave")
+	@ResponseBody
+	public Object commentSave(String gId, Integer starNum, String content, Integer anon, Integer oId) throws Exception{
+		if (gId == null || starNum == null || content == null || anon == null || oId == null) {
+			return renderError("参数错误");
+		}
+		// 用户id
+		String suidStr = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_USER_ID).getValue();
+		Integer suid = Integer.parseInt(suidStr);
+		//Integer suid = 4;	
+		ShopGoodsdiscuss discuss = new ShopGoodsdiscuss();
+		discuss.setGid(gId);
+		discuss.setStar(starNum);
+		discuss.setDiscontent(content);
+		if (anon == 1) {
+			discuss.setSuid(0);
+		}else{
+			discuss.setSuid(suid);
+		}
+		discuss.setDistime(new Date());
+		
+		if (!this_ShopGoodsdiscussService.insert(discuss)) {
+			throw new Exception("shopOrder discuss save error");
+		}
+		
+		ShopOrderdetail orderdetail = this_ShopOrderdetailService.selectOne(
+				new EntityWrapper<ShopOrderdetail>().eq("oid", oId).eq("gid", gId));
+		orderdetail.setCommentstatus("b");
+		if (this_ShopOrderdetailService.updateById(orderdetail)) {
+			return renderSuccess("评论成功");
+		} else{
+			return renderSuccess("评论失败");
+		}
+		
+	}
+}

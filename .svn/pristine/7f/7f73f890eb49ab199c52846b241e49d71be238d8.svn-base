@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.nwnu.system.mapper.ShopUseraddressMapper">
+	<!--开启二级缓存-->
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+
+	<resultMap id="BaseResultMap" type="org.nwnu.system.entity.ShopUseraddress">
+		<id column="id" property="id" />
+		<result column="realname" property="realname" />
+		<result column="realaddress" property="realaddress" />
+		<result column="tel" property="tel" />
+		<result column="status" property="status" />
+		<result column="suid" property="suid" />
+		<result column="uptime" property="uptime" />
+	</resultMap>
+
+    <!-- 通用查询结果列-->
+    <sql id="Base_Column_List">
+        id, realname, realaddress, tel, status, suid, uptime
+    </sql>
+</mapper>

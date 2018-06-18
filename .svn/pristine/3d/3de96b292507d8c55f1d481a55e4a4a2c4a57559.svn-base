@@ -1,0 +1,15 @@
+eclipse.preferences.version=1
+encoding//src/main/java=UTF-8
+encoding//src/main/resources=UTF-8
+encoding//src/main/resources/config.properties=UTF-8
+encoding//src/main/resources/log4j.properties=UTF-8
+encoding//src/main/resources/mybatis-config.xml=UTF-8
+encoding//src/main/resources/spring-mvc.xml=UTF-8
+encoding//src/main/resources/spring-mybatis.xml=UTF-8
+encoding//src/main/resources/spring-smtp-mail.xml=UTF-8
+encoding//src/main/resources/velocity.properties=UTF-8
+encoding//src/main/webapp/WEB-INF/view/GoodsType/GoodsTypeView.vm=UTF-8
+encoding//src/main/webapp/WEB-INF/view/Home/Left.vm=UTF-8
+encoding//src/main/webapp/WEB-INF/view/Upload/UploadExample.vm=UTF-8
+encoding//src/test/java=UTF-8
+encoding/<project>=UTF-8

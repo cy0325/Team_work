@@ -1,0 +1,247 @@
+package org.nwnu.system.controller;
+
+
+import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.plugins.Page;
+
+import me.chanjar.weixin.common.api.WxConsts;
+import me.chanjar.weixin.common.bean.menu.WxMenu;
+import me.chanjar.weixin.common.bean.menu.WxMenuButton;
+
+import org.nwnu.system.entity.SysUser;
+import org.nwnu.system.entity.WexinMenu;
+import org.nwnu.system.service.SysUserService;
+import org.nwnu.system.service.WexinMenuService;
+import org.nwnu.system.weixin.WeixinMenu;
+import org.nwnu.base.controller.BaseController;//基础包
+import org.nwnu.pub.util.Const;
+import org.nwnu.pub.util.StringUtil;//自定义字符串处理类，如果没有就取掉
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpSession;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * <p>
+ * 微信菜单 前端控制器
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+@Controller
+@RequestMapping("/WexinMenu")
+public class WexinMenuController extends BaseController {
+	@Autowired
+	private WexinMenuService this_WexinMenuService;	
+	
+	@Autowired
+	private SysUserService this_SysUserService;	
+	
+	/***
+	 * 每个controller的首页
+	 * 	 
+	 */
+	@RequestMapping(value = "/WexinMenuIndex")
+	public ModelAndView WexinMenuIndex(ModelAndView modelAndView) {
+		return modelAndView;
+	}
+
+	/***
+	 * 列表
+	 * 
+	 * @param 
+	 * @param page
+	 *            起始页
+	 * @param rows
+	 *            页面大小 * @param sort 排序字段 * @param rows 排序顺序
+	 * @return
+	 */
+	@RequestMapping(value = "/List", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> GetList() {
+		EntityWrapper<WexinMenu> wrapper=new EntityWrapper<WexinMenu>();	
+		//如果有查询条件，此处需要构造查询warpper
+		//例如wrapper.eq();	
+		List<WexinMenu> WexinMenuList = new ArrayList<WexinMenu>();
+		List<WexinMenu> fWeixinMenus = this_WexinMenuService
+				.selectList(new EntityWrapper<WexinMenu>().eq("fid", 1));
+		
+		for(WexinMenu weixinMenu : fWeixinMenus){
+			WexinMenuList.add(weixinMenu);
+			WexinMenuList.addAll(this_WexinMenuService
+					.selectList(new EntityWrapper<WexinMenu>().eq("fid", weixinMenu.getId())));
+		}
+		for(WexinMenu wexinMenu : WexinMenuList){
+			if(wexinMenu.getFid() == 1){
+				wexinMenu.setfName("一级菜单");
+			} else{
+				wexinMenu.setfName(this_WexinMenuService
+						.selectOne(new EntityWrapper<WexinMenu>().eq("id", wexinMenu.getFid())).getMenuname());
+			}
+			wexinMenu.setuName(this_SysUserService.selectById(wexinMenu.getUid()).getName());
+		}
+		Map<String, Object> result = new HashMap<String, Object>();		
+		int total=this_WexinMenuService.selectList(wrapper).size();		
+		result.put("total", total);
+		result.put("data", WexinMenuList);		
+		return result;
+	}
+
+	/***
+	 * 单页，如果是修改，显示内容及表单，如果是添加显示表单
+	 * 
+	 * @param 
+	 * @return
+	 */
+	@RequestMapping(value = "/WexinMenuView", method = RequestMethod.GET)
+	public ModelAndView view(ModelAndView modelAndView, WexinMenu this_WexinMenu, @RequestParam(value = "id", required = false) Integer id) {	
+		if (id != null) {
+            modelAndView.addObject("WexinMenu", this_WexinMenuService.selectById(id));
+        }else
+        {        	
+        	modelAndView.addObject("WexinMenu",this_WexinMenu);
+        }
+		List<WexinMenu> weixinMenus = this_WexinMenuService
+    			.selectList(new EntityWrapper<WexinMenu>().eq("fid", 1));
+    	modelAndView.addObject("weixinMenus", weixinMenus);
+	     return modelAndView;
+	}
+
+	/***
+	 * 保存，如果是新增，调用insert，如果是修改，调用updateById
+	 * 
+	 * @param 
+	 * @return
+	 */
+	@RequestMapping(value = "/Save", method = RequestMethod.POST)
+	@ResponseBody
+	public Object Save(WexinMenu this_WexinMenu, HttpSession session) {
+		if (StringUtil.isEmpty(this_WexinMenu.getFid())) {
+			return renderError("父菜单不能为空");
+		}
+		if (StringUtil.isEmpty(this_WexinMenu.getMenuname())) {
+			return renderError("菜单名称不能为空");
+		}
+		if (StringUtil.isEmpty(this_WexinMenu.getMenuurl())) {
+			return renderError("菜单链接不能为空");
+		}
+		List<WexinMenu> fMenus = this_WexinMenuService.selectList(new EntityWrapper<WexinMenu>().eq("fid", 1));
+		if(fMenus.size() == 3 && this_WexinMenu.getFid() == 1){
+			return renderError("抱歉，微信菜单最多包括3个一级菜单");
+		}
+		List<WexinMenu> sMenus = this_WexinMenuService
+				.selectList(new EntityWrapper<WexinMenu>().eq("fid", this_WexinMenu.getFid()));
+		if (sMenus.size() == 5 && this_WexinMenu.getFid() != 1) {
+			return renderError("抱歉，每个一级菜单最多包含5个二级菜单");
+		}
+		if(this_WexinMenu.getFid() == 1){
+			this_WexinMenu.setMenutype("a");
+		}else{
+			this_WexinMenu.setMenutype("b");
+		}
+		this_WexinMenu.setUid(((SysUser)session.getAttribute(Const.lOGIN_SYSUSER)).getId());
+		this_WexinMenu.setUptime(new Date());
+		if (this_WexinMenu.getId() == null) {
+			this_WexinMenuService.insert(this_WexinMenu);
+			createMenu();
+			return renderSuccess("添加成功");
+		} else {
+			this_WexinMenuService.updateById(this_WexinMenu);
+			createMenu();
+			return renderSuccess("修改成功");
+		}
+	}
+
+	/***
+	 * 根据id删除
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@RequestMapping("/Delete")
+	@ResponseBody
+	public Object Delete(@RequestParam(value = "id", required = true) Integer id) {
+		this_WexinMenuService.deleteById(id);
+		createMenu();
+		return renderSuccess("删除成功");
+	}
+
+	/***
+	 * 根据ids批量删除，此方法根据前端需要
+	 * 
+	 * @param ids 逗号拼接项
+	 * @return
+	 */
+	@RequestMapping("/BatchDelete")
+	@ResponseBody
+	public Object BatchDelete(@RequestParam(value = "ids", required = true) String ids) {
+		List<Integer> idList=new ArrayList<Integer>();
+		if(StringUtil.isNotEmpty(ids))
+		{
+			if (ids.contains("all,")) {
+				ids=ids.replace("all,", "");//checkbox全选的时候带入，要去掉
+			}			
+			String[] lsStrings=ids.split(",");			
+			for (String id : lsStrings) {
+				idList.add(Integer.parseInt(id));
+			}
+			this_WexinMenuService.deleteBatchIds(idList);
+			createMenu();
+			return renderSuccess("删除成功");
+		}else{
+			return renderError("请选择需要删除的数据");
+		}
+		
+	}
+	
+	
+	private void createMenu(){
+		WxMenu menu = new WxMenu();
+		
+		List<WexinMenu> wexinMenuLists = this_WexinMenuService
+				.selectList(new EntityWrapper<WexinMenu>().eq("fid", 1));
+		
+		for(WexinMenu wmMenu : wexinMenuLists){
+			WxMenuButton button = new WxMenuButton();
+			button.setName(wmMenu.getMenuname());
+			List<WexinMenu> weixinMenus = this_WexinMenuService.selectList(new EntityWrapper<WexinMenu>().eq("fid", wmMenu.getId()));
+			
+			if (weixinMenus.size() > 0) {
+				button.setType(WxConsts.BUTTON_CLICK);
+				button.setKey(wmMenu.getId().toString());
+			} else{
+				button.setType(WxConsts.BUTTON_VIEW);
+				button.setUrl(wmMenu.getMenuurl());
+			}
+			menu.getButtons().add(button);
+			for(WexinMenu wm : weixinMenus){
+				WxMenuButton button2 = new WxMenuButton();
+				button2.setName(wm.getMenuname());
+				button2.setType(WxConsts.BUTTON_VIEW);
+				button2.setUrl(wm.getMenuurl());
+				button.getSubButtons().add(button2);
+			}
+		}
+
+		 WeixinMenu weixinMenu = new WeixinMenu();
+		 weixinMenu.init();
+		 weixinMenu.delete();
+		 //System.out.println(JSONObject.toJSON(menu));
+		 weixinMenu.create(menu);
+	}
+	
+	
+}

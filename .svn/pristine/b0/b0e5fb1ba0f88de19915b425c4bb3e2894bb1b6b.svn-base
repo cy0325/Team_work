@@ -1,0 +1,16 @@
+package org.nwnu.system.mapper;
+
+import org.nwnu.system.entity.UserReason;
+import com.baomidou.mybatisplus.mapper.BaseMapper;
+
+/**
+ * <p>
+  * 用户理由表 Mapper 接口
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-23
+ */
+public interface UserReasonMapper extends BaseMapper<UserReason> {
+
+}

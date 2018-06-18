@@ -1,0 +1,81 @@
+package org.nwnu.system.entity;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+public class CartGoodVo implements Serializable{
+	
+	private Integer id;
+	private Integer gid;
+	private Integer quantity;
+	private String goodName;
+	private String goodSpec;
+	private String goodMainImg;
+	private float goodPrice;
+	private String goodStatus;
+	private Integer goodStock;
+	private BigDecimal goodTotalPrice;
+	
+	public Integer getId() {
+		return id;
+	}
+	public void setId(Integer id) {
+		this.id = id;
+	}
+	public Integer getGid() {
+		return gid;
+	}
+	public void setGid(Integer gid) {
+		this.gid = gid;
+	}
+	public Integer getQuantity() {
+		return quantity;
+	}
+	public void setQuantity(Integer quantity) {
+		this.quantity = quantity;
+	}
+	public String getGoodName() {
+		return goodName;
+	}
+	public void setGoodName(String goodName) {
+		this.goodName = goodName;
+	}
+	public String getGoodSpec() {
+		return goodSpec;
+	}
+	public void setGoodSpec(String goodSpec) {
+		this.goodSpec = goodSpec;
+	}
+	public String getGoodMainImg() {
+		return goodMainImg;
+	}
+	public void setGoodMainImg(String goodMainImg) {
+		this.goodMainImg = goodMainImg;
+	}
+	
+	public float getGoodPrice() {
+		return goodPrice;
+	}
+	public void setGoodPrice(float goodPrice) {
+		this.goodPrice = goodPrice;
+	}
+	public String getGoodStatus() {
+		return goodStatus;
+	}
+	public void setGoodStatus(String goodStatus) {
+		this.goodStatus = goodStatus;
+	}
+	public Integer getGoodStock() {
+		return goodStock;
+	}
+	public void setGoodStock(Integer goodStock) {
+		this.goodStock = goodStock;
+	}
+	public BigDecimal getGoodTotalPrice() {
+		return goodTotalPrice;
+	}
+	public void setGoodTotalPrice(BigDecimal goodTotalPrice) {
+		this.goodTotalPrice = goodTotalPrice;
+	}
+	
+}

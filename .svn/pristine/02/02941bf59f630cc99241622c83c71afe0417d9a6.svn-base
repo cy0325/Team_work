@@ -1,0 +1,389 @@
+package org.nwnu.system.entity;
+
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableName;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import org.apache.commons.io.filefilter.FalseFileFilter;
+
+/**
+ * <p>
+ * 商品
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+
+@TableName("goods_detail")
+public class GoodsDetail implements Serializable {
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
+
+	/**
+	 * 主键
+	 */
+	private Integer id;
+
+	/**
+	 * 所属大类
+	 */
+	private Integer fid;
+
+	/**
+	 * 所属小类
+	 */
+	private Integer sid;
+
+	/**
+	 * 所属活动
+	 */
+	private Integer aid;
+	
+	/**
+	 * 商品编号
+	 */
+	private String goodscode;
+
+	/**
+	 * 商品名称
+	 */
+	private String goodsname;
+
+	/**
+	 * 图片1
+	 */
+	private String pic1;
+
+	/**
+	 * 图片2
+	 */
+	private String pic2;
+
+	/**
+	 * 图片2
+	 */
+	private String pic3;
+
+	/**
+	 * 规格
+	 */
+	private Integer spec;
+
+	/**
+	 * 价格
+	 */
+	private Float price;
+
+	/**
+	 * 库存
+	 */
+	private Integer kucun;
+
+	/**
+	 * 产地
+	 */
+	private String chandi;
+
+	/**
+	 * 派送说明
+	 */
+	private String psdesc;
+
+	/**
+	 * 商品描述
+	 */
+	private String desc;
+
+	/**
+	 * 是否上架
+	 */
+	private String status;
+
+	/**
+	 * 是否热卖
+	 */
+	private String sellstatus;
+
+	/**
+	 * 是否新品
+	 */
+	private String newstatus;
+
+	/**
+	 * 其他
+	 */
+	private String remark;
+
+	/**
+	 * 操作员id
+	 */
+	private Integer uid;
+
+	/**
+	 * 操作时间
+	 */
+	private Date uptime;
+	
+	public String getGoodscode() {
+		return goodscode;
+	}
+
+	public void setGoodscode(String goodscode) {
+		this.goodscode = goodscode;
+	}
+
+	@TableField(exist = false)
+	private String bgtName;
+	
+	@TableField(exist = false)
+	private String sgtName;
+	
+	@TableField(exist = false)
+	private String sysUserName;
+	
+	@TableField(exist = false)
+	private GoodsActivity goodsActivity;
+	
+	@TableField(exist = false)
+	private String specStr;
+	
+	@TableField(exist = false)
+	private String activityname;
+	
+	/**
+	 * 下单时间
+	 */
+	@TableField(exist = false)
+	private String placetime;
+	
+	/**
+	 * 订单id
+	 */
+	@TableField(exist = false)
+	private Integer oid;
+	
+	public Integer getOid() {
+		return oid;
+	}
+
+	public void setOid(Integer oid) {
+		this.oid = oid;
+	}
+
+	public String getPlacetime() {
+		return placetime;
+	}
+
+	public void setPlacetime(String placetime) {
+		this.placetime = placetime;
+	}
+
+	public String getSpecStr() {
+		return specStr;
+	}
+
+	public void setSpecStr(String specStr) {
+		this.specStr = specStr;
+	}
+
+	public String getBgtName() {
+		return bgtName;
+	}
+
+	public void setBgtName(String bgtName) {
+		this.bgtName = bgtName;
+	}
+
+	public String getSgtName() {
+		return sgtName;
+	}
+
+	public void setSgtName(String sgtName) {
+		this.sgtName = sgtName;
+	}
+	public String getActivityname() {
+		return activityname;
+	}
+
+	public void setActivityname(String activityname) {
+		this.activityname = activityname;
+	}
+	public String getSysUserName() {
+		return sysUserName;
+	}
+
+	public void setSysUserName(String sysUserName) {
+		this.sysUserName = sysUserName;
+	}
+
+	public GoodsActivity getGoodsActivity() {
+		return goodsActivity;
+	}
+
+	public void setGoodsActivity(GoodsActivity goodsActivity) {
+		this.goodsActivity = goodsActivity;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getFid() {
+		return fid;
+	}
+
+	public void setFid(Integer fid) {
+		this.fid = fid;
+	}
+
+	public Integer getSid() {
+		return sid;
+	}
+
+	public void setSid(Integer sid) {
+		this.sid = sid;
+	}
+
+	public Integer getAid() {
+		return aid;
+	}
+
+	public void setAid(Integer aid) {
+		this.aid = aid;
+	}
+
+	public String getGoodsname() {
+		return goodsname;
+	}
+
+	public void setGoodsname(String goodsname) {
+		this.goodsname = goodsname;
+	}
+
+	public String getPic1() {
+		return pic1;
+	}
+
+	public void setPic1(String pic1) {
+		this.pic1 = pic1;
+	}
+
+	public String getPic2() {
+		return pic2;
+	}
+
+	public void setPic2(String pic2) {
+		this.pic2 = pic2;
+	}
+
+	public String getPic3() {
+		return pic3;
+	}
+
+	public void setPic3(String pic3) {
+		this.pic3 = pic3;
+	}
+
+	public Integer getSpec() {
+		return spec;
+	}
+
+	public void setSpec(Integer spec) {
+		this.spec = spec;
+	}
+
+	public Float getPrice() {
+		return price;
+	}
+
+	public void setPrice(Float price) {
+		this.price = price;
+	}
+
+	public Integer getKucun() {
+		return kucun;
+	}
+
+	public void setKucun(Integer kucun) {
+		this.kucun = kucun;
+	}
+
+	public String getChandi() {
+		return chandi;
+	}
+
+	public void setChandi(String chandi) {
+		this.chandi = chandi;
+	}
+
+	public String getPsdesc() {
+		return psdesc;
+	}
+
+	public void setPsdesc(String psdesc) {
+		this.psdesc = psdesc;
+	}
+
+	public String getDesc() {
+		return desc;
+	}
+
+	public void setDesc(String desc) {
+		this.desc = desc;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public String getSellstatus() {
+		return sellstatus;
+	}
+
+	public void setSellstatus(String sellstatus) {
+		this.sellstatus = sellstatus;
+	}
+
+	public String getNewstatus() {
+		return newstatus;
+	}
+
+	public void setNewstatus(String newstatus) {
+		this.newstatus = newstatus;
+	}
+
+	public String getRemark() {
+		return remark;
+	}
+
+	public void setRemark(String remark) {
+		this.remark = remark;
+	}
+
+	public Integer getUid() {
+		return uid;
+	}
+
+	public void setUid(Integer uid) {
+		this.uid = uid;
+	}
+
+	public Date getUptime() {
+		return uptime;
+	}
+
+	public void setUptime(Date uptime) {
+		this.uptime = uptime;
+	}
+}

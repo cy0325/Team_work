@@ -1,0 +1,199 @@
+#override("content")
+<article class="page-container">
+	<form class="form form-horizontal" id="form-view"  enctype="multipart/form-data">
+	            		<input type="hidden" id="id" name="id" value="$!{FoodsDetail.id}"/>
+				        		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>所属类别：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+			 <span class="select-box radius">
+					<select class="select" id="select-fid" size="1" name="fid">
+						#foreach($gt in $foodsTypes)
+	                        #if($!{FoodsDetail.fid} == $!{gt.id})
+	                            <option value="$!{gt.id}" selected>$!{gt.name}</option>
+	                        #else
+	                            <option value="$!{gt.id}">$!{gt.name}</option>
+	                        #end
+	                    #end
+					</select>
+				</span>
+            </div>
+        </div>
+
+				        		
+				        		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>菜品名称：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<input id="foodsname" name="foodsname" type="text" class="input-text" value="$!{FoodsDetail.foodsname}" placeholder="请输入菜品名称" >
+			</div>
+		</div>
+				        		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>图片：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<span class="btn-upload form-group">
+ 					<input class="input-text upload-url radius" type="text" name="file_1" id="file_1" readonly value="$!{FoodsDetail.pic}">
+ 						<a href="javascript:void();" class="btn btn-primary radius">上传图片</a>
+  					<input type="file" name="filepic1" class="input-file">
+  					<label style="color:red;font-size:12px;">&nbsp;&nbsp;&nbsp;请您上传小于50k的图片！</label>
+				</span>
+			</div>
+		</div>
+						        		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red"></span>原价：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<input id="sprice" name="sprice" type="text" class="input-text" value="$!{FoodsDetail.sprice}" placeholder="请输入原价，可以为空" >
+			</div>
+		</div>
+		
+				        		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>现价：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<input id="price" name="price" type="text" class="input-text" value="$!{FoodsDetail.price}" placeholder="请输入现价" >
+			</div>
+		</div>
+
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>是否售光：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+			#if(${FoodsDetail.foodstutas}=="a")
+				 <div class="radio-box">
+				    <input type="radio" id="radio-1" name="foodstutas" value="a" checked>
+				    <label for="radio-1">是</label>
+				 </div>
+				  <div class="radio-box">
+				    <input type="radio" id="radio-2" name="foodstutas" value="b">
+				    <label for="radio-2">否</label>
+				  </div>			
+				#else
+				<div class="radio-box">
+				    <input type="radio" id="radio-1" name="foodstutas" value="a">
+				    <label for="radio-1">是</label>
+				 </div>
+				  <div class="radio-box">
+				    <input type="radio" id="radio-2" name="foodstutas" value="b" checked>
+				    <label for="radio-2">否</label>
+				  </div>	
+				#end
+			</div>
+		</div>
+		
+		      		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>菜品描述：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+			<textarea name="desc" id="desc" type="text" class="textarea radius" placeholder="请输入菜品描述">$!{FoodsDetail.desc}</textarea>
+				
+			</div>
+		</div>
+						<div class="row cl">
+			<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-2">				
+				<button type="submit" class="btn btn-danger radius" ><i class="Hui-iconfont">&#xe632;</i> 提交</button>
+				<button onClick="layer_close();" class="btn btn-default radius" type="button">&nbsp;&nbsp;取消&nbsp;&nbsp;</button>
+			</div>
+		</div>
+			        	
+	</form>
+</article>
+#end
+<!-- 这是一个select示例   
+<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2">是否启用：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+		        						<div class="radio-box">
+					    <input type="radio" id="radio-1" name="status" value="a" checked>
+					    <label for="radio-1">是</label>
+					 </div>
+					  <div class="radio-box">
+					    <input type="radio" id="radio-2" name="status" value="b">
+					    <label for="radio-2">否</label>
+					  </div>	
+									
+			</div>
+</div>	 -->
+#override("js")
+<!--请在下方写此页面业务相关的脚本,首先需要引入juery.validate表单验证插件-->
+<script type="text/javascript" src="/static/lib/jquery.validation/1.14.0/jquery.validate.js"></script> 
+<script type="text/javascript" src="/static/lib/jquery.validation/1.14.0/validate-methods.js"></script> 
+<script type="text/javascript" src="/static/lib/jquery.validation/1.14.0/messages_zh.js"></script>
+<script type="text/javascript">
+
+	$(function(){
+		//表单验证,如果有其他需要直接添加即可，比如可以填入digits:true必须输入数字，这个根据jquery.validate插件验证规则
+		$("#form-view").validate({
+				rules:{
+				 fid:{
+						required:true,
+					},
+				  sid:{
+						required:true,
+					},
+				 foodscode:{
+						required:true,
+					},
+				  foodsname:{
+						required:true,
+					},
+				 pic:{
+						required:true,
+					},
+					 sprice:{
+							
+							isFloatGtZero:true,
+							isTwoDecimal:true
+						},
+				 price:{
+						required:true,
+						isFloatGtZero:true,
+						isTwoDecimal:true
+					},
+				  desc:{
+						required:true,
+					},
+				  uid:{
+						required:true,
+					},
+				  	uptime:{
+						required:true,
+					},
+				  				 				},
+				  				 				onkeyup : false,
+				  				 				focusCleanup : true,
+				  				 				success : "valid",
+				  				 				submitHandler : function(form) {
+				  				 					//var param = $("#form-view").serialize(); //表单内容序列化
+				  				 					$(form).ajaxSubmit({
+				  				 						url : '/FoodsDetail/Save.do',
+				  				 						type : 'POST',
+				  				 						dataType : 'json',
+				  				 						success : function(result) {
+				  				 							if (result.success) {
+				  				 								parent.layer.msg(result.msg, {
+				  				 									icon : 1,
+				  				 									time : 2500
+				  				 								});
+				  				 								//以下为关闭当前frame，并刷新父页面
+				  				 								var index = parent.layer.getFrameIndex(window.name);
+				  				 								parent.$("#pagecontent").load(
+				  				 								window.parent.location.href+ "#pagecontent");//刷新父页面表格tbody
+				  				 								parent.$("#mypage").load(window.parent.location.href+ "#mypage");//分页也需要刷新一下
+				  				 								parent.layer.close(index);
+
+				  				 							} else {
+				  				 								layer.msg(result.msg, {
+				  				 									icon : 2,
+				  				 									time : 1500
+				  				 								});
+				  				 							}
+				  				 						},
+				  				 						error : function(data) {
+				  				 							layer.msg("对不起，服务请求错误！", {
+				  				 								icon : 2,
+				  				 								time : 1500
+				  				 							});
+				  				 						}
+				  				 					});
+				  				 				}
+				  				 			});
+
+				  				 		})
+</script>
+#end
+#extends("/Home/Layout.vm")

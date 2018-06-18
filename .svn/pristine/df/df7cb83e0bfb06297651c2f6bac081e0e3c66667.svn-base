@@ -1,0 +1,99 @@
+package org.nwnu.system.entity;
+
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableName;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * <p>
+ * 用户信用值
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-22
+ */
+
+@TableName("user_credit")
+public class UserCredit implements Serializable {
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
+
+	/**
+	 * 主键
+	 */
+	private Integer id;
+
+	/**
+	 * 订单金额上限
+	 */
+	private Float money;
+
+	/**
+	 * 成交次数
+	 */
+	private Integer num;
+
+	/**
+	 * 操作员id
+	 */
+	private Integer uid;
+
+	/**
+	 * 操作时间
+	 */
+	private Date uptime;
+
+	@TableField(exist = false)
+	private String uName;
+
+	public String getuName() {
+		return uName;
+	}
+
+	public void setuName(String uName) {
+		this.uName = uName;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Float getMoney() {
+		return money;
+	}
+
+	public void setMoney(Float money) {
+		this.money = money;
+	}
+
+	public Integer getNum() {
+		return num;
+	}
+
+	public void setNum(Integer num) {
+		this.num = num;
+	}
+
+	public Integer getUid() {
+		return uid;
+	}
+
+	public void setUid(Integer uid) {
+		this.uid = uid;
+	}
+
+	public Date getUptime() {
+		return uptime;
+	}
+
+	public void setUptime(Date uptime) {
+		this.uptime = uptime;
+	}
+
+}

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>天鲜易购-地址管理</title>
+
+	<!--CSS引入-->
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loaders.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loading.css"/>
+	<link href="/static/app/css/mui.min.css" rel="stylesheet">
+	<link href="/static/app/css/mui.poppicker.css" rel="stylesheet">
+	<link href="/static/app/css/mui.picker.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/app/css/base.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/style.css"/>
+</head>
+
+<!--loading页开始-->
+<div class="loading">
+	<div class="loader">
+        <div class="loader-inner pacman">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+	</div>
+</div>
+<!--loading页结束-->
+
+<body>
+	<header class="top-header fixed-header">
+		<a class="icona" href="javascript:history.go(-1)">
+				<img src="/static/app/images/left.png"/>
+			</a>
+		<h3>地址管理</h3>
+			
+			<a class="text-top" >
+			</a>
+	</header>
+	
+	<div id="main" class="container">
+		<form data-vj-validate action="/App/saveAddress" method="post" class="change-address" id="save">
+			<input type="hidden" name="suid" #if($isNew) value="$!uid" #else value="$!address.suid" #end>	
+			#if(!$isNew) <input type="hidden" name="id" value="$!address.id"> #end
+			#if($transfer)
+			<input type="hidden" name="ids" value="$!{ids}">
+			<input type="hidden" name="counts" value="$!{counts}">
+			#end
+			<ul>
+				<li>
+					<label class="addd">收货人：</label>
+					<input type="text" data-vj-rule="required" data-vj-msg="收货人必须填写" name="realname" value="$!address.realname"/>
+				</li>
+				<li>
+					<label class="addd">手机号：</label>
+					<input type="tel" data-vj-rule="phone" data-vj-msg="手机格式不合法" name="tel" value="$!address.tel"/>
+				</li>
+				
+				<li>
+					<label class="addd">详细地址：</label>
+                    <input type="text" data-vj-rule="required" data-vj-msg="详细地址必须填写" name="realaddress" value="$!address.realaddress"/>
+				</li>
+			</ul>
+			
+			<ul>
+				#if($!address.status == "a")
+				<li class="checkboxa">
+					<input type="checkbox" name="status" checked value="a"/>
+					<label class="check checkd" onselectstart="return false"  >设置为默认地址</label>
+				</li>
+				#else
+				<li class="checkboxa">
+					<input type="checkbox" name="status" value="a"/>
+					<label class="check" onselectstart="return false"  >设置为默认地址</label>
+				</li>
+				#end
+			</ul>
+			#if(!$isNew)
+			<ul>
+				<li>
+					<a href="javascript:void 0;" data-vj-confirm="确定要删除吗？" data-vj-ajax data-vj-url="/App/delAddress?id=$!{address.id}">
+						<div>
+                            <span class="mui-icon mui-icon mui-icon-trash"></span><h3>删除此地址</h3>
+                        </div>
+					</a>
+				</li>
+			</ul>
+			#end
+			<input type="submit" value="保存" />
+		</form>
+	</div>
+</body>
+
+<!--JS引入-->
+<script src="/static/app/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/app/js/fastclick.js"></script>
+<script src="/static/app/js/alert.js"></script>
+<script src="/static/app/js/home.js"></script>
+<script src="/static/app/js/vj-validate.js"></script>
+<!-- <script src="/static/app/js/mui.min.js"></script>
+<script src="/static/app/js/mui.poppicker.js"></script>
+<script src="/static/app/js/mui.picker.min.js"></script>
+<script src="/static/app/js/city.js"></script> -->
+<script type="text/javascript">
+
+    function compatible() {
+        var h = $("header").outerHeight(true);
+        $("#main").css("marginTop", h + 0 + "px");
+    }
+    
+    $(window).load(function(){
+        $(".loading").addClass("loader-chanage").fadeOut(300);
+        compatible();
+    });
+    
+    /* window.onload = function() {
+        document.querySelector('.loading').classList.add('loader-chanage');
+        document.querySelector('.loading').classList.add('mui-hidden');
+        
+    }; */
+
+    $(".checkboxa label").on('click',function(){
+        if($(this).hasClass('checkd')){
+            $(this).removeClass("checkd").siblings("input[type=checkbox]").removeAttr("checked");
+        }else{
+            $(this).addClass("checkd").siblings("input[type=checkbox]").attr("checked", true);
+        }
+    });
+    /* document.querySelector('.checkboxa label').addEventListener('touchstart', function() {
+        if (this.classList.contains('checkd')) {
+            this.classList.remove('checkd');
+            this.previousElementSibling.removeAttribute('checked');
+        } else {
+            this.classList.add('checkd');
+            this.previousElementSibling.setAttribute('checked', true);
+        }
+    }); */
+    
+	var obj = new VjValidate();
+	obj.init();
+	
+
+    /* var _getParam = function(obj, param) {
+        return obj[param] || '';
+    };
+
+    var cityPicker = new mui.PopPicker({
+        layer: 3
+    });
+    cityPicker.setData(cityData);
+
+    document.querySelector('#area').onfocus = function() {
+        var $this = this;
+        cityPicker.show(function(items) {
+            $this.value = ($this.value + _getParam(items[0], 'text') + " " + _getParam(items[1], 'text') + " " + _getParam(items[2], 'text'));
+        });
+    }; */
+
+</script>
+
+</html>

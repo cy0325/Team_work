@@ -1,0 +1,117 @@
+package org.nwnu.front.controller;
+
+import java.util.Date;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.apache.xml.resolver.apps.resolver;
+import org.nwnu.base.controller.BaseController;
+import org.nwnu.pub.util.Const;
+import org.nwnu.pub.util.CookiesUtil;
+import org.nwnu.pub.util.StringUtil;
+import org.nwnu.system.entity.GoodsDetail;
+import org.nwnu.system.entity.ShopOrder;
+import org.nwnu.system.entity.ShopOrderdetail;
+import org.nwnu.system.entity.UserReason;
+import org.nwnu.system.service.GoodsDetailService;
+import org.nwnu.system.service.ShopOrderService;
+import org.nwnu.system.service.ShopOrderdetailService;
+import org.nwnu.system.service.UserReasonService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+
+
+@Controller
+@RequestMapping("/App")
+public class OrderReason extends BaseController{
+	
+	@Autowired
+	private HttpServletRequest request;
+	
+	@Autowired
+	private ShopOrderService this_ShopOrderService;
+	
+	@Autowired
+	private UserReasonService this_UserReasonService;
+	
+	@Autowired
+	private ShopOrderdetailService this_ShopOrderdetailService;
+	
+	@Autowired
+	private GoodsDetailService this_GoodsDetailService;
+	
+	/**
+	 * 填写订单原因视图
+	 * @param oId
+	 * @param type
+	 * @return
+	 */
+	@RequestMapping("/reason")
+	public ModelAndView reason(@RequestParam(required = true, value = "oId") Integer oId,
+			@RequestParam(required = true, value = "type") String type){
+		UserReason reason = new UserReason();
+		reason.setOrderid(oId);
+		reason.setType(type);
+		return new ModelAndView().addObject("reason", reason);
+	}
+	
+	
+	/**
+	 * 原因提交保存
+	 * @param reason
+	 * @return
+	 */
+	@RequestMapping("/reasonSave")
+	@ResponseBody
+	public Object save(UserReason reason){
+		if (StringUtil.isEmpty(reason.getReason())) {
+			return renderError("理由不能为空");
+		}
+		UserReason reason2 = this_UserReasonService.selectOne(
+				new EntityWrapper<UserReason>().eq("orderid", reason.getOrderid()).eq("type", "b"));
+		if (reason2 != null) {
+			return renderError("该订单已提交过申请退款请求");
+		}
+		UserReason reason3 = this_UserReasonService.selectOne(
+				new EntityWrapper<UserReason>().eq("orderid", reason.getOrderid()).eq("type", "a"));
+		if (reason3 != null) {
+			return renderError("该订单已提交取消订单请求");
+		}
+		// 获取获取用户信息
+		String userId = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_USER_ID).getValue();
+		//String userId = "3";
+		//判断用户提交的原因类型
+		if (reason.getType().equals("a")) {
+			ShopOrder order = this_ShopOrderService.selectById(reason.getOrderid());
+			// 将订单的状态修改为取消
+			order.setOrderstatus("c");
+			this_ShopOrderService.updateById(order);
+			// 如果支付方式为货到付款
+			if (order.getPayway().equals("b")) {
+				// 恢复库存
+				List<ShopOrderdetail> orderItemList = this_ShopOrderdetailService.selectList(
+						new EntityWrapper<ShopOrderdetail>().eq("oid", order.getId()));
+				for (ShopOrderdetail orderItem : orderItemList) {
+					GoodsDetail good = this_GoodsDetailService.selectById(orderItem.getGid());
+					good.setKucun(good.getKucun() + orderItem.getGnum());
+					this_GoodsDetailService.updateById(good);
+				}
+			}
+		}
+		reason.setSuid(Integer.parseInt(userId));
+		reason.setUptime(new Date());
+		if(this_UserReasonService.insert(reason)){
+			return renderSuccess("提交成功");
+		} else{
+			return renderError("提交失败");
+		}
+	}
+
+}

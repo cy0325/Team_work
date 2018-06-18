@@ -1,0 +1,20 @@
+package org.nwnu.system.service.impl;
+
+import org.nwnu.system.entity.ShopOrderdetail;
+import org.nwnu.system.mapper.ShopOrderdetailMapper;
+import org.nwnu.system.service.ShopOrderdetailService;
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import org.springframework.stereotype.Service;
+
+/**
+ * <p>
+ * 订单详情 服务实现类
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+@Service
+public class ShopOrderdetailServiceImpl extends ServiceImpl<ShopOrderdetailMapper, ShopOrderdetail> implements ShopOrderdetailService {
+	
+}

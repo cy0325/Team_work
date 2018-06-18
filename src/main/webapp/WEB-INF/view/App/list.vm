@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>天鲜易购-$!{title}专区</title>
+
+	<!--引入CSS-->
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loaders.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loading.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/base.css"/>
+    <link href="/static/app/css/mui.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/app/css/all.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/style.css"/>
+</head>
+
+<!--loading页开始-->
+<div class="loading">
+	<div class="loader">
+        <div class="loader-inner pacman">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+	</div>
+</div>
+<!--loading页结束-->
+
+<body>
+	<header class="top-header fixed-header">
+		<a class="icona" href="javascript:history.go(-1)">
+            <img src="/static/app/images/left.png"/>
+        </a>
+		<h3>$!{title}专区</h3>
+			
+        <a class="iconb" href="javascript:;" onclick="cart_list()">
+            <img src="/static/app/images/shopbar.png"/>
+            #if($!cartcounts != 0)
+            <span id="cart_num" class="mui-badge mui-badge-primary fz-primary">$!cartcounts</span>
+            #end
+        </a>
+	</header>
+	
+	<div id="main" class="container">
+		<section class="list">
+
+            <!--搜索-->
+			<div class="search">
+				<input type="text" value="$!keys" placeholder="" />
+				<label id="search"><img src="/static/app/images/list-search.png"/></label>
+			</div>
+
+            <!--过滤菜单-->
+			<nav>
+				<ul>
+					<li #if($sorttype == "all") class="list-active" #end>
+						<a href="/App/list?sid=$!{sid}&keys=$!{keys}">
+							<span>全部</span>
+						</a>
+					</li>
+					<li #if($sorttype == "sellsup" || $sorttype == "sellsdown") class="list-active" #end>
+					
+						#if($sorttype == "sellsup")
+						<a href="/App/list?sid=$!{sid}&sorttype=sellsdown&keys=$!{keys}">
+							<span>销量</span>
+							<img src="/static/app/images/up-red.png"/>
+						</a>
+						#elseif($sorttype == "sellsdown")
+						<a href="/App/list?sid=$!{sid}&sorttype=sellsup&keys=$!{keys}">
+							<span>销量</span>
+							<img src="/static/app/images/down-red.png"/>
+						</a>
+						#else
+						<a href="/App/list?sid=$!{sid}&sorttype=sellsup&keys=$!{keys}">
+							<span>销量</span>
+						</a>
+						#end
+						
+					</li>
+					<li #if($sorttype == "priceup" || $sorttype == "pricedown") class="list-active" #end>
+					
+						#if($sorttype == "priceup")
+						<a href="/App/list?sid=$!{sid}&sorttype=pricedown&keys=$!{keys}">
+							<span>价格</span>
+							<img src="/static/app/images/up-red.png"/>
+						</a>
+						#elseif($sorttype == "pricedown")
+						<a href="/App/list?sid=$!{sid}&sorttype=priceup&keys=$!{keys}">
+							<span>价格</span>
+							<img src="/static/app/images/down-red.png"/>
+						</a>
+						#else
+						<a href="/App/list?sid=$!{sid}&sorttype=priceup&keys=$!{keys}">
+							<span>价格</span>
+						</a>
+						#end
+						
+					</li>
+					<li #if($sorttype == "commentup" || $sorttype == "commentdown") class="list-active" #end>
+					
+						#if($sorttype == "commentup")
+						<a href="/App/list?sid=$!{sid}&sorttype=commentdown&keys=$!{keys}">
+							<span>评价</span>
+							<img src="/static/app/images/up-red.png"/>
+						</a>
+						#elseif($sorttype == "commentdown")
+						<a href="/App/list?sid=$!{sid}&sorttype=commentup&keys=$!{keys}">
+							<span>评价</span>
+							<img src="/static/app/images/down-red.png"/>
+						</a>
+						#else
+						<a href="/App/list?sid=$!{sid}&sorttype=commentup&keys=$!{keys}">
+							<span>评价</span>
+						</a>
+						#end
+						
+					</li>
+				</ul>
+			</nav>
+
+            <!--产品列表-->
+            <ul class="h-list" style="padding: 0 0.15rem 0.05rem;">
+            
+            	#foreach($item in $goods)
+                <li class="pic">
+                    <a href="/App/detail.do?id=$!{item.id}">
+                        <img class="col-3" src="$!item.pic1"/>
+                        <div class="col-9 mui-pull-right">
+                            <p>$!item.goodsname</p>
+                            <p class="vj-price">
+                                <b>￥$!item.price</b>
+                            </p>
+                        </div>
+                    </a>
+                    <button class="add-cart" title="加入购物车" onclick="add_cart($!item.id)">
+                        加入购物车
+                    </button>
+                </li>
+                #end
+                
+            </ul>
+		</section>
+	</div>
+</body>
+
+<!--JS引入-->
+<script src="/static/app/js/fastclick.js"></script>
+<script src="/static/app/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/app/js/alert.js"></script>
+<script src="/static/app/js/home.js"></script>
+<script type="text/javascript">
+    $(window).load(function(){
+        $(".loading").addClass("loader-chanage").fadeOut(300);
+        compatible();
+    });
+
+    $(window).resize(function() {
+        compatible();
+    });
+
+    function compatible() {
+        var h = $("header").outerHeight(true);
+        $("#main").css("marginTop", h + 0 + "px");
+    }
+    
+    $("#search").click(function() {
+    	var val = $(this).siblings("input").val();
+    	val = $.trim(val);
+    	window.location.href = "/App/list?sid=$!{sid}&sorttype=$!{sorttype}&keys=" + val;
+    });
+    function add_cart(gid){
+    	#if($!{login_flag} == 0)
+ 	   		var flag = true;
+ 	   	#else
+ 	   		var flag = false;
+ 	   	#end
+ 	   	if(flag){
+ 	   		$.toast("请您先登录");
+ 	   		return;
+ 	   }
+      	 $.ajax({
+              url: '/App/cart_add.do',
+              type: 'POST',
+              dataType:'json',
+              data: {gId:gid,count:1},
+              success:function(result){
+                  if(result.success)
+                  {
+                  	$.toast("加入购物车成功！");
+                  	$('#cart_num').text(result.obj)
+                  }else
+                  {
+                  	$.toast(result.msg);
+                  }
+              },
+              error:function(data) {
+                  $.toast("对不起，服务请求错误！");
+              }
+          }); 
+      }
+    function cart_list(){
+    	#if($!{login_flag} == 0)
+ 	   		var flag = true;
+ 	   	#else
+ 	   		var flag = false;
+ 	   	#end
+ 	   	if(flag){
+ 	   		$.toast("请您先登录");
+ 	   		return;
+ 	   }
+    	location.href = "/App/cart_list.do"
+    }
+</script>
+</html>

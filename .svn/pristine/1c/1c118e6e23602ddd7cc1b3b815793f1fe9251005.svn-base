@@ -1,0 +1,85 @@
+#override("content")
+<article class="page-container">
+	<div class="form form-horizontal">
+		<div class="row cl">
+			<p id="aid" hidden>$!{GoodsActivity.id}</p>
+			<div style="width: auto;">
+				<div style="width: 1000px;margin: 0 auto;">
+					<dl class="permission-list">
+						#foreach($goodsType in $!GoodsType)
+							<dt>
+								<label>$!{goodsType.name}</label>
+							</dt>
+							<dd>
+							#foreach($good in $AllGoods)
+								#if($!{goodsType.id} == $!{good.fid})
+									#set($param = "")
+									#foreach($cg in $CheckedGoods)
+										#if($!{cg.id} == $!{good.id})
+											#set($param = $!{good.id})
+											<label><input class="sub_checked" type="checkbox" checked 
+											value="$!{good.id}">$!{good.goodsname}</label>
+										#end
+									#end
+									#if(${param} == "")
+										<label><input class="sub_checked" type="checkbox" 
+										value="$!{good.id}">$!{good.goodsname}</label>
+									#end
+								#end
+							#end
+						#end
+					</dl>
+				</div>
+			</div>
+		</div>
+		<div class="row cl">
+			<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-3">
+				<button type="submit" onclick="add_good()" class="btn btn-danger radius" ><i class="Hui-iconfont">&#xe632;</i> 提交</button>
+				<button onClick="layer_close();" class="btn btn-default radius" type="button">&nbsp;&nbsp;取消&nbsp;&nbsp;</button>
+			</div>
+		</div>
+	</div>
+</article>
+#end
+#override("js")
+<!--请在下方写此页面业务相关的脚本,首先需要引入juery.validate表单验证插件-->
+<script type="text/javascript" src="/static/lib/jquery.validation/1.14.0/jquery.validate.js"></script> 
+<script type="text/javascript" src="/static/lib/jquery.validation/1.14.0/validate-methods.js"></script> 
+<script type="text/javascript" src="/static/lib/jquery.validation/1.14.0/messages_zh.js"></script>
+<script type="text/javascript">
+	function selectCheckedSub(){
+		var checkedArr = $(".sub_checked:checked");
+		var str = checkedArr.map(function(){
+			return this.value
+		}).get().join(",")
+		return str;
+	}
+	
+
+	function add_good() {
+		var ids = selectCheckedSub()
+		var aid = $('#aid').text()
+		$.ajax({
+			url : '/GoodsActivity/addGoods.do',
+			type : 'POST',
+			dataType : 'json',
+			data:{aid:aid, ids:ids},
+			success : function(result) {
+				if (result.success) {
+					parent.layer.msg(result.msg, {
+						icon : 1,
+						time : 2500
+					});
+					layer_close()
+				} else {
+					layer.msg(result.msg,{icon:2,time:1500});
+				}
+			},
+			error : function(data) {
+				layer.msg("对不起，服务请求错误！",{icon:2,time:1500});
+			}
+		});
+	}
+</script>
+#end
+#extends("/Home/Layout.vm")

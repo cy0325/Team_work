@@ -1,0 +1,414 @@
+package org.nwnu.system.controller;
+
+
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.plugins.Page;
+
+import org.apache.poi.ss.formula.functions.IDStarAlgorithm;
+import org.nwnu.system.entity.GoodsActivity;
+import org.nwnu.system.entity.GoodsDetail;
+import org.nwnu.system.entity.GoodsPref;
+import org.nwnu.system.entity.GoodsType;
+import org.nwnu.system.entity.SysRole;
+import org.nwnu.system.entity.SysUser;
+import org.nwnu.system.service.GoodsActivityService;
+import org.nwnu.system.service.GoodsDetailService;
+import org.nwnu.system.service.GoodsPrefService;
+import org.nwnu.system.service.GoodsTypeService;
+import org.nwnu.system.service.SysUserService;
+import org.nwnu.base.controller.BaseController;//基础包
+import org.nwnu.pub.util.Const;
+import org.nwnu.pub.util.StringUtil;//自定义字符串处理类，如果没有就取掉
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * <p>
+ * 市场活动 前端控制器
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+@Controller
+@RequestMapping("/GoodsActivity")
+public class GoodsActivityController extends BaseController {
+	@Autowired
+	private GoodsActivityService this_GoodsActivityService;	
+	@Autowired
+    private HttpServletRequest request;	
+	@Autowired
+	private SysUserService this_SysUserService;
+	@Autowired
+	private GoodsTypeService this_GoodsTypeService;
+	@Autowired
+	private GoodsDetailService this_GoodsDetailService;
+	@Autowired
+	private GoodsPrefService this_GoodsPrefService;
+	
+	/***
+	 * 每个controller的首页
+	 * 	 
+	 */
+	@RequestMapping(value = "/GoodsActivityIndex")
+	public ModelAndView GoodsActivityIndex(ModelAndView modelAndView) {
+		return modelAndView;
+	}
+
+	/***
+	 * 列表
+	 * 
+	 * @param 
+	 * @param page
+	 *            起始页
+	 * @param rows
+	 *            页面大小 * @param sort 排序字段 * @param rows 排序顺序
+	 * @return
+	 */
+	@RequestMapping(value = "/List", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> GetList(
+			@RequestParam(required = false, defaultValue = "1") int page,
+			@RequestParam(required = false, defaultValue = "10") int pagesizes,
+			@RequestParam(required = false,defaultValue = "") String datemin,
+			@RequestParam(required = false,defaultValue = "") String datemax,
+			@RequestParam(required = false,defaultValue = "") String actName) {
+		EntityWrapper<GoodsActivity> wrapper=new EntityWrapper<GoodsActivity>();	
+		if(StringUtil.isNotEmpty(datemax)&&StringUtil.isEmpty(datemin)){
+			wrapper.like("uptime", datemax);
+		}
+		if(StringUtil.isEmpty("datemax")&&StringUtil.isNotEmpty(datemin)){
+			wrapper.like("uptime", datemin);
+		}
+		if(StringUtil.isNotEmpty(datemax)&&StringUtil.isNotEmpty(datemin)){
+			wrapper.between("uptime", datemin, datemax);
+		}
+		if(StringUtil.isNotEmpty(actName)){
+			wrapper.like("name", actName);
+		}
+		List<GoodsActivity> GoodsActivityList=this_GoodsActivityService.selectPage(
+				new Page<GoodsActivity>(page,pagesizes),
+				wrapper.orderBy("id", false)//根据id倒序输出
+				).getRecords();	
+		for(GoodsActivity ga:GoodsActivityList){
+			ga.setUName(this_SysUserService.selectById(ga.getUid()).getName());
+		}
+		Map<String, Object> result = new HashMap<String, Object>();		
+		int total=this_GoodsActivityService.selectList(wrapper).size();		
+		result.put("total", total);
+		result.put("data", GoodsActivityList);		
+		return result;
+	}
+
+	/***
+	 * 单页，如果是修改，显示内容及表单，如果是添加显示表单
+	 * 
+	 * @param 
+	 * @return
+	 */
+	@RequestMapping(value = "/GoodsActivityView", method = RequestMethod.GET)
+	public ModelAndView view(ModelAndView modelAndView, GoodsActivity this_GoodsActivity, @RequestParam(value = "id", required = false) Integer id) {	
+		if (id != null) {
+            modelAndView.addObject("GoodsActivity", this_GoodsActivityService.selectById(id));
+        }else
+        {        	
+        	modelAndView.addObject("GoodsActivity",this_GoodsActivity);
+        }
+	     return modelAndView;
+	}
+
+	/***
+	 * 保存，如果是新增，调用insert，如果是修改，调用updateById
+	 * 
+	 * @param 
+	 * @return
+	 */
+	@RequestMapping(value = "/Save", method = RequestMethod.POST)
+	@ResponseBody
+	public Object Save(GoodsActivity this_GoodsActivity,HttpSession session,
+			@RequestParam(value = "filepic1", required = false) MultipartFile filepic1,
+			@RequestParam(value = "filepic2", required = false) MultipartFile filepic2) {
+		if(StringUtil.isEmpty(this_GoodsActivity.getName())){
+		 	return renderError("活动名称不能为空");		
+		 	}
+		if(StringUtil.isEmpty(this_GoodsActivity.getIntro())){
+		 	return renderError("简介不能为空");		
+		 	}
+		if(StringUtil.isEmpty(this_GoodsActivity.getStatus())){
+		 	return renderError("是否开启不能为空");		
+		 	}
+		List<MultipartFile> fileList = new ArrayList<MultipartFile>();
+		List<String> urlList = new ArrayList<String>();
+		fileList.add(filepic1);
+		fileList.add(filepic2);
+		
+		for(MultipartFile file : fileList){
+			//文件上传
+	        DateFormat df = new SimpleDateFormat("yyyy-MM-dd");
+	        String date = df.format(new Date());
+	        String year = date.substring(0, 4);
+	        String month = date.substring(5, 7);
+	        //文件路径 upload/article/当前年月/
+	        String path = request.getSession().getServletContext().getRealPath("upload") + "/goodsActivity/" + year + month + "/";
+	        //取扩展名
+	        if(file != null){
+	        	String extension = getExtensionName(file.getOriginalFilename());
+		        
+		        //拼接新的文件名
+		        String fileName = getCurrTime()+buildRandom(5) + "." + extension;
+		        
+		        if (upload(path, fileName, file)) {
+		        	urlList.add("/upload" + "/goodsActivity/" + year + month + "/"+fileName);
+		        	continue;
+		        } else{
+		        	return renderError("保存失败！");
+		        }
+	        } else{
+	        	urlList.add("");
+	        }
+		}
+		//添加url
+		this_GoodsActivity.setPic(urlList.get(0));
+		this_GoodsActivity.setPic2(urlList.get(1));
+		
+		
+		if(filepic1 == null){
+			this_GoodsActivity.setPic(this_GoodsActivityService.selectById(this_GoodsActivity.getId()).getPic());
+		}
+		if(filepic2 == null){
+			this_GoodsActivity.setPic2(this_GoodsActivityService.selectById(this_GoodsActivity.getId()).getPic2());
+		}
+	   this_GoodsActivity.setUid(((SysUser)session.getAttribute("sysLoginUser")).getId());
+	   this_GoodsActivity.setUptime(new Date());
+	   if (this_GoodsActivity.getId() == null) {
+            return this_GoodsActivityService.insert(this_GoodsActivity) ? renderSuccess("添加成功") : renderError("添加失败");
+        } else {
+            return this_GoodsActivityService.updateById(this_GoodsActivity) ? renderSuccess("修改成功") : renderError("修改失败");
+        }		
+	}
+
+	/***
+	 * 根据id删除
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@RequestMapping("/Delete")
+	@ResponseBody
+	public Object Delete(@RequestParam(value = "id", required = true) Integer id) {
+		if(this_GoodsDetailService.selectOne(new EntityWrapper<GoodsDetail>().eq("aid", id))!=null){
+			return renderError("删除失败，该活动无法删除");
+		}
+		else{
+			return this_GoodsActivityService.deleteById(id) ? renderSuccess("删除成功") : renderError("删除失败");
+		}
+	}
+	/***
+	 * 根据id停用
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@RequestMapping("/StatusClose")
+	@ResponseBody
+	public Object StatusClose(@RequestParam(value = "id", required = true) Integer id) {
+		GoodsActivity goodsActivity=this_GoodsActivityService.selectById(id);
+		List<GoodsDetail> goodsList=this_GoodsDetailService.selectList(new EntityWrapper<GoodsDetail>().eq("aid", id));
+		if (goodsActivity!=null) {
+			goodsActivity.setStatus("b");
+			if(!goodsList.isEmpty()){
+				for(GoodsDetail gd:goodsList){
+					gd.setStatus("b");
+				}
+				this_GoodsDetailService.updateBatchById(goodsList);
+			}
+			return this_GoodsActivityService.updateById(goodsActivity) ? renderSuccess("成功") : renderError("失败");
+		}else
+		{
+			return renderError("该信息不存在");
+		}
+	}
+	/***
+	 * 根据id启用
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@RequestMapping("/StatusOpen")
+	@ResponseBody
+	public Object StatusOpen(@RequestParam(value = "id", required = true) Integer id) {
+		GoodsActivity goodsActivity=this_GoodsActivityService.selectById(id);
+		if (goodsActivity!=null) {
+			goodsActivity.setStatus("a");
+			return this_GoodsActivityService.updateById(goodsActivity) ? renderSuccess("成功") : renderError("失败");
+		}else
+		{
+			return renderError("该信息不存在");
+		}
+	}
+	
+	/***
+	 * 显示活动下添加商品表单
+	 * 
+	 * @param 
+	 * @return
+	 */
+	@RequestMapping(value = "/GoodsView", method = RequestMethod.GET)
+	public ModelAndView goodsView(ModelAndView modelAndView, GoodsActivity this_GoodsActivity, 
+			@RequestParam(value = "id", required = false) Integer id) {	
+		List<GoodsType> goodsTypeList=this_GoodsTypeService.selectList(new EntityWrapper<GoodsType>().eq("pid", "0"));
+        modelAndView.addObject("GoodsType", goodsTypeList );
+        List<GoodsDetail> allGoodsList = new ArrayList<GoodsDetail>();
+        for(GoodsType gd:goodsTypeList){
+        	List<GoodsDetail> Goods = this_GoodsDetailService.selectList(new EntityWrapper<GoodsDetail>()
+        			.eq("fid", gd.getId()).eq("status", "a").eq("aid", 0));
+        	if(!Goods.isEmpty()){
+        		allGoodsList.addAll(Goods);
+        	}
+        }
+        List<GoodsDetail> checkGoodsList = this_GoodsDetailService.selectList(new EntityWrapper<GoodsDetail>()
+        		.eq("aid", id).eq("status", "a"));
+        if(!checkGoodsList.isEmpty()){
+        	modelAndView.addObject("CheckedGoods", checkGoodsList);
+        }
+        modelAndView.addObject("AllGoods", allGoodsList);
+        modelAndView.addObject("GoodsActivity", this_GoodsActivityService.selectById(id));
+        return modelAndView;
+	}
+	
+	/***
+	 * 根据ids批量添加商品到选中的活动
+	 * 
+	 * @param ids 逗号拼接项
+	 * @return
+	 */
+	@RequestMapping(value = "/addGoods")
+	@ResponseBody
+	public Object BatchAdd(
+			@RequestParam(required = true, value = "aid") Integer aid,
+			@RequestParam(required = false, value = "ids") String ids) {
+		List<Integer> idList=new ArrayList<Integer>();
+
+		if(StringUtil.isEmpty(ids)){
+			List<GoodsDetail> goods=this_GoodsDetailService.selectList(new EntityWrapper<GoodsDetail>().eq("aid", aid));
+			if(!goods.isEmpty()){
+				for(GoodsDetail g:goods){
+					g.setAid(0);
+				}
+				this_GoodsDetailService.updateBatchById(goods);
+			}
+			return renderSuccess("添加成功");
+		}
+		String[] idsStr = ids.split(",");
+		for (String id : idsStr) {
+			idList.add(Integer.parseInt(id));
+		}
+		List<GoodsDetail> sgoods = this_GoodsDetailService.selectList(new EntityWrapper<GoodsDetail>()
+				.in("id", idList));
+		List<GoodsDetail> dgoods = this_GoodsDetailService.selectList(new EntityWrapper<GoodsDetail>()
+				.eq("aid", aid).notIn("id", idList));
+		for(GoodsDetail g: sgoods){
+			g.setAid(aid);
+		}
+		for(GoodsDetail g:dgoods){
+			g.setAid(0);
+		}
+		if(!sgoods.isEmpty()){
+			this_GoodsDetailService.updateBatchById(sgoods);
+		}
+		if(!dgoods.isEmpty()){
+			this_GoodsDetailService.updateBatchById(dgoods);
+		}
+		return renderSuccess("添加成功");
+	}	
+	/***
+	 * 活动商品的首页
+	 * 	 
+	 */
+	@RequestMapping(value = "/GoodsIndex")
+	public ModelAndView GoodsIndex(ModelAndView modelAndView,
+			@RequestParam(value = "id", required = false) Integer id) {
+		GoodsActivity goodsActivity = this_GoodsActivityService.selectById(id);
+		modelAndView.addObject("goodsActivity", goodsActivity);
+		return modelAndView;
+	}	
+	/***
+	 * 列表
+	 * 
+	 * @param 
+	 * @param page
+	 *            起始页
+	 * @param rows
+	 *            页面大小 * @param sort 排序字段 * @param rows 排序顺序
+	 * @return
+	 */
+	@RequestMapping(value = "/goodsList", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> GetGoodsList(
+			@RequestParam(required = false, defaultValue = "1") int page,
+			@RequestParam(required = false, defaultValue = "10") int pagesizes,
+			@RequestParam(required = false, defaultValue = "") int aid) {
+		EntityWrapper<GoodsDetail> wrapper=new EntityWrapper<GoodsDetail>();
+		wrapper.eq("aid", aid);
+		List<GoodsDetail> GoodsDetailList=this_GoodsDetailService.selectPage(
+				new Page<GoodsDetail>(page,pagesizes),
+				wrapper.orderBy("id", false)//根据id倒序输出
+				).getRecords();	
+		List<GoodsActivity> activityList=this_GoodsActivityService.selectList(new EntityWrapper<GoodsActivity>());
+		for(GoodsDetail gDetail : GoodsDetailList){
+			gDetail.setSysUserName(this_SysUserService.selectById(gDetail.getUid()).getName());
+			gDetail.setBgtName(this_GoodsTypeService.selectById(gDetail.getFid()).getName());
+			gDetail.setSgtName(this_GoodsTypeService.selectById(gDetail.getSid()).getName());
+			if(gDetail.getSellstatus().equals("a")){
+				gDetail.setSellstatus("是");
+			}else if(gDetail.getSellstatus().equals("b")){
+				gDetail.setSellstatus("否");
+			}
+			if(gDetail.getNewstatus().equals("a")){
+				gDetail.setNewstatus("是");
+			}else if(gDetail.getNewstatus().equals("b")){
+				gDetail.setNewstatus("否");
+			}
+			for(GoodsActivity ga:activityList){
+				if(ga.getId()==gDetail.getAid()){
+					gDetail.setActivityname(ga.getName());
+				}
+			}
+		}
+		Map<String, Object> result = new HashMap<String, Object>();		
+		int total=this_GoodsDetailService.selectList(wrapper).size();		
+		result.put("total", total);
+		result.put("data", GoodsDetailList);		
+		return result;
+	}
+	/***
+	 * 根据id删除
+	 * 
+	 * @param id
+	 * @return
+	 */
+	@RequestMapping("/DeleteAgoods")
+	@ResponseBody
+	public Object DeleteGoods(@RequestParam(value = "id", required = true) Integer id) {
+		GoodsDetail dg=this_GoodsDetailService.selectOne(new EntityWrapper<GoodsDetail>().eq("id", id));
+		dg.setAid(0);
+		return this_GoodsDetailService.updateById(dg)? renderSuccess("删除成功") : renderError("删除失败");
+	}
+}

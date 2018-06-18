@@ -1,0 +1,20 @@
+package org.nwnu.system.service.impl;
+
+import org.nwnu.system.entity.WexinContent;
+import org.nwnu.system.mapper.WexinContentMapper;
+import org.nwnu.system.service.WexinContentService;
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import org.springframework.stereotype.Service;
+
+/**
+ * <p>
+ * 微信推送消息 服务实现类
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+@Service
+public class WexinContentServiceImpl extends ServiceImpl<WexinContentMapper, WexinContent> implements WexinContentService {
+	
+}

@@ -1,0 +1,26 @@
+package org.nwnu.system.controller;
+
+import org.nwnu.base.controller.BaseController;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+/**
+ * <p>
+ * 数据分析（商品销量）
+ * </p>
+ * 
+ * @author dusk
+ *
+ */
+@Controller
+@RequestMapping("DataAnalys")
+public class DataAnalysController extends BaseController{
+	//商品销量统计
+	@RequestMapping(value="/GoodsSalesIndex")
+	public ModelAndView DataAnaysIndex(ModelAndView modelAndview){
+		return modelAndview;
+	}
+	
+
+}

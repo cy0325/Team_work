@@ -1,0 +1,300 @@
+/*
+Navicat MySQL Data Transfer
+Source Server         : localhost
+Source Server Version : 50709
+Source Host           : localhost:3306
+Source Database       : marketplus
+
+Target Server Type    : MYSQL
+Target Server Version : 50709
+File Encoding         : 65001
+
+Time: 2017-08-10 15:16:07
+*/
+
+/*系统相关表*/
+-- ----------------------------
+-- Table structure for `sys_dict`
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_dict`;
+CREATE TABLE `sys_dict` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `dict` varchar(50) DEFAULT NULL COMMENT '字段名称',
+  `dictzh` varchar(50) DEFAULT NULL COMMENT '字段中文名称',
+  `dictname` varchar(50) DEFAULT NULL COMMENT '字段显示',
+  `dictvalue` varchar(50) DEFAULT NULL COMMENT '字段存储值',
+  `seq` int(11) NOT NULL DEFAULT '0' COMMENT '显示顺序',
+  `uid` int(11) NOT NULL COMMENT '操作员id',
+  `uptime` time DEFAULT NULL COMMENT '操作时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='系统字典';
+
+
+
+-- ----------------------------
+-- Table structure for `sys_privilege`
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_privilege`;
+CREATE TABLE `sys_privilege` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `privilegecode` varchar(4) NOT NULL COMMENT '权限编码',
+  `privilegename` varchar(255) NOT NULL COMMENT '权限名称',
+  `parentcode` varchar(4) NOT NULL COMMENT '父编码',
+  `url` varchar(255) DEFAULT NULL COMMENT '地址',
+  `isshow` char(1) DEFAULT 'a' COMMENT '是否显示',
+  `sequence` int(11) DEFAULT '0' COMMENT '显示顺序',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  `uid` int(11) NOT NULL COMMENT '操作员id',
+  `uptime` time DEFAULT NULL COMMENT '操作时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='权限';
+
+
+-- ----------------------------
+-- Table structure for `sys_role`
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_role`;
+CREATE TABLE `sys_role` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `rolecode` varchar(4) NOT NULL COMMENT '角色编码',
+  `rolename` varchar(255) NOT NULL COMMENT '角色名称',
+  `sequence` int(11) DEFAULT '0' COMMENT '显示顺序',
+  `status` char(1) DEFAULT 'a' COMMENT '是否启用',
+  `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+  `uid` int(11) NOT NULL COMMENT '操作员id',
+  `uptime` time DEFAULT NULL COMMENT '操作时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='用户角色';
+
+
+-- ----------------------------
+-- Table structure for `sys_role_privilege`
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_role_privilege`;
+CREATE TABLE `sys_role_privilege` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `rolecode` varchar(4) NOT NULL COMMENT '角色编码',
+  `privilegecode` varchar(4) NOT NULL COMMENT '权限编码集',
+  `uid` int(11) NOT NULL COMMENT '操作员id',
+  `uptime` time DEFAULT NULL COMMENT '操作时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='角色权限';
+
+
+-- ----------------------------
+-- Table structure for `sys_user`
+-- ----------------------------
+DROP TABLE IF EXISTS `sys_user`;
+CREATE TABLE `sys_user` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `tel` varchar(50) NOT NULL COMMENT '手机号码',
+  `pwd` varchar(200) NOT NULL COMMENT '密码',
+  `rolecode` varchar(4) NOT NULL COMMENT '角色编码',
+  `name` varchar(50) NOT NULL COMMENT '真实姓名',
+  `qq` varchar(20) DEFAULT NULL COMMENT 'QQ号码',
+  `uid` int(11) NOT NULL COMMENT '操作员id',
+  `uptime` time DEFAULT NULL COMMENT '操作时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='管理员';
+
+/*商品管理类*/
+-- ----------------------------
+-- Table structure for `goods_type` 
+-- ----------------------------
+DROP TABLE IF EXISTS `goods_type`;
+CREATE TABLE `goods_type` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `pid` int(11) NOT NULL COMMENT '父类',
+  `name` varchar(50) NOT NULL COMMENT '类目名称',
+  `pic` varchar(255) NOT NULL COMMENT '类别图片'
+  `sequence` int(11) DEFAULT '0' COMMENT '显示顺序',
+  `uid` int(11) NOT NULL COMMENT '操作员id',
+  `uptime` time DEFAULT NULL COMMENT '操作时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='商品类目';
+
+-- ----------------------------
+-- Table structure for `goods_activity` 
+-- ----------------------------
+DROP TABLE IF EXISTS `goods_activity`;
+CREATE TABLE `goods_activity` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `name` varchar(255) NOT NULL COMMENT '活动名称',  
+  `pic` varchar(255) NOT NULL COMMENT '活动图片', 
+  `status` char(1) DEFAULT 'b' COMMENT '是否开启', -- a开启b不开启
+  `uid` int(11) NOT NULL COMMENT '操作员id',
+  `uptime` time DEFAULT NULL COMMENT '操作时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='市场活动';
+
+-- ----------------------------
+-- Table structure for `goods_detail` 
+-- ----------------------------
+DROP TABLE IF EXISTS `goods_detail`;
+CREATE TABLE `goods_detail` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `fid` int(11) NOT NULL COMMENT '所属大类',
+  `sid` int(11) NOT NULL COMMENT '所属小类',
+  `aid` int(11) DEFAULT NULL COMMENT '所属活动',
+  `goodsname` varchar(100) NOT NULL COMMENT '商品名称',
+  `pic1` varchar(255) DEFAULT NULL COMMENT '图片1',
+  `pic2` varchar(255) DEFAULT NULL COMMENT '图片2',
+  `pic3` varchar(255) DEFAULT NULL COMMENT '图片2',
+  `spec` varchar(50) DEFAULT NULL COMMENT '规格',
+  `price` float DEFAULT 0 COMMENT '价格',
+  `kucun` float DEFAULT 0 COMMENT '库存',
+  `chandi` varchar(50) DEFAULT NULL COMMENT '产地',
+  `spec` varchar(50) DEFAULT NULL COMMENT '派送说明',    
+  `desc` text  DEFAULT NULL COMMENT '商品描述',  
+  `status` char(1) DEFAULT 'a' COMMENT '是否上架', -- a上架b下架
+  `remark` varchar(1000) DEFAULT NULL COMMENT '其他',
+  `uid` int(11) NOT NULL COMMENT '操作员id',
+  `uptime` time DEFAULT NULL COMMENT '操作时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='商品';
+
+/*添加一个根据购买数量进行优惠的表*/
+
+/*用户类*/
+-- ----------------------------
+-- Table structure for `shop_user` 
+-- ----------------------------
+DROP TABLE IF EXISTS `shop_user`;
+CREATE TABLE `shop_user` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `weinum` varchar(50) NOT NULL COMMENT '微信号',
+  `weiname` varchar(50) NOT NULL COMMENT '微信昵称',
+  `weipic` varchar(50) NOT NULL COMMENT '微信头像',
+  `tel` varchar(20) NOT NULL COMMENT '电话',
+  `pwd` varchar(200) NOT NULL COMMENT '密码',
+  `realname` varchar(255) NOT NULL COMMENT '真实姓名',
+  `registtime` time DEFAULT NULL COMMENT '注册时间',
+  `status` char(1) DEFAULT 'a' COMMENT '是否禁用', -- a开启b禁用
+  `uid` int(11) DEFAULT NULL COMMENT '操作员id',
+  `uptime` time DEFAULT NULL COMMENT '操作时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='用户';
+
+-- ----------------------------
+-- Table structure for `shop_useraddress` 
+-- ----------------------------
+DROP TABLE IF EXISTS `shop_useraddress`;
+CREATE TABLE `shop_useraddress` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `uid` int(11) NOT NULL COMMENT '用户ID',
+  `realname` varchar(255) NOT NULL COMMENT '收货人',
+  `realaddress` varchar(255) NOT NULL COMMENT '收货地址',
+  `tel` varchar(20) NOT NULL COMMENT '联系电话',
+  `status` char(1) DEFAULT 'b' COMMENT '默认地址', -- a是b否
+  `suid` int(11) DEFAULT NULL COMMENT 'shop_user_id',
+  `uptime` time DEFAULT NULL COMMENT '操作时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='用户地址';
+
+-- ----------------------------
+-- Table structure for `shop_goodsdiscuss` 
+-- ----------------------------
+DROP TABLE IF EXISTS `shop_goodsdiscuss`;
+CREATE TABLE `shop_goodsdiscuss` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `gid` varchar(20) NOT NULL COMMENT '商品ID', 
+  `star` int(11) NOT NULL COMMENT '评论等级', -- 1\2\3\4\5
+  `discontent` varchar(2000) NOT NULL COMMENT '评论内容',
+  `suid` int(11) DEFAULT NULL COMMENT 'shop_user_id',
+  `distime` time NOT NULL COMMENT '评论时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='商户商品评价';
+
+/*购物类*/
+-- ----------------------------
+-- Table structure for `shop_cart` 
+-- ----------------------------
+DROP TABLE IF EXISTS `shop_cart`;
+CREATE TABLE `shop_cart` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `gid` int(11) NOT NULL COMMENT '商品ID', 
+  `gnum` int(11) NOT NULL COMMENT '商品数量', 
+  `suid` int(11) DEFAULT NULL COMMENT 'shop_user_id',
+  `upTime` time DEFAULT NULL COMMENT '操作时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='购物车';
+
+-- ----------------------------
+-- Table structure for `shop_order` 
+-- ----------------------------
+DROP TABLE IF EXISTS `shop_order`;
+CREATE TABLE `cust_order` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `ordernum` varchar(10) NOT NULL COMMENT '订单编号',--  生成唯一性编号 
+  `tmoney` float NOT NULL COMMENT '总金额', 
+  `uptime` time DEFAULT NULL COMMENT '下单时间', 
+  `payway` char(1) NOT NULL COMMENT '支付方式',-- a微信支付、b货到付款  
+  `paystatus` char(1) DEFAULT  'a' COMMENT '支付状态', -- a未支付 b已支付
+  `paytime` time DEFAULT NULL COMMENT '支付时间',
+  `addressid` int(11) NOT NULL COMMENT '用户配货地址id',
+  `freight` float NOT NULL COMMENT '运费',
+  `carrytype` char(1) NOT NULL COMMENT '发货方式', -- a 配货 b自提
+  `carrytime` time DEFAULT NULL COMMENT '发货时间',
+  `carrymember` varchar(10) NOT NULL COMMENT '派送员',--      
+  `carrystatus` char(1) DEFAULT 'a' COMMENT '发货状态', -- a未发货 b已发货  
+  `orderstatus` char(1) DEFAULT 'a' COMMENT '订单状态', -- a未完成 b已完成 c取消 d退款  
+  `uid` int(11) DEFAULT NULL COMMENT '订单操作员id',
+  `uptime` time DEFAULT NULL COMMENT '订单状态操作时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='客户订单';
+
+-- ----------------------------
+-- Table structure for `shop_orderdetail` 
+-- ----------------------------
+DROP TABLE IF EXISTS `shop_orderdetail`;
+CREATE TABLE `cust_order` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `oid` int(11) NOT NULL COMMENT '订单id',
+  `gid` int(11) NOT NULL COMMENT '商品id',  
+  `gnum` int(11) NOT NULL COMMENT '数量',  
+  `realprice` float NOT NULL COMMENT '成交价',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='订单详情';
+
+
+
+--- 微信相关类
+-- ----------------------------
+-- Table structure for `wexin_menu` -- 微信菜单
+-- ----------------------------
+DROP TABLE IF EXISTS `wexin_menu`;
+CREATE TABLE `wexin_menu` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `fid` int(11) NOT NULL COMMENT '父菜单ID',
+  `menuname` varchar(50) NOT NULL COMMENT '菜单名称', 
+  `menutype` varchar(50) NOT NULL COMMENT '菜单类型', -- 发送消息，跳转网页
+  `menuurl` varchar(255) DEFAULT NULL COMMENT '菜单url', --跳转网页类型具有此项
+  `uid` int(11) DEFAULT NULL COMMENT '操作员id',
+  `uptime` time DEFAULT NULL COMMENT '操作时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='微信菜单';
+
+DROP TABLE IF EXISTS `wexin_content`;
+CREATE TABLE `wexin_content` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `title` varchar(50) NOT NULL COMMENT '标题', 
+  `pic` varchar(200) NOT NULL COMMENT '图片', 
+  `cont` text DEFAULT NULL COMMENT '内容', 
+  `uid` int(11) DEFAULT NULL COMMENT '操作员id',
+  `uptime` time DEFAULT NULL COMMENT '操作时间',
+  `status` char(1) DEFAULT 'a' COMMENT '是否推送',  -- a未推送 b 已推送
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8 COMMENT='微信推送消息';
+
+
+DROP TABLE IF EXISTS `user_reason`;
+CREATE TABLE `user_reason` (
+  `id` int(11) NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `suid` int(11) NOT NULL COMMENT '用户id',
+  `orderid` int(11) NOT NULL COMMENT '订单id',
+  `type` char(1) NOT NULL COMMENT '理由类型', --a:取消订单  b:申请退款
+  `reason` varchar(255) NOT NULL COMMENT '用户理由',
+  `uptime` datetime DEFAULT NULL COMMENT '操作时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='用户理由表';
+

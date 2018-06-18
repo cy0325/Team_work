@@ -1,0 +1,16 @@
+package org.nwnu.system.mapper;
+
+import org.nwnu.system.entity.WexinContent;
+import com.baomidou.mybatisplus.mapper.BaseMapper;
+
+/**
+ * <p>
+  * 微信推送消息 Mapper 接口
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+public interface WexinContentMapper extends BaseMapper<WexinContent> {
+
+}

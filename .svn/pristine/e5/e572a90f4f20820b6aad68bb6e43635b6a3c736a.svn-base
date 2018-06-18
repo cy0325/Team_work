@@ -1,0 +1,20 @@
+package org.nwnu.system.service.impl;
+
+import org.nwnu.system.entity.UserReason;
+import org.nwnu.system.mapper.UserReasonMapper;
+import org.nwnu.system.service.UserReasonService;
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import org.springframework.stereotype.Service;
+
+/**
+ * <p>
+ * 用户理由表 服务实现类
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-23
+ */
+@Service
+public class UserReasonServiceImpl extends ServiceImpl<UserReasonMapper, UserReason> implements UserReasonService {
+	
+}

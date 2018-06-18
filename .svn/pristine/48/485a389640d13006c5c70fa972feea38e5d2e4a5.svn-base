@@ -1,0 +1,757 @@
+package org.nwnu.front.controller;
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import me.chanjar.weixin.mp.bean.result.WxMpUser;
+
+import org.nwnu.base.controller.BaseController;
+import org.nwnu.pub.util.Const;
+import org.nwnu.pub.util.CookiesUtil;
+import org.nwnu.pub.util.Utils;
+import org.nwnu.system.entity.GoodsActivity;
+import org.nwnu.system.entity.GoodsDetail;
+import org.nwnu.system.entity.GoodsType;
+import org.nwnu.system.entity.ShopCart;
+import org.nwnu.system.entity.ShopGoodsdiscuss;
+import org.nwnu.system.entity.ShopOrder;
+import org.nwnu.system.entity.ShopOrderdetail;
+import org.nwnu.system.entity.ShopUser;
+import org.nwnu.system.entity.ShopUseraddress;
+import org.nwnu.system.service.GoodsActivityService;
+import org.nwnu.system.service.GoodsDetailService;
+import org.nwnu.system.service.GoodsTypeService;
+import org.nwnu.system.service.ShopCartService;
+import org.nwnu.system.service.ShopGoodsdiscussService;
+import org.nwnu.system.service.ShopOrderService;
+import org.nwnu.system.service.ShopOrderdetailService;
+import org.nwnu.system.service.ShopUserService;
+import org.nwnu.system.service.ShopUseraddressService;
+import org.nwnu.system.service.SysDictService;
+import org.nwnu.system.weixin.WeixinAuth;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+
+
+@Controller
+@RequestMapping("/App")
+public class AppHomeController extends BaseController {
+	
+	@Autowired
+	private GoodsActivityService goodsActivityService;
+	
+	@Autowired
+	private GoodsTypeService goodsTypeService;
+	
+	@Autowired
+	private GoodsDetailService goodsDetailService;
+	
+	@Autowired
+	private ShopUseraddressService shopUseraddressService;
+	
+	@Autowired
+	private ShopOrderService shopOrderService;
+	
+	@Autowired
+	private ShopOrderdetailService shopOrderdetailService;
+
+	@Autowired
+	private SysDictService sysDictService;
+
+	@Autowired
+	private HttpServletResponse response;
+	
+	@Autowired
+	private ShopCartService shopCartService;
+	
+	@Autowired
+	private ShopUserService shopUserService;
+	
+	@Autowired
+	private ShopCartService this_ShopCartService;
+	
+	@Autowired
+	private HttpServletRequest request;
+	
+	@Autowired
+	private ShopGoodsdiscussService this_ShopGoodsdiscussService;
+	/**
+	 * 首页
+	 * @param modelAndView
+	 * @return
+	 * @throws Exception 
+	 */
+	@RequestMapping("/index")
+	@ResponseBody
+	public ModelAndView index(ModelAndView modelAndView, String code) throws Exception {
+		
+		// 获取微信网页授权，将相关信息设置到session中
+		Cookie ck = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_OPENID);
+		if (code != null && ck == null) {
+			WeixinAuth weAuth = new WeixinAuth();
+			WxMpUser user = weAuth.getAuth(code);
+			CookiesUtil.addCookie(response, Const.COOKIES_SHOP_OPENID, user.getOpenId(), Const.SESSION_TIME);
+			CookiesUtil.addCookie(response, Const.COOKIES_SHOP_HEADURL, user.getHeadImgUrl(), Const.SESSION_TIME);
+			CookiesUtil.addCookie(response, Const.COOKIES_SHOP_WEINAME,  URLEncoder.encode(user.getNickname(), "UTF-8"), Const.SESSION_TIME);
+		}
+		
+		//System.out.println("************"+shopUser.getWeipic());
+		//查询所有开启的活动，并且按照时间倒序排列
+		modelAndView.addObject("acts", this.goodsActivityService.selectList(
+				new EntityWrapper<GoodsActivity>().eq("status", "a")
+				));
+		
+		//查询所有的大类
+		modelAndView.addObject("types", this.goodsTypeService.selectList(new EntityWrapper<GoodsType>().eq("pid", 0).orderBy("sequence", true)));
+		
+		//查询新品商品
+		modelAndView.addObject("news", this.goodsDetailService.selectList(new EntityWrapper<GoodsDetail>().eq("status", "a").eq("newstatus", "a").orderBy("id", false).limit(0, 6)));
+		
+		//查询热卖商品
+		modelAndView.addObject("hots", this.goodsDetailService.selectList(new EntityWrapper<GoodsDetail>().eq("status", "a").eq("sellstatus", "a").orderBy("id", false).limit(0, 6)));
+		
+		//查询所有商品
+		modelAndView.addObject("alls", this.goodsDetailService.selectList(new EntityWrapper<GoodsDetail>().eq("status", "a").orderBy("id", false)));
+		
+		// 查询该用户购物车里商品数量
+		// 用户id
+		Integer cartNum = 0;
+		Cookie cookie = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_USER_ID);
+		if (cookie != null) {
+			Integer suid = Integer.parseInt(cookie.getValue());
+			cartNum = this_ShopCartService.selectCartGoodsCount(suid);
+			modelAndView.addObject("login_flag", 1);
+		}else{
+			modelAndView.addObject("login_flag", 0);
+		}
+		
+		modelAndView.addObject("cartNum", cartNum);
+		return modelAndView; 
+	}
+	
+	/**
+	 * 首页搜索页
+	 * @param modelAndView
+	 * @param keys 搜索关键字
+	 * @return
+	 */
+	@RequestMapping("/search-list")
+	@ResponseBody
+	public ModelAndView searchList(ModelAndView modelAndView, @RequestParam(value = "keys", required = false, defaultValue = "") String keys) {
+		
+		//查询所有符合商品
+		modelAndView.addObject("goods", this.goodsDetailService.selectList(new EntityWrapper<GoodsDetail>().eq("status", "a").like("goodsname", keys).orderBy("id", false)));
+		modelAndView.addObject("keys", keys);
+		return modelAndView;
+	}
+	
+	/**
+	 * 首页下拉刷新请求数据
+	 * @param p 第p页
+	 * @return
+	 */
+	@RequestMapping(value = "/getGoods", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> getGoodsByPage(@RequestParam(required = true, value = "p") int p) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		
+		//每页显示的数量
+		int pageNum = 6;
+		//分页开始位置
+		int start = pageNum * (p - 1);
+	
+		map.put("goods", this.goodsDetailService.selectList(new EntityWrapper<GoodsDetail>().eq("status", "a").orderBy("id", false).limit(start, pageNum)));
+		
+		return map;
+	}
+	
+	/**
+	 * 活动页
+	 * @param modelAndView
+	 * @param id 需要活动id
+	 * @return
+	 */
+	@RequestMapping("/activity")
+	@ResponseBody
+	public ModelAndView activity(ModelAndView modelAndView, @RequestParam(required = true, value = "id") int id) {
+		
+		modelAndView.addObject("act", this.goodsActivityService.selectById(id));
+		
+		modelAndView.addObject("goods", this.goodsDetailService.selectList(new EntityWrapper<GoodsDetail>().eq("status", "a").eq("aid", id).orderBy("id", false)));
+		
+		return modelAndView;
+	}
+	
+	/**
+	 * 分类页
+	 * @param modelAndView
+	 * @param typeid 大类id
+	 * @param keys 搜索关键字
+	 * @return
+	 */
+	@RequestMapping("/sort")
+	@ResponseBody
+	public ModelAndView sort(ModelAndView modelAndView, 
+			@RequestParam(value = "typeid", required = false, defaultValue = "-1") int typeid,
+			@RequestParam(value = "keys", required = false, defaultValue = "") String keys) {
+		
+		//查询所有的大类
+		List<GoodsType> list = this.goodsTypeService.selectList(new EntityWrapper<GoodsType>().eq("pid", 0).orderBy("sequence", true));
+		modelAndView.addObject("types", list);
+		
+		boolean in = false;
+		String name = "";
+		
+		for (int i = 0, len = list.size(); i < len; i++) {
+			if (list.get(i).getId() == typeid) {
+				in = true;
+				name = list.get(i).getName();
+				break;
+			}
+		}
+		
+		if (!in) {
+			typeid = list.get(0).getId();
+			name = list.get(0).getName();
+		}
+		
+		modelAndView.addObject("actid", typeid);
+		modelAndView.addObject("title", name);
+		
+		if (!keys.isEmpty()) {
+			modelAndView.addObject("keys", keys);
+		}
+		
+		//查询所属typeid的小类
+		List<GoodsType> listSmall = this.goodsTypeService.selectList(new EntityWrapper<GoodsType>().eq("pid", typeid).like("name", keys).orderBy("sequence", true));
+		modelAndView.addObject("smalltypes", listSmall);
+		
+		// 查询该用户购物车里商品数量
+		// 用户id
+		Integer cartNum = 0;
+		Cookie cookie = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_USER_ID);
+		if (cookie != null) {
+			Integer suid = Integer.parseInt(cookie.getValue());
+			cartNum = this_ShopCartService.selectCartGoodsCount(suid);
+			modelAndView.addObject("login_flag", 1);
+		}else{
+			modelAndView.addObject("login_flag", 0);
+		}
+		modelAndView.addObject("cartNum", cartNum);
+		
+		return modelAndView;
+	}
+	
+	/**
+	 * 搜索列表页面
+	 * @param modelAndView
+	 * @param sid 小类id
+	 * @param keys 搜索关键字
+	 * @param sortType 排序类型
+	 * @return
+	 */
+	@RequestMapping("/list")
+	@ResponseBody
+	public ModelAndView list(ModelAndView modelAndView, 
+			@RequestParam(value = "sid", required = true) int sid,
+			@RequestParam(value = "keys", required = false, defaultValue = "") String keys,
+			@RequestParam(value = "sorttype", required = false, defaultValue = "all") String sortType) {
+		
+		Cookie cookie = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_USER_ID);
+		if (cookie != null) {
+			modelAndView.addObject("login_flag", 1);
+			int id = Integer.parseInt(cookie.getValue());
+			modelAndView.addObject("cartcounts", this_ShopCartService.selectCartGoodsCount(id));
+		}else{
+			modelAndView.addObject("login_flag", 0);
+			modelAndView.addObject("cartcounts", 0);
+		}
+		
+
+		
+		if (sortType.equals("all")) {
+			
+			//选择该小类下所有商品
+			modelAndView.addObject("goods", this.goodsDetailService.selectList(new EntityWrapper<GoodsDetail>()
+					.eq("status", "a").eq("sid", sid).like("goodsname", keys).orderBy("id", false)));
+			
+		} else if (sortType.equals("sellsup")) {
+			
+			//选择该小类下所有商品按照销售量升序排序
+			// 该条件下的所有商品
+			List<GoodsDetail> goList = this.goodsDetailService.selectList(new EntityWrapper<GoodsDetail>()
+					.eq("status", "a").eq("sid", sid).like("goodsname", keys).orderBy("id", false));
+			// 商品们的id
+			List<Integer> idsList = new ArrayList<Integer>();
+			for(GoodsDetail gDetail : goList){
+				idsList.add(gDetail.getId());
+			}
+			// 购买过这些商品的订单
+			List<ShopOrderdetail> orderdetailList = shopOrderdetailService.selectList(
+					new EntityWrapper<ShopOrderdetail>()
+					.in("gid", idsList).groupBy("gid").orderBy("sum(gnum)", true));
+			// 排序好的商品
+			List<GoodsDetail> goodsDetailList = new ArrayList<GoodsDetail>();
+			for(ShopOrderdetail shopOrderdetail : orderdetailList){
+				goodsDetailList.add(goodsDetailService.selectById(shopOrderdetail.getGid()));
+			}
+			
+			modelAndView.addObject("goods", goodsDetailList);
+			
+		} else if (sortType.equals("sellsdown")) {
+			
+			//选择该小类下所有商品按照销售量降序排序
+			
+			// 该条件下的所有商品
+			List<GoodsDetail> goList = this.goodsDetailService.selectList(new EntityWrapper<GoodsDetail>()
+					.eq("status", "a").eq("sid", sid).like("goodsname", keys).orderBy("id", false));
+			// 商品们的id
+			List<Integer> idsList = new ArrayList<Integer>();
+			for(GoodsDetail gDetail : goList){
+				idsList.add(gDetail.getId());
+			}
+			// 购买过这些商品的订单
+			List<ShopOrderdetail> orderdetailList = shopOrderdetailService.selectList(
+					new EntityWrapper<ShopOrderdetail>()
+					.in("gid", idsList).groupBy("gid").orderBy("sum(gnum)", false));
+			// 排序好的商品
+			List<GoodsDetail> goodsDetailList = new ArrayList<GoodsDetail>();
+			for(ShopOrderdetail shopOrderdetail : orderdetailList){
+				goodsDetailList.add(goodsDetailService.selectById(shopOrderdetail.getGid()));
+			}
+			
+			modelAndView.addObject("goods", goodsDetailList);
+			
+		} else if (sortType.equals("priceup")) {
+			
+			//选择该小类下所有商品按照价格升序排序
+			modelAndView.addObject("goods", this.goodsDetailService.selectList(new EntityWrapper<GoodsDetail>()
+					.eq("status", "a").eq("sid", sid).like("goodsname", keys).orderBy("price", true)));
+			
+		} else if (sortType.equals("pricedown")) {
+			
+			//选择该小类下所有商品按照价格降序排序
+			modelAndView.addObject("goods", this.goodsDetailService.selectList(new EntityWrapper<GoodsDetail>()
+					.eq("status", "a").eq("sid", sid).like("goodsname", keys).orderBy("price", false)));
+			
+		} else if (sortType.equals("commentup")) {
+			
+			//选择该小类下所有商品按照评论升序排序
+			//符合条件的所有商品
+			List<GoodsDetail> goodsDetailList = this.goodsDetailService.selectList(new EntityWrapper<GoodsDetail>()
+					.eq("status", "a").eq("sid", sid).like("goodsname", keys).orderBy("id", false));
+			// 获取商品的id
+			List<Integer> idsList = new ArrayList<Integer>();
+			for(GoodsDetail goodsDetail : goodsDetailList){
+				idsList.add(goodsDetail.getId());
+			}
+			// 去评论表中查找商品评论的数量
+			List<ShopGoodsdiscuss> discussList = this_ShopGoodsdiscussService.selectList(
+					new EntityWrapper<ShopGoodsdiscuss>().in("gid", idsList)
+					.orderBy("count(gid)", true).groupBy("gid"));
+			// 排序好的商品
+			List<GoodsDetail> goodsDetails = new ArrayList<GoodsDetail>();
+			for(ShopGoodsdiscuss discuss : discussList){
+				goodsDetails.add(goodsDetailService.selectById(discuss.getGid()));
+			}
+			modelAndView.addObject("goods", goodsDetails);
+			
+		} else if (sortType.equals("commentdown")) {
+			
+			//选择该小类下所有商品按照评论降序排序
+			//符合条件的所有商品
+			List<GoodsDetail> goodsDetailList = this.goodsDetailService.selectList(new EntityWrapper<GoodsDetail>()
+					.eq("status", "a").eq("sid", sid).like("goodsname", keys).orderBy("id", false));
+			// 获取商品的id
+			List<Integer> idsList = new ArrayList<Integer>();
+			for(GoodsDetail goodsDetail : goodsDetailList){
+				idsList.add(goodsDetail.getId());
+			}
+			// 去评论表中查找商品评论的数量
+			List<ShopGoodsdiscuss> discussList = this_ShopGoodsdiscussService.selectList(
+					new EntityWrapper<ShopGoodsdiscuss>().in("gid", idsList)
+					.orderBy("count(gid)", false).groupBy("gid"));
+			// 排序好的商品
+			List<GoodsDetail> goodsDetails = new ArrayList<GoodsDetail>();
+			for(ShopGoodsdiscuss discuss : discussList){
+				goodsDetails.add(goodsDetailService.selectById(discuss.getGid()));
+			}
+			modelAndView.addObject("goods", goodsDetails);
+		}
+		
+		
+		modelAndView.addObject("sorttype", sortType);
+		modelAndView.addObject("sid", sid);
+		modelAndView.addObject("title", this.goodsTypeService.selectOne(new EntityWrapper<GoodsType>().eq("id", sid)).getName());
+		
+		if (!keys.isEmpty()) {
+			modelAndView.addObject("keys", keys);
+		}
+		
+		return modelAndView;
+	}
+	
+	@RequestMapping("/person")
+	@ResponseBody
+	public ModelAndView person(ModelAndView modelAndView) {
+		
+		Cookie cookie = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_USER_ID);
+		
+		boolean login = true;
+		
+		if (cookie == null) {
+			login = false;
+		}
+		
+		if (login) {
+			
+			int id = Integer.parseInt(cookie.getValue());
+			
+			String openId = shopUserService.selectById(id).getOpenid();
+			
+			modelAndView.addObject("nopay", this.shopOrderService.selectCount(
+					new EntityWrapper<ShopOrder>().eq("openid", openId).eq("paystatus", "a").eq("orderstatus", "a").eq("payway", "a")
+					));
+			modelAndView.addObject("nogetgoods", this.shopOrderService.selectCount(
+					new EntityWrapper<ShopOrder>().eq("openid", openId).eq("paystatus", "b").eq("orderstatus", "a").eq("payway", "a").or().eq("openid", openId).eq("paystatus", "a").eq("orderstatus", "a").eq("payway", "b")
+					));
+			
+			int sum = 0;
+			
+			List<ShopOrder> list = this.shopOrderService.selectList(
+
+					new EntityWrapper<ShopOrder>().eq("openid", openId).eq("orderstatus", "b")
+					
+					);
+			
+			for (int i = 0, len = list.size(); i < len; i++) {
+				
+				sum += this.shopOrderdetailService.selectCount(new EntityWrapper<ShopOrderdetail>().eq("oid", list.get(i).getId()).eq("commentstatus", "a"));
+				
+			}
+			
+			modelAndView.addObject("nocomment", sum);
+			
+			
+			modelAndView.addObject("cartcounts", this_ShopCartService.selectCartGoodsCount(id));
+			
+			modelAndView.addObject("user", this.shopUserService.selectById(id));
+		}
+		
+		modelAndView.addObject("login", login);
+		
+		return modelAndView;
+	}
+	
+	/**
+	 * 地址页面
+	 * @param modelAndView
+	 * @param ids 订单过程参数
+	 * @param counts 订单过程参数
+	 * @return
+	 */
+	@RequestMapping("/address")
+	@ResponseBody
+	public ModelAndView address(ModelAndView modelAndView,
+			@RequestParam(value = "ids", required = false, defaultValue = "") String ids,
+			@RequestParam(value = "counts", required = false, defaultValue = "")String counts) {
+		
+		// cookie获取用户id
+		Cookie cookie = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_USER_ID);
+		
+		Integer id = null;
+		if (cookie != null) {
+			id = Integer.parseInt(cookie.getValue());
+		} else {
+			return null;
+		}
+		
+		modelAndView.addObject("addresses", this.shopUseraddressService.selectList(new EntityWrapper<ShopUseraddress>().eq("suid", id).orderBy("id", false)));
+		
+		if (!ids.isEmpty() && !counts.isEmpty()) {
+			modelAndView.addObject("transfer", true);
+			modelAndView.addObject("ids", ids).addObject("counts", counts);
+		} else {
+			modelAndView.addObject("transfer", false);
+		}
+		
+		return modelAndView;
+	}
+	
+	/**
+	 * 添加或修改地址
+	 * @param modelAndView
+	 * @param id 地址修改时的id
+	 * @return
+	 */
+	@RequestMapping("/add-address")
+	@ResponseBody
+	public ModelAndView addAddress(ModelAndView modelAndView,
+			@RequestParam(value = "id", required = false, defaultValue = "-1") int id,
+			@RequestParam(value = "ids", required = false, defaultValue = "") String ids,
+			@RequestParam(value = "counts", required = false, defaultValue = "")String counts) {
+		
+		// cookie获取用户id
+		Cookie cookie = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_USER_ID);
+		
+		Integer uid = null;
+		if (cookie != null) {
+			uid = Integer.parseInt(cookie.getValue());
+		} else {
+			return null;
+		}
+		
+		boolean isNew = true;
+		if (id != -1) {
+			isNew = false;
+			modelAndView.addObject("address", this.shopUseraddressService.selectById(id));
+		} else {
+			modelAndView.addObject("uid", uid);
+		}
+		
+		if (!ids.isEmpty() && !counts.isEmpty()) {
+			modelAndView.addObject("transfer", true);
+			modelAndView.addObject("ids", ids).addObject("counts", counts);
+		} else {
+			modelAndView.addObject("transfer", false);
+		}
+		
+		modelAndView.addObject("isNew", isNew);
+		
+		return modelAndView;
+	}
+	
+	/**
+	 * 保存地址
+	 * @param shopUseraddress
+	 * @return
+	 */
+	@RequestMapping("/saveAddress")
+	@ResponseBody
+	public Map<String, Object> saveAddress(ShopUseraddress shopUseraddress,
+			@RequestParam(value = "ids", required = false, defaultValue = "") String ids,
+			@RequestParam(value = "counts", required = false, defaultValue = "")String counts) {
+		
+		Map<String, Object> map = new HashMap<String, Object>();
+		shopUseraddress.setUptime(new Date());
+		
+		if (shopUseraddress.getStatus() == null) {
+			
+			shopUseraddress.setStatus("b");
+			
+		} else if (shopUseraddress.getStatus().equals("a")) {
+			
+			ShopUseraddress temp = this.shopUseraddressService.selectOne(new EntityWrapper<ShopUseraddress>().eq("suid", shopUseraddress.getSuid()).eq("status", "a"));
+			if (temp != null) {
+				temp.setStatus("b");
+				this.shopUseraddressService.updateById(temp);
+			}
+		}
+		
+		boolean res = this.shopUseraddressService.insertOrUpdate(shopUseraddress);
+		if (res) {
+			map.put("statusCode", 1);
+			map.put("msg", "操作成功");
+			
+			if (!ids.isEmpty() && !counts.isEmpty()) {
+				map.put("url", "/App/address?ids=" + ids + "&counts=" + counts);
+			} else {
+				map.put("url", "/App/address");
+			}
+			
+		} else {
+			map.put("statusCode", 0);
+			map.put("msg", "操作失败");
+		}
+		
+		return map;
+	}
+	
+	/**
+	 * 删除地址
+	 * @param id
+	 * @return
+	 */
+	@RequestMapping("/delAddress")
+	@ResponseBody
+	public Map<String, Object> delAddress(@RequestParam(value = "id", required = true) int id) {
+		Map<String, Object> map = new HashMap<String, Object>();
+		
+		ShopUseraddress address = shopUseraddressService.selectById(id);
+		address.setSuid(0);
+		boolean res = this.shopUseraddressService.updateById(address);
+		if (res) {
+			map.put("statusCode", 1);
+			map.put("msg", "操作成功");
+			map.put("url", "/App/address?id=2");
+		} else {
+			map.put("statusCode", 0);
+			map.put("msg", "操作失败");
+		}
+		
+		return map;
+	}
+	
+	/**
+	 * 全部订单
+	 * @param modelAndView
+	 * @return
+	 */
+	@RequestMapping("/order")
+	@ResponseBody
+	public ModelAndView order(ModelAndView modelAndView,
+			@RequestParam(value = "type", required = false, defaultValue = "all") String type) {
+		// cookie获取用户id
+		Cookie cookie = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_USER_ID);
+		
+		String openId = null;
+		if (cookie != null) {
+			Integer cookieId = Integer.parseInt(cookie.getValue());
+			openId = shopUserService.selectById(cookieId).getOpenid();
+		} else {
+			return null;
+		}
+		
+		List<ShopOrder> list = null;
+		
+		switch(type) {
+			case "all":
+				list = this.shopOrderService.selectList(
+						new EntityWrapper<ShopOrder>().eq("openid", openId).orderBy("id", false)
+						);
+				break;
+			case "nopay":
+				list = this.shopOrderService.selectList(
+						new EntityWrapper<ShopOrder>().eq("openid", openId).eq("paystatus", "a").eq("orderstatus", "a").eq("payway", "a").orderBy("id", false)
+						);
+				break;
+			case "nogetgoods":
+				list = this.shopOrderService.selectList(
+						new EntityWrapper<ShopOrder>().eq("openid", openId).eq("paystatus", "b").eq("orderstatus", "a").eq("payway", "a").or().eq("openid", openId).eq("paystatus", "a").eq("orderstatus", "a").eq("payway", "b").orderBy("id", false)
+						);
+				break;
+			default:
+				list = this.shopOrderService.selectList(new EntityWrapper<ShopOrder>().eq("openid", openId).orderBy("id", false));	
+		}
+		
+		modelAndView.addObject("type", type);
+		
+		
+		if (list.size() != 0) {
+			for(int j = 0, jlen = list.size(); j < jlen; j++) {
+				
+				List<ShopOrderdetail> temp = this.shopOrderdetailService.selectList(new EntityWrapper<ShopOrderdetail>().eq("oid", list.get(j).getId()));
+				
+				if (temp.size() != 0) {
+					
+					int goodsCount = 0;
+					
+					list.get(j).setPic(this.goodsDetailService.selectById(temp.get(0).getGid()).getPic1());
+					
+					for (int i = 0, len = temp.size(); i < len; i++) {
+						
+						goodsCount += temp.get(i).getGnum();
+						
+					}
+					
+					list.get(j).setGoodsCount(goodsCount);
+					
+				}
+				
+				if (list.get(j).getPaystatus().equals("a")) {
+					list.get(j).setPaystatusName("未支付");
+				} else if (list.get(j).getPaystatus().equals("b")) {
+					list.get(j).setPaystatusName("已支付");
+				} else {
+					list.get(j).setPaystatusName("未知");
+				}
+				
+				
+				if (list.get(j).getCarrystatus().equals("a")) {
+					list.get(j).setCarrystatusName("未发货");
+				} else if (list.get(j).getCarrystatus().equals("b")) {
+					list.get(j).setCarrystatusName("已发货");
+				} else {
+					list.get(j).setCarrystatusName("未知");
+				}
+				
+				switch (list.get(j).getOrderstatus()) {
+					case "a":
+						list.get(j).setOrderstatusName("未完成");
+						break;
+					case "b":
+						list.get(j).setOrderstatusName("已完成");
+						break;
+					case "c":
+						list.get(j).setOrderstatusName("已取消");
+						break;
+					case "d":
+						list.get(j).setOrderstatusName("已退款");
+						break;
+					default:
+						list.get(j).setOrderstatusName("未知");
+				}
+				
+			}
+		}
+		
+		modelAndView.addObject("utils", new Utils());
+		
+		return modelAndView.addObject("orders", list);
+	}
+	
+	@RequestMapping("/order-detail")
+	@ResponseBody
+	public ModelAndView orderDetail(ModelAndView modelAndView,
+			@RequestParam(value = "id", required = true) int id) {
+		
+		ShopOrder order = this.shopOrderService.selectById(id);
+		
+		List<ShopOrderdetail> list = this.shopOrderdetailService.selectList(new EntityWrapper<ShopOrderdetail>().eq("oid", id));
+		
+		list.forEach(item -> {
+			item.setGoodsDetail(this.goodsDetailService.selectById(item.getGid()));
+			item.setGoodSpec(this.sysDictService.selectById(item.getGoodsDetail().getSpec()).getDictvalue());
+		});
+		
+		modelAndView.addObject("order", order);
+		modelAndView.addObject("goods", list);
+		modelAndView.addObject("address", this.shopUseraddressService.selectById(order.getAddressid()));
+		modelAndView.addObject("utils", new Utils());
+		
+		return modelAndView;
+	}
+	
+	@RequestMapping("/userinfo")
+	@ResponseBody
+	public ModelAndView userInfo(ModelAndView modelAndView) {
+		
+		// cookie获取用户id
+		Cookie cookie = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_USER_ID);
+		
+		Integer id = null;
+		if (cookie != null) {
+			id = Integer.parseInt(cookie.getValue());
+		} else {
+			return null;
+		}
+		
+		modelAndView.addObject("user", this.shopUserService.selectById(id));
+		
+		return modelAndView;
+	}
+}

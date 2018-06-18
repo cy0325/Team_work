@@ -1,0 +1,194 @@
+package org.nwnu.base.controller;
+
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+
+import org.nwnu.pub.util.Const;
+import org.nwnu.system.entity.ShopUser;
+import org.nwnu.system.entity.StudentUser;
+import org.nwnu.system.entity.SysPrivilege;
+import org.nwnu.system.entity.SysRole;
+import org.nwnu.system.entity.SysRolePrivilege;
+import org.nwnu.system.entity.SysUser;
+import org.nwnu.system.service.SysPrivilegeService;
+import org.nwnu.system.service.SysRolePrivilegeService;
+import org.nwnu.system.service.SysRoleService;
+import org.nwnu.system.service.SysUserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import java.util.*;
+
+@Controller
+@RequestMapping(value = "/Home")
+public class HomeController extends BaseController {
+	@Autowired
+    private SysRolePrivilegeService sysRolePrivilegeService;
+
+    @Autowired
+    private SysPrivilegeService sysPrivilegeService;
+    
+    @Autowired
+    private SysUserService sysuserService;
+    
+    @Autowired
+    private SysRoleService this_SysRoleService;
+
+    
+    @Autowired
+    private HttpServletRequest request;
+    
+    @RequestMapping(value = "/Index", method = RequestMethod.GET)
+    public ModelAndView Index(ModelAndView modelAndView, HttpSession session) {
+    	SysUser sysUser = (SysUser)session.getAttribute(Const.lOGIN_SYSUSER);
+    	if (sysUser != null) {
+            String roleCode = sysUser.getRolecode();
+            List<SysRolePrivilege> rolePrivilege = sysRolePrivilegeService.selectList(new EntityWrapper<SysRolePrivilege>().eq("roleCode", roleCode));
+            List<SysRolePrivilege> rolePrivileges = new ArrayList<SysRolePrivilege>();
+            for(SysRolePrivilege sysRolePrivilege : rolePrivilege){
+            	SysPrivilege sysPrivilege = sysPrivilegeService.selectOne(new EntityWrapper<SysPrivilege>().eq("privilegeCode", sysRolePrivilege.getPrivilegecode()));
+            	if (!sysPrivilege.getIsshow().equals("a")) {
+					continue;
+				}
+            	sysRolePrivilege.setSysPrivilege(sysPrivilege);
+            	rolePrivileges.add(sysRolePrivilege);
+            }
+            Collections.sort(rolePrivileges);
+            modelAndView.addObject("SysRolePrivilege", rolePrivileges);
+            modelAndView.addObject("sysRole", this_SysRoleService.selectOne(new EntityWrapper<SysRole>().eq("rolecode", sysUser.getRolecode())));
+        	modelAndView.addObject("user", sysUser);
+        }
+    	if (session.getAttribute(Const.lOGIN_SHOPUSER) != null) {
+    		System.out.println("***************进入商铺管理登录");
+    		System.out.println("************************lOGIN_SHOPUSER"+Const.lOGIN_SHOPUSER);
+    		System.out.println("**************************session:"+(ShopUser)session.getAttribute(Const.lOGIN_SHOPUSER));
+        	ShopUser shopUser = (ShopUser)session.getAttribute(Const.lOGIN_SHOPUSER);
+        	System.out.println("***************shopUser:"+shopUser);
+            String roleCode = shopUser.getRolecode();
+            List<SysRolePrivilege> rolePrivilege = sysRolePrivilegeService.selectList(new EntityWrapper<SysRolePrivilege>().eq("roleCode", roleCode));
+            List<SysRolePrivilege> rolePrivileges = new ArrayList<SysRolePrivilege>();
+            for(SysRolePrivilege sysRolePrivilege : rolePrivilege){
+            	SysPrivilege sysPrivilege = sysPrivilegeService.selectOne(new EntityWrapper<SysPrivilege>().eq("privilegeCode", sysRolePrivilege.getPrivilegecode()));
+            	if (!sysPrivilege.getIsshow().equals("a")) {
+					continue;
+				}
+            	sysRolePrivilege.setSysPrivilege(sysPrivilege);
+            	rolePrivileges.add(sysRolePrivilege);
+            }
+            Collections.sort(rolePrivileges);
+            modelAndView.addObject("SysRolePrivilege", rolePrivileges);
+        	modelAndView.addObject("sysRole", this_SysRoleService
+        			.selectOne(new EntityWrapper<SysRole>().eq("rolecode", shopUser.getRolecode())));
+        	modelAndView.addObject("user", shopUser);
+    	}
+    	if (session.getAttribute(Const.lOGIN_StuUSER) != null) {
+        	StudentUser stu = (StudentUser)session.getAttribute(Const.lOGIN_StuUSER);
+            String roleCode = stu.getRolecode();
+            List<SysRolePrivilege> rolePrivilege = sysRolePrivilegeService.selectList(new EntityWrapper<SysRolePrivilege>().eq("roleCode", roleCode));
+            List<SysRolePrivilege> rolePrivileges = new ArrayList<SysRolePrivilege>();
+            for(SysRolePrivilege sysRolePrivilege : rolePrivilege){
+            	SysPrivilege sysPrivilege = sysPrivilegeService.selectOne(new EntityWrapper<SysPrivilege>().eq("privilegeCode", sysRolePrivilege.getPrivilegecode()));
+            	if (!sysPrivilege.getIsshow().equals("a")) {
+					continue;
+				}
+            	sysRolePrivilege.setSysPrivilege(sysPrivilege);
+            	rolePrivileges.add(sysRolePrivilege);
+            }
+            Collections.sort(rolePrivileges);
+            modelAndView.addObject("SysRolePrivilege", rolePrivileges);
+        	modelAndView.addObject("sysRole", this_SysRoleService.selectOne(new EntityWrapper<SysRole>().eq("rolecode", stu.getRolecode())));
+        	modelAndView.addObject("user", stu);
+    	}
+    	return modelAndView;
+    }
+    
+    
+    @RequestMapping(value = "/Welcome", method = RequestMethod.GET)
+    public ModelAndView Welcome(ModelAndView modelAndView) {
+    	return modelAndView;
+    }
+    //修改密码视图
+   /* @RequestMapping(value = "reSetPwdView")
+    public String reSetPwdView() {
+        return "Home/reSetPwdView";
+    }*/
+    
+  	//保存新密码
+   /* @RequestMapping(value = "savepwd", method = RequestMethod.POST)
+    @ResponseBody
+    public Object savepwd(HttpSession session, ArtExpert artExpert) {
+    	if (StringUtil.isEmpty(artExpert.getPwd())) {
+            return renderError("原密码不能为空");
+        }
+    	if (StringUtil.isEmpty(artExpert.getNewPwd())) {
+            return renderError("新密码不能为空");
+        }
+    	String pastString = artExpert.getPwd();
+    	String newString = artExpert.getNewPwd();
+    	
+    	if((session.getAttribute("sysLoginUser")) != null){
+    		SysUser sysUser = (SysUser) session.getAttribute("sysLoginUser");
+    		byte[] salt = PasswordUtil.getStaticSalt();
+            String cipherText = PasswordUtil.encrypt(sysUser.getRoleCode(), pastString, salt);
+            if(cipherText.equals(sysUser.getPwd())){
+            	String newcipherText = PasswordUtil.encrypt(sysUser.getRoleCode(), newString, salt);
+            	sysUser.setPwd(newcipherText);
+            	return sysuserService.updateById(sysUser) ? renderSuccess("密码修改成功！") : renderError("密码修改失败！");
+            }
+            else{
+            	return renderError("原密码错误，请重新输入。");
+            }
+    	}
+    	else if((session.getAttribute("authLoginUser")) != null){
+    		ArtAuthor artAuthor = (ArtAuthor) session.getAttribute("authLoginUser");
+    		byte[] salt = PasswordUtil.getStaticSalt();
+            String cipherText = PasswordUtil.encrypt(artAuthor.getRoleCode(), pastString, salt);
+            if(cipherText.equals(artAuthor.getPwd())){
+            	String newcipherText = PasswordUtil.encrypt(artAuthor.getRoleCode(), newString, salt);
+            	artAuthor.setPwd(newcipherText);
+            	return artAuthorService.updateById(artAuthor) ? renderSuccess("密码修改成功！") : renderError("密码修改失败！");
+            }
+            else{
+            	return renderError("原密码错误，请重新输入。");
+            }
+    	}
+    	else if((session.getAttribute("expertLoginUser")) != null){
+    		ArtExpert expert = (ArtExpert) session.getAttribute("expertLoginUser");
+    		byte[] salt = PasswordUtil.getStaticSalt();
+            String cipherText = PasswordUtil.encrypt(expert.getRoleCode(), pastString, salt);
+            if(cipherText.equals(expert.getPwd())){
+            	String newcipherText = PasswordUtil.encrypt(expert.getRoleCode(), newString, salt);
+            	expert.setPwd(newcipherText);
+            	return artExpertService.updateById(expert) ? renderSuccess("密码修改成功！") : renderError("密码修改失败！");
+            }
+            else{
+            	return renderError("原密码错误，请重新输入。");
+            }
+    	}
+    	return renderError("原密码错误，请重新输入。");
+    }
+    */
+
+
+    @RequestMapping(value = "logout")
+    public String logout(HttpSession session) throws Exception {
+      //  session.invalidate();
+       // return "redirect:/Login/SysLogin.do";
+    	 if (session.getAttribute(Const.lOGIN_SHOPUSER) != null) {
+             session.invalidate();
+             return "redirect:/Login/ShopLogin.do";
+         } else if (session.getAttribute(Const.lOGIN_StuUSER) != null) {
+             session.invalidate();
+             return "redirect:/Login/StuLogin.do";
+         } else {
+             session.invalidate();
+             return "redirect:/Login/SysLogin.do";
+         }
+    }
+}

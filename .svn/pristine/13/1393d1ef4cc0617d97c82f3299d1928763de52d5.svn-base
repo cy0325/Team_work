@@ -1,0 +1,119 @@
+#override("content")
+<article class="page-container">
+	<form class="form form-horizontal" id="form-view">
+		<input type="hidden" id="id" name="id" value="$!{sysrole.id}"/>
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>角色编码：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<input type="text" class="input-text radius" value="$!{sysrole.rolecode}" placeholder="" id="roleCode" name="rolecode" readonly>
+			</div>
+		</div>
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>角色名称：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<input type="text" class="input-text radius" value="$!{sysrole.rolename}" placeholder="" id="roleName" name="rolename">
+			</div>
+		</div>		
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>显示顺序：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<input type="text" class="input-text radius" value="$!{sysrole.sequence}" placeholder="" id="sequence" name="sequence">
+			</div>
+		</div>
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2">是否启用：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+		        	#if(${sysrole.status}=="b")
+					 <div class="radio-box">
+					    <input type="radio" id="radio-1" name="status" value="a">
+					    <label for="radio-1">是</label>
+					 </div>
+					  <div class="radio-box">
+					    <input type="radio" id="radio-2" name="status" value="b" checked>
+					    <label for="radio-2">否</label>
+					  </div>			
+					#else
+					<div class="radio-box">
+					    <input type="radio" id="radio-1" name="status" value="a" checked>
+					    <label for="radio-1">是</label>
+					 </div>
+					  <div class="radio-box">
+					    <input type="radio" id="radio-2" name="status" value="b">
+					    <label for="radio-2">否</label>
+					  </div>	
+					#end
+				
+			</div>
+		</div>
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2">备注：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<input type="text" class="input-text radius" value="$!{sysrole.remark}" placeholder="" id="remark" name="remark">
+			</div>
+		</div>		
+		<div class="row cl">
+			<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-2">				
+				<button type="submit" class="btn btn-danger radius" ><i class="Hui-iconfont">&#xe632;</i> 提交</button>
+				<button onClick="layer_close();" class="btn btn-default radius" type="button">&nbsp;&nbsp;取消&nbsp;&nbsp;</button>
+			</div>
+		</div>
+	</form>
+</article>
+#end
+#override("js")
+<script type="text/javascript" src="/static/lib/jquery.validation/1.14.0/jquery.validate.js"></script> 
+<script type="text/javascript" src="/static/lib/jquery.validation/1.14.0/validate-methods.js"></script> 
+<script type="text/javascript" src="/static/lib/jquery.validation/1.14.0/messages_zh.js"></script>
+<script type="text/javascript">
+
+	$(function(){
+		//表单验证	
+		$("#form-view").validate({
+				rules:{
+					roleName:{
+						required:true,
+					},
+					sequence:{
+					    digits:true,
+						required:true,
+					},
+					status:{
+						required:true,
+					}
+				},
+				onkeyup:false,
+				focusCleanup:true,
+				success:"valid",
+				submitHandler:function(form){
+				var param = $("#form-view").serialize(); 
+					 $.ajax({
+					        url: '/SysRole/Save.do',
+					 		type: 'POST',
+					 		dataType:'json',
+							data:param,
+			                success:function(result){
+			                if(result.success)
+							{
+								parent.layer.msg(result.msg,{icon:1,time:2500});
+								//以下为关闭当前frame，并刷新父页面
+								var index = parent.layer.getFrameIndex(window.name);
+								parent.$("#pagecontent").load(window.parent.location.href+"#pagecontent");//刷新父页面表格tbody
+								parent.$("#mypage").load(window.parent.location.href+"#mypage");//分页也需要刷新一下
+								parent.layer.close(index);
+								
+							}else
+							{
+								layer.msg(result.msg,{icon:2,time:1500});
+							}
+							},
+							error:function(data) {
+								layer.msg("对不起，服务请求错误！",{icon:2,time:1500});
+							}
+		                }); 
+				  }
+		});
+		
+	})
+</script>
+#end
+#extends("/Home/Layout.vm")

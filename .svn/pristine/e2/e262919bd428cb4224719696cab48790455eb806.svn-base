@@ -1,0 +1,103 @@
+package org.nwnu.front.controller;
+
+import java.util.List;
+
+import org.nwnu.base.controller.BaseController;
+import org.nwnu.pub.util.WeixinUtil;
+import org.nwnu.system.entity.GoodsDetail;
+import org.nwnu.system.entity.ShopOrder;
+import org.nwnu.system.entity.ShopOrderdetail;
+import org.nwnu.system.service.GoodsDetailService;
+import org.nwnu.system.service.PayService;
+import org.nwnu.system.service.ShopOrderService;
+import org.nwnu.system.service.ShopOrderdetailService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.lly835.bestpay.model.PayResponse;
+
+
+
+@Controller
+@RequestMapping("/WeixinPay")
+public class WeixinPayController extends BaseController{
+	
+	@Autowired
+	private ShopOrderService this_ShopOrderService;
+	
+	@Autowired
+	private PayService this_PayService;
+	
+	@Autowired
+	private ShopOrderdetailService this_ShopOrderdetailService;
+	
+	@Autowired
+	private GoodsDetailService this_GoodsDetailService;
+	
+	/**
+	 * 发起微信支付
+	 * @param modelAndView
+	 * @param orderId
+	 * @return
+	 * @throws Exception 
+	 */
+	@RequestMapping(value = "/create.do", method = RequestMethod.GET)
+	public Object create(ModelAndView modelAndView, @RequestParam("orderId") Integer orderId) throws Exception{
+		// 查询订单
+		ShopOrder order = this_ShopOrderService.selectById(orderId);
+		// 判断订单是否存在
+		if(order == null){
+			throw new Exception("order is not exist");
+		}
+		// 修改订单的支付方式
+		order.setPayway("a");
+		if(this_ShopOrderService.updateById(order)){
+			order = this_ShopOrderService.selectById(order.getId());
+		}
+		// 判断微信支付是否已支付
+		if(!order.getPayway().equals("a") || !order.getPaystatus().equals("a")){
+			throw new Exception("order is not normal");
+		}
+		// 发起支付
+		PayResponse response = this_PayService.create(order);
+		modelAndView.addObject("payResponse", response);
+		return modelAndView;
+	}
+	
+	
+	/**
+	 * 对微信服务器回调信息的回复
+	 * @param notifyData
+	 * @return
+	 */
+	@RequestMapping("/notify.do")
+	public ModelAndView notify(@RequestBody String notifyData){
+		try {
+			PayResponse response = this_PayService.notify(notifyData);
+			ShopOrder order = this_ShopOrderService
+					.selectOne(new EntityWrapper<ShopOrder>().
+							eq("orderNum", response.getOrderId().subSequence(0, 10).toString()));
+			order = this_ShopOrderService.payStatus(order);
+			// 减少订单商品的库存
+			List<ShopOrderdetail> orderItemList = this_ShopOrderdetailService.selectList(
+					new EntityWrapper<ShopOrderdetail>().eq("oid", order.getId()));
+			for (ShopOrderdetail orderItem : orderItemList) {
+				GoodsDetail good = this_GoodsDetailService.selectById(orderItem.getGid());
+				good.setKucun(good.getKucun() - orderItem.getGnum());
+				this_GoodsDetailService.updateById(good);
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return new ModelAndView("WeixinPay/success");
+	}
+
+}

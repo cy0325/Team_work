@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.nwnu.system.mapper.SysPrivilegeMapper">
+<!--开启二级缓存-->
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+	<!-- 通用查询映射结果 -->
+	<resultMap id="BaseResultMap" type="org.nwnu.system.entity.SysPrivilege">
+		<id column="id" property="id" />
+		<result column="privilegeCode" property="privilegeCode" />
+		<result column="privilegeName" property="privilegeName" />
+		<result column="parentCode" property="parentCode" />
+		<result column="url" property="url" />
+		<result column="iconfont" property="iconfont" />
+		<result column="isShow" property="isShow" />
+		<result column="sequence" property="sequence" />
+		<result column="remark" property="remark" />
+		<result column="operator" property="operator" />
+		<result column="updateDate" property="updateDate" />
+	</resultMap>
+	
+	<select id="getCode"  resultType="string">
+	    SELECT   right(concat('0000',rtrim(max(privilegeCode) + 1)), 4) AS codestr
+	    FROM      sys_privilege
+  	</select>
+  	
+  	<select id="getParentCode" resultType="string">
+     SELECT   concat(right(concat('00',ltrim(max(left(privilegecode, 2)) + 1)), 2),'00') as codestr
+      FROM sys_privilege
+  </select>
+
+</mapper>

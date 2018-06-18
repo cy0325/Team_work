@@ -1,0 +1,123 @@
+package org.nwnu.system.entity;
+
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableName;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * <p>
+ * 用户理由表
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-23
+ */
+
+@TableName("user_reason")
+public class UserReason implements Serializable {
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
+
+	/**
+	 * 主键
+	 */
+	private Integer id;
+
+	/**
+	 * 用户id
+	 */
+	private Integer suid;
+
+	/**
+	 * 订单id
+	 */
+	private Integer orderid;
+
+	/**
+	 * 理由类型
+	 */
+	private String type;
+
+	/**
+	 * 用户理由
+	 */
+	private String reason;
+
+	/**
+	 * 操作时间
+	 */
+	private Date uptime;
+	
+	@TableField(exist = false)
+	private ShopOrder order;
+	
+	@TableField(exist = false)
+	private ShopUser user;
+
+	public ShopUser getUser() {
+		return user;
+	}
+
+	public void setUser(ShopUser user) {
+		this.user = user;
+	}
+
+	public ShopOrder getOrder() {
+		return order;
+	}
+
+	public void setOrder(ShopOrder order) {
+		this.order = order;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getSuid() {
+		return suid;
+	}
+
+	public void setSuid(Integer suid) {
+		this.suid = suid;
+	}
+
+	public Integer getOrderid() {
+		return orderid;
+	}
+
+	public void setOrderid(Integer orderid) {
+		this.orderid = orderid;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public String getReason() {
+		return reason;
+	}
+
+	public void setReason(String reason) {
+		this.reason = reason;
+	}
+
+	public Date getUptime() {
+		return uptime;
+	}
+
+	public void setUptime(Date uptime) {
+		this.uptime = uptime;
+	}
+
+}

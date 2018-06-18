@@ -1,0 +1,194 @@
+package org.nwnu.front.controller;
+
+
+import java.net.URLDecoder;
+import java.util.Date;
+
+import javax.imageio.spi.RegisterableService;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.nwnu.base.controller.BaseController;
+import org.nwnu.pub.util.Const;
+import org.nwnu.pub.util.CookiesUtil;
+import org.nwnu.pub.util.SmsUtil;
+import org.nwnu.pub.util.StringUtil;
+import org.nwnu.system.entity.ShopUser;
+import org.nwnu.system.service.ShopUserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.aliyuncs.exceptions.ClientException;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+
+
+@Controller
+@RequestMapping("/App")
+public class SpUserController extends BaseController{
+	
+	@Autowired
+	private ShopUserService this_ShopUserService;
+	
+	@Autowired
+	private HttpServletResponse response;
+	
+	@Autowired
+	private HttpServletRequest request;
+
+	
+	@RequestMapping("/register")
+	public String register(ModelAndView modelAndView){
+		return "App/register";
+	}
+	
+	
+	@RequestMapping("/login")
+	public ModelAndView login(ModelAndView modelAndView) throws Exception{
+		return modelAndView;
+	}
+	
+	/**
+	 * 注册发送短信
+	 * @param tel
+	 * @return
+	 */
+	@RequestMapping("/sendCode")
+	@ResponseBody
+	public Object sendCode(String tel){
+		if (tel == null || !(tel.length() == 11)) {
+			String string = "请求输入正确的手机号码";
+			return renderError(string);
+		}
+		ShopUser user = this_ShopUserService.selectOne(new EntityWrapper<ShopUser>()
+						.eq("tel", tel));
+		if (user == null) {
+			String veriCode = Integer.toString(buildRandom(6));
+			try {
+				if(SmsUtil.sendPhoneCode(tel, veriCode)){
+					return renderSuccess(veriCode);
+				} else{
+					return renderError("验证码发送频繁，请稍后再试");
+				}
+			} catch (ClientException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return renderSuccess(veriCode);
+		} else{
+			return renderError("抱歉，该用户已注册");
+		}
+		
+	}
+	
+	
+	/**
+	 * 注册保存
+	 * @param session
+	 * @param user
+	 * @return
+	 * @throws Exception 
+	 */
+	@RequestMapping(value = "/register", method = RequestMethod.POST)
+	@ResponseBody
+	public Object register(HttpSession session, ShopUser user) throws Exception{
+		if(StringUtil.isEmpty(user.getCode())){
+			return renderError("验证码不能为空");
+		}
+		ShopUser user2 = this_ShopUserService.selectOne(new EntityWrapper<ShopUser>().eq("tel", user.getTel()));
+		if (user2 != null) {
+			return renderError("该用户已经注册");
+		}
+		if(user.getCode().equals(user.getVeriCode())){
+			String openId = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_OPENID).getValue();
+			String headUrl = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_HEADURL).getValue();
+			String weiName = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_WEINAME).getValue();
+			if(openId != null ||headUrl != null ||weiName != null  ){
+				user.setOpenid(openId);
+				user.setWeiname(URLDecoder.decode(weiName, "UTF-8"));
+				user.setWeipic(headUrl);
+				user.setRegisttime(new Date());
+			}else{
+				return renderError("注册失败");
+			}
+			if(this_ShopUserService.insert(user)){
+				CookiesUtil.addCookie(response, Const.COOKIES_SHOP_USER_ID, user.getId().toString(), Const.COOKIES_TIME);
+				return renderSuccess("注册成功");
+			}else{
+				return renderError("注册失败");
+			}
+		}
+		return renderError("验证码错误");
+	}
+	
+	
+	/**
+	 * 登录发送验证码
+	 * @param tel
+	 * @return
+	 */
+	@RequestMapping("/login_sendCode")
+	@ResponseBody
+	public Object loginSendCode(String tel){
+		if (tel == null) {
+			String string = "请求错误";
+			return renderError(string);
+		}
+		ShopUser user = this_ShopUserService.selectOne(new EntityWrapper<ShopUser>()
+						.eq("tel", tel));
+		if(user != null && user.getStatus().equals("a")){
+			String veriCode = Integer.toString(buildRandom(6));
+			try {
+				if(SmsUtil.sendPhoneCode(tel, veriCode)){
+					return renderSuccess(veriCode);
+				} else{
+					return renderError("验证码发送频繁，请稍后再试");
+				}
+			} catch (ClientException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			return renderError("服务器错误");
+		} else if(user != null && user.getStatus().equals("b")){
+			return renderError("抱歉，该用户已被管理员停用");
+		} else{
+			return renderError("抱歉，该用户尚未注册");
+		}
+	}
+	
+	
+	/**
+	 * 登录保存
+	 * @param tel
+	 * @param code
+	 * @param veriCode
+	 * @param gid
+	 * @param session
+	 * @return
+	 */
+	@RequestMapping(value = "/login", method = RequestMethod.POST)
+	@ResponseBody
+	public Object loginSave(@RequestParam(required = true, value = "tel") String tel,
+			@RequestParam(required = true, value = "code") String code,
+			@RequestParam(required = true, value = "veriCode") String veriCode,
+			HttpSession session){
+		if(!code.equals(veriCode)){
+			return renderError("验证码错误");
+		}
+		ShopUser shopUser = this_ShopUserService.selectOne(new EntityWrapper<ShopUser>().eq("tel", tel));
+		ShopUser user = this_ShopUserService.selectById(shopUser.getId());
+		if(user.getTel().equals(tel)){
+			CookiesUtil.addCookie(response, Const.COOKIES_SHOP_USER_ID, user.getId().toString(), Const.COOKIES_TIME);
+			return renderSuccess("/App/index.do");
+		}else{
+			return renderError("抱歉，该用户尚未注册");
+		}
+	}
+		
+}

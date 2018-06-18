@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>天鲜易购-个人中心</title>
+
+	<!--CSS-->
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loaders.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loading.css"/>
+	<link href="/static/app/css/mui.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/app/css/base.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/style.css"/>
+
+</head>
+<!--loading页开始-->
+<div class="loading">
+	<div class="loader">
+        <div class="loader-inner pacman">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+	</div>
+</div>
+<!--loading页结束-->
+<body>
+
+	#if($login)
+	<div class="p-top clearfloat">
+		<a href="/App/userinfo">
+			<div class="tu">
+				<img src="$!user.weipic"/>
+			</div>
+			<p class="name">$!user.weiname</p>
+		</a>
+	</div>
+	
+	<div class="container">
+		<section class="self">
+			<dl>
+				<dt>
+					<a href="/App/order">
+						<img src="/static/app/images/self-icon.png"/>
+						<b>全部订单</b>
+						<span><img src="/static/app/images/right.png"/></span>
+					</a>
+				</dt>
+				<dd>
+                    <ul>
+
+                        <li>
+                            <a href="/App/order?type=nopay">
+                                <img src="/static/app/images/order-icon03.png"/>
+                                <p>待付款</p>
+                            </a>
+                            #if($!nopay != 0)
+                            <span class="mui-badge mui-badge-primary fz-primary">$!nopay</span>
+                            #end
+                        </li>
+                        <li>
+                            <a href="/App/order?type=nogetgoods">
+                                <img src="/static/app/images/order-icon02.png"/>
+                                <p>待收货</p>
+                            </a>
+                            #if($!nogetgoods != 0)
+                            <span class="mui-badge mui-badge-primary fz-primary">$!nogetgoods</span>
+                            #end
+                        </li>
+                        <li>
+                            <a href="/App/comment_list.do" >
+                                <img src="/static/app/images/order-icon04.png"/>
+                                <p>待评价</p>
+                            </a>
+                            
+                            #if($!nocomment != 0)
+                            <span class="mui-badge mui-badge-primary fz-primary">$!nocomment</span>
+                            #end
+                        </li>
+                    </ul>
+				</dd>
+			</dl>
+			
+			<ul class="self-icon">
+				<li>
+					<a href="/App/userinfo">
+						<img src="/static/app/images/self-icon01.png"/>
+						<p>个人信息</p>
+						<span><img src="/static/app/images/right.png"/></span>
+					</a>
+				</li>
+
+				<li>
+					<a href="/App/address">
+						<img src="/static/app/images/self-icon04.png"/>
+						<p>地址管理</p>
+						<span><img src="/static/app/images/right.png"/></span>
+					</a>
+				</li>
+			</ul>
+		</section>
+	</div>
+	#else
+	<div class="p-top  clearfloat">
+		<a href="/App/login" class="mui-btn mui-btn-success fz-primary">亲，您还没登录，点我去登陆</a>
+	</div>
+	
+	<div class="container fixed-contb">
+		<section class="self">
+			<dl>
+				<dt>
+					<a href="javascript: showTip();">
+						<img src="/static/app/images/self-icon.png"/>
+						<b>全部订单</b>
+						<span><img src="/static/app/images/right.png"/></span>
+					</a>
+				</dt>
+				<dd>
+                    <ul>
+
+                        <li>
+                            <a href="javascript: showTip();">
+                                <img src="/static/app/images/order-icon03.png"/>
+                                <p>待付款</p>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="javascript: showTip();">
+                                <img src="/static/app/images/order-icon02.png"/>
+                                <p>待收货</p>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="javascript: showTip();">
+                                <img src="/static/app/images/order-icon04.png"/>
+                                <p>待评价</p>
+                            </a>
+                        </li>
+                    </ul>
+				</dd>
+			</dl>
+			
+			<ul class="self-icon">
+				<li>
+					<a href="javascript: showTip();">
+						<img src="/static/app/images/self-icon01.png"/>
+						<p>个人信息</p>
+						<span><img src="/static/app/images/right.png"/></span>
+					</a>
+				</li>
+
+				<li>
+					<a href="javascript: showTip();">
+						<img src="/static/app/images/self-icon04.png"/>
+						<p>地址管理</p>
+						<span><img src="/static/app/images/right.png"/></span>
+					</a>
+				</li>
+			</ul>
+		</section>
+	</div>
+	#end
+	
+	<footer class="page-footer fixed-footer">
+		<ul>
+			<li>
+				<a href="/App/index">
+					<img src="/static/app/images/footer001.png"/>
+					<p>首页</p>
+				</a>
+			</li>
+			<li>
+				<a href="/App/sort">
+					<img src="/static/app/images/footer002.png"/>
+					<p>分类</p>
+				</a>
+			</li>
+			<li>
+				#if($login)
+				<a href="/App/cart_list.do">
+					<img src="/static/app/images/footer003.png"/>
+					<p>购物车</p>
+				</a>
+				#if($!cartcounts != 0)
+                	<span class="mui-badge mui-badge-primary fz-primary">$!cartcounts</span>
+                #end
+                #else
+                <a href="javascript: showTip();">
+					<img src="/static/app/images/footer003.png"/>
+					<p>购物车</p>
+				</a>
+                #end
+			</li>
+			<li class="active">
+				<a href="/App/person">
+					<img src="/static/app/images/footer04.png"/>
+					<p>个人中心</p>
+				</a>
+			</li>
+		</ul>
+	</footer>
+	
+	
+</body>
+
+<!--JS-->
+<script src="/static/app/js/fastclick.js"></script>
+<script src="/static/app/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/app/js/alert.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+
+    function compatible() {
+        var h = $(".container .self .self-icon li img").height();
+        $(".container .self .self-icon li p").css("line-height", h + "px");
+    }
+    $(window).load(function(){
+        $(".loading").addClass("loader-chanage").fadeOut(300);
+        compatible();
+        $(window).resize(function() {
+            compatible();
+        });
+    });
+    
+    function showTip() {
+    	$.toast("请您先登录");
+    }
+    
+</script>
+
+</html>

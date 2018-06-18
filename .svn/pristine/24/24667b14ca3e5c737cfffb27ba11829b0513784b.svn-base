@@ -1,0 +1,16 @@
+package org.nwnu.system.mapper;
+
+import org.nwnu.system.entity.GoodsType;
+import com.baomidou.mybatisplus.mapper.BaseMapper;
+
+/**
+ * <p>
+  * 商品类目 Mapper 接口
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+public interface GoodsTypeMapper extends BaseMapper<GoodsType> {
+
+}

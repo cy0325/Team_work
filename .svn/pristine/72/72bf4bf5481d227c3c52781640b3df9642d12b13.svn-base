@@ -1,0 +1,20 @@
+package org.nwnu.system.service.impl;
+
+import org.nwnu.system.entity.GoodsActivity;
+import org.nwnu.system.mapper.GoodsActivityMapper;
+import org.nwnu.system.service.GoodsActivityService;
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import org.springframework.stereotype.Service;
+
+/**
+ * <p>
+ * 市场活动 服务实现类
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+@Service
+public class GoodsActivityServiceImpl extends ServiceImpl<GoodsActivityMapper, GoodsActivity> implements GoodsActivityService {
+	
+}

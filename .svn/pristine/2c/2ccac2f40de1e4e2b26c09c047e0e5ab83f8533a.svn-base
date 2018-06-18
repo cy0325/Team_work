@@ -1,0 +1,29 @@
+package org.nwnu.system.service.impl;
+
+import org.nwnu.system.entity.ShopCart;
+import org.nwnu.system.mapper.ShopCartMapper;
+import org.nwnu.system.service.ShopCartService;
+
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ * <p>
+ * 购物车 服务实现类
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+@Service
+public class ShopCartServiceImpl extends ServiceImpl<ShopCartMapper, ShopCart> implements ShopCartService {
+	
+	@Autowired
+	private ShopCartMapper this_ShopCartMapper;
+	
+	public int selectCartGoodsCount(Integer userId){
+		return this_ShopCartMapper.selectCartGoodsCount(userId);
+	}
+}

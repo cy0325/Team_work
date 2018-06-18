@@ -1,0 +1,264 @@
+package org.nwnu.pub.util;
+
+import java.awt.Color;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.List;
+
+import javax.swing.text.TabExpander;
+
+import org.nwnu.system.entity.PdfBean;
+import org.nwnu.system.entity.PdfGood;
+import org.nwnu.system.entity.Student;
+
+import cn.org.rapid_framework.jdbc.sqlgenerator.metadata.Table;
+
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.ExceptionConverter;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Header;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.Rectangle;
+import com.itextpdf.text.pdf.BaseFont;
+import com.itextpdf.text.pdf.ColumnText;
+import com.itextpdf.text.pdf.PdfContentByte;
+import com.itextpdf.text.pdf.PdfName;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfPageEventHelper;
+import com.itextpdf.text.pdf.PdfTemplate;
+import com.itextpdf.text.pdf.PdfWriter;
+import com.itextpdf.text.pdf.draw.LineSeparator;
+
+public class PdfUtil {
+	
+    //创建一个byte型别数组的缓冲区，利用ByteArrayOutputStream的实例向数组中写入数据
+    private ByteArrayOutputStream baos;
+    //定义PdfWriter对象
+    private PdfWriter writer;
+    //定义一个Pdf页面
+    private Document document;
+    //定义一个写入数据的Table
+    private PdfPTable table;
+    //定义Pdf的字体对象
+    private BaseFont baseFont;
+    
+    private Font font;
+    
+    private static final String FONT = "E:/Dome/Java/powerbase/src/main/webapp/static/simsun.ttc,1";
+    
+    private static final String FONT2 = "E:/Dome/Java/powerbase/src/main/webapp/static/simkai.ttf";
+    
+    private static final String LOGOIMG = "E:/Dome/Java/powerbase/src/main/webapp/static/logo.jpg";
+
+    //定义每一列的宽度的比例
+    float[] widths = {25, 20, 20, 20};
+    float[] widths2 = {18, 45};
+    float[] widths3 = {18, 20, 25};
+    
+    class Header extends PdfPageEventHelper {
+        Font font;
+        PdfTemplate t;
+        Image total;
+ 
+        @Override
+        public void onOpenDocument(PdfWriter writer, Document document) {
+            t = writer.getDirectContent().createTemplate(30, 16);
+            try {
+                total = Image.getInstance(t);
+                total.setRole(PdfName.ARTIFACT);
+                font =  new Font(BaseFont.createFont(FONT, BaseFont.IDENTITY_H, BaseFont.EMBEDDED), 10);
+            } catch (DocumentException de) {
+                throw new ExceptionConverter(de);
+            } catch (IOException ioe) {
+                throw new ExceptionConverter(ioe);
+            }
+        }
+ 
+        @Override
+        public void onEndPage(PdfWriter writer, Document document) {
+            PdfPTable table = new PdfPTable(3);
+            try {
+                table.setWidths(new int[]{24, 24, 2});
+                table.setTotalWidth(510);
+                table.getDefaultCell().setFixedHeight(20);
+                table.getDefaultCell().setBorder(Rectangle.BOTTOM);
+                table.addCell(new Phrase("天鲜易购", font));
+                table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_RIGHT);
+                table.addCell(new Phrase(String.format("第 %d 页 /共", writer.getPageNumber()), font));
+                PdfPCell cell = new PdfPCell(total);
+                cell.setBorder(Rectangle.BOTTOM);
+                table.addCell(cell);
+                PdfContentByte canvas = writer.getDirectContent();
+                canvas.beginMarkedContentSequence(PdfName.ARTIFACT);
+                table.writeSelectedRows(0, -1, 36, 30, canvas);
+                canvas.endMarkedContentSequence();
+            } catch (DocumentException de) {
+                throw new ExceptionConverter(de);
+            }
+        }
+ 
+        @Override
+        public void onCloseDocument(PdfWriter writer, Document document) {
+            ColumnText.showTextAligned(t, Element.ALIGN_LEFT,
+                new Phrase(String.valueOf(writer.getPageNumber()), font),
+                2, 4, 0);
+        }
+    }
+    
+    //初始化Table
+    public void init() throws DocumentException, IOException {
+        //设置Pdf页面的大小
+        document = new Document(PageSize.A4, -20, -20, 30, 30);
+        baos = new ByteArrayOutputStream();
+        writer = PdfWriter.getInstance(document, baos);
+        writer.setPageEvent(new Header());
+        document.open();
+    }
+    
+    //生成Pdf页面标题
+    public void buildPdfTitile(String type) throws DocumentException, MalformedURLException, IOException {
+    	//设置字体
+        baseFont = BaseFont.createFont(FONT2, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+        //new 一个只有一列的Table
+        table = new PdfPTable(1);
+        Image i = Image.getInstance(LOGOIMG);
+        i.scaleAbsolute(22, 22);
+        i.setAbsolutePosition(202, 787);
+        document.add(i);
+        //设置字体样式
+        font = new Font(baseFont, 20, Font.BOLD, new BaseColor(0, 0, 0));
+        PdfPCell cell = getPdfCell("天鲜易购出货单", font, 0, Element.ALIGN_CENTER);
+        //插入数据
+        table.addCell(cell);
+        font = new Font(baseFont, 16, Font.NORMAL, new BaseColor(0, 0, 0));
+        if (type.equals("a")) {
+        	table.addCell(getPdfCell("(自提订单)", font, 0, Element.ALIGN_CENTER));
+		} else{
+			table.addCell(getPdfCell("(配送订单)", font, 0, Element.ALIGN_CENTER));
+		}
+        table.addCell(getPdfCell("\n", font, 0, Element.ALIGN_CENTER));
+        //把table添加到Document对象
+        document.add(table);
+        
+    }
+    
+    //生成Pdf表头
+    public void buildPdfTableHeader(PdfBean bean) throws DocumentException, IOException {
+    	baseFont = BaseFont.createFont(FONT, BaseFont.IDENTITY_H, BaseFont.NOT_EMBEDDED);
+    	font = new Font(baseFont, 12, Font.NORMAL, new BaseColor(0, 0, 0));
+    	//订单编号，下单时间
+    	table = new PdfPTable(widths2);
+    	table.addCell(getPdfCell("订单编号："+bean.getOrderNum(), font, 0, Element.ALIGN_LEFT));
+    	table.addCell(getPdfCell("下单时间："+bean.getUpDate(), font, 0, Element.ALIGN_LEFT));
+    	document.add(table);
+    	table = new PdfPTable(widths2);
+    	table.addCell(getPdfCell("支付方式："+bean.getPayway(), font, 0, Element.ALIGN_LEFT));
+    	table.addCell(getPdfCell("是否支付："+bean.getPaystatus(), font, 0, Element.ALIGN_LEFT));
+    	document.add(table);
+    	table = new PdfPTable(widths3);
+    	table.addCell(getPdfCell("总 金 额："+bean.getTotalPrice(), font, 0, Element.ALIGN_LEFT));
+    	table.addCell(getPdfCell("运费："+bean.getFreight(), font, 0, Element.ALIGN_LEFT));
+    	table.addCell(getPdfCell("自提优惠："+bean.getLiftFee(), font, 0, Element.ALIGN_LEFT));
+    	document.add(table);
+    	table = new PdfPTable(widths2);
+    	table.addCell(getPdfCell("用户姓名："+bean.getName(), font, 0, Element.ALIGN_LEFT));
+    	table.addCell(getPdfCell("电话："+bean.getTel(), font, 0, Element.ALIGN_LEFT));
+    	document.add(table);
+    	table = new PdfPTable(1);
+    	table.addCell(getPdfCell("用户地址："+bean.getAddress(), font, 0, Element.ALIGN_LEFT));
+    	document.add(table);
+    	// 加线
+        document.add(new LineSeparator(1, 80, BaseColor.BLACK, Element.ALIGN_CENTER, -10));
+        table = new PdfPTable(1);
+        table.addCell(getPdfCell("\n", font, 0, Element.ALIGN_CENTER));
+    	document.add(table);
+        String[] tableHeaders = {"商品名称", "规格", "数量*单价", "小计"};
+        table = new PdfPTable(widths);
+        //设置字体样式
+        font = new Font(baseFont, 12, Font.BOLD, new BaseColor(0, 0, 0));
+        for (int i = 0; i < tableHeaders.length; i++) {
+            table.addCell(getPdfCell(tableHeaders[i], font, 0, Element.ALIGN_CENTER));
+        }
+        document.add(table);
+    }
+    
+  //写入Pdf表数据
+    public void buildPdfTableBody(List<PdfGood> goodList) throws DocumentException {
+        table = new PdfPTable(widths);
+        //定义每个单元格的默认边框宽度
+        //table.getDefaultCell().setBorderWidth((float) 0.1);
+        //定义每个单元格的默认横向排列方式
+        table.getDefaultCell().setHorizontalAlignment(Element.ALIGN_CENTER);
+        //设置字体样式
+        font = new Font(baseFont, 11, Font.NORMAL, new BaseColor(0, 0, 0));
+        //Pdf加入表数据
+        for (PdfGood pdfGood : goodList) {
+        	table.addCell(getPdfCell(pdfGood.getName(), font, 0, Element.ALIGN_CENTER));
+            table.addCell(getPdfCell(pdfGood.getSpec(), font, 0, Element.ALIGN_CENTER));
+            table.addCell(getPdfCell(pdfGood.getNumAndPrice(), font, 0, Element.ALIGN_CENTER));
+            table.addCell(getPdfCell(pdfGood.getTotalPrice(), font, 0, Element.ALIGN_CENTER));
+		}
+        document.add(table);
+    }
+
+    //获得每个不同单元格的style，方法里面的参数分别为(单元格的值, 字体样式, 边框宽度, 水平位置)
+    public PdfPCell getPdfCell(String value, Font font, float borderWidth, int align) {
+        Phrase phrase = new Phrase(value, font);
+
+        PdfPCell cell = new PdfPCell();
+        cell.setPhrase(phrase);
+        //设置边框宽度
+        cell.setBorderWidth(borderWidth);
+        //设置水平位置
+        cell.setHorizontalAlignment(align);
+        return cell;
+    }
+    
+    public void buildPdfTail(String type) throws DocumentException{
+    	document.add(new LineSeparator(1, 80, BaseColor.BLACK, Element.ALIGN_CENTER, -5));
+    	table = new PdfPTable(1);
+    	table.addCell(getPdfCell("\n", font, 0, Element.ALIGN_CENTER));
+    	document.add(table);
+    	table = new PdfPTable(1);
+    	font = new Font(baseFont, 12, Font.NORMAL, new BaseColor(0, 0, 0));
+    	String p1 = null;
+    	if (type.equals("a")) {
+    		p1 = "收银员："+"___________"+"     "+"收银日期："+"___________"+"     "+"客户签字："+"___________";
+		} else{
+			p1 = "派送员："+"___________"+"     "+"派送日期："+"___________"+"     "
+		+"客户签字："+"___________"+"\n\n"+"收银员："+"___________"+"     "+"收银日期："+"___________";
+		}
+    	table.addCell(getPdfCell(p1, font, 0, Element.ALIGN_LEFT));
+    	document.add(table);
+    }
+    
+  //导出为Pdf
+    public ByteArrayOutputStream exportPdf(String type, List<PdfBean> list) throws DocumentException, IOException {
+        init();
+        int i = 0;
+        for (PdfBean pdfBean : list) {
+        	buildPdfTitile(type);
+            buildPdfTableHeader(pdfBean);
+            buildPdfTableBody(pdfBean.getGoodList());
+            buildPdfTail(type);
+            if (i != list.size()-1) {
+            	document.newPage();
+			}
+            i++;
+		}
+        document.close();
+        return baos;
+    }
+    
+    
+    
+}

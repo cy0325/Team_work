@@ -1,0 +1,262 @@
+package org.nwnu.pub.util;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
+import net.sf.ehcache.Statistics;
+
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.nwnu.system.weixin.AccessToken;
+
+import com.alibaba.fastjson.JSONObject;
+
+public class WeixinUtil {
+	
+	//private static final String AppID = "wxa67e2f0f2041533f";//个人微信公众账号
+	//public static final String AppID = "wx9de4da5c20dc4ed7";//微信测试号
+	
+	public static final String AppID = "wxaccb6821e1fd111e"; //生产账号
+	
+	//private static final String AppSecret = "90e88ecb93a10ffc98a9513c30a129c7"; //个人微信公众账号
+	//public static final String AppSecret = "92788d56ccbabbe1e0480f79a02d39a4";  //微信测试号
+	public static final String AppSecret = "1cbefb891e13be940685e09e0791f5f1"; //生产账号
+	
+	public static final String TOKEN = "powerbase";
+	
+	public static final String AESKey = "hfqPgwQmfQxAE9VHm6yB85dCFs64Zg75M7H1F0scoRo";
+	
+	public static final String MchId = "1383822302";
+	
+	public static final String MchKey = "9AFCD22328245C33226461D9BDF94946";
+	
+	public static final String NotifyURL = "http://www.bravedawn.cn/WeixinPay/notify.do";
+	
+	public static final String KeyPath = "E:/Dome/Java/powerbase/src/main/webapp/static/weixin_cert/apiclient_cert.p12";
+	
+	private static final String ACCESS_TOKEN_URL = "https://api.weixin.qq.com/cgi-bin/token?grant_type=client_credential&appid=APPID&secret=APPSECRET";
+	
+	private static final String CREATE_MENU_URL = "https://api.weixin.qq.com/cgi-bin/menu/create?access_token=ACCESS_TOKEN";
+
+	private static final String QUERY_MENU_URL = "https://api.weixin.qq.com/cgi-bin/menu/get?access_token=ACCESS_TOKEN";
+	
+	private static final String DELETE_MENU_URL = "https://api.weixin.qq.com/cgi-bin/menu/delete?access_token=ACCESS_TOKEN";
+	
+	private static final String ADD_MATERIAL_URL = "https://api.weixin.qq.com/cgi-bin/material/add_material?access_token=ACCESS_TOKEN&type=image";
+	
+	private static final String ADD_NEWS_URL = "https://api.weixin.qq.com/cgi-bin/material/add_news?access_token=ACCESS_TOKEN";
+	
+	private static final String SEND_ALL_URL = "https://api.weixin.qq.com/cgi-bin/message/mass/sendall?access_token=ACCESS_TOKEN";
+	
+	private static final String SEND_URL = "https://api.weixin.qq.com/cgi-bin/message/mass/send?access_token=ACCESS_TOKEN";
+	
+	private static final String SEND_MES_STAUTS = "https://api.weixin.qq.com/cgi-bin/message/mass/get?access_token=ACCESS_TOKEN";
+	
+	private static final String USER_OPENID_URL = "https://api.weixin.qq.com/cgi-bin/user/get?access_token=ACCESS_TOKEN&next_openid=";
+	
+	/**
+	 * get请求
+	 * @param url
+	 * @return
+	 */
+	public static JSONObject doGetStr(String url){
+		DefaultHttpClient httpClient = new DefaultHttpClient();
+		HttpGet httpGet = new HttpGet(url);
+		JSONObject jsonObject = null;
+		try {
+			HttpResponse httpResponse = httpClient.execute(httpGet);
+			HttpEntity entity = httpResponse.getEntity();
+			if(entity != null){
+				String result = EntityUtils.toString(entity, "UTF-8");
+				jsonObject = JSONObject.parseObject(result);
+			}
+			
+		}catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return jsonObject;
+	}
+	
+	/**
+	 * post请求
+	 * @param url
+	 * @param outStr
+	 * @return
+	 */
+	public static JSONObject doPostStr(String url, String outStr){
+		DefaultHttpClient httpClient = new DefaultHttpClient();
+		HttpPost httpPost = new HttpPost(url);
+		JSONObject jsonObject = null;
+		httpPost.setEntity(new StringEntity(outStr, "UTF-8"));
+		try {
+			HttpResponse httpResponse = httpClient.execute(httpPost);
+			String result = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
+			jsonObject = JSONObject.parseObject(result);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return jsonObject;
+	}
+	
+	
+	/**
+	 * 获取access_token
+	 * @return
+	 */
+	public static AccessToken getAccessToken(){
+		AccessToken accessToken = new AccessToken();
+		String url = ACCESS_TOKEN_URL.replace("APPID", AppID).replace("APPSECRET", AppSecret);
+		
+		JSONObject jsonObject = doGetStr(url);
+		if(jsonObject != null){
+			accessToken.setToken(jsonObject.getString("access_token"));
+			accessToken.setExpriresIn(jsonObject.getString("expires_in"));
+			
+		}
+		return accessToken;
+	}
+
+	
+	public static int createMenu(String token, String menu){
+		Integer result = null;
+		String url = CREATE_MENU_URL.replace("ACCESS_TOKEN", token);
+		JSONObject jsonObject = doPostStr(url, menu);
+		if(jsonObject != null){
+			result = jsonObject.getInteger("errcode");
+		}
+		return result;
+	}
+	
+	
+	public static JSONObject queryMenu(String token){
+		String url = QUERY_MENU_URL.replace("ACCESS_TOKEN", token);
+		JSONObject jsonObject = doGetStr(url);
+		return jsonObject;
+	}
+	
+	public static int deleteMenu(String token){
+		Integer result = null;
+		String url = DELETE_MENU_URL.replace("ACCESS_TOKEN", token);
+		JSONObject jsonObject = doGetStr(url);
+		if(jsonObject != null){
+			result = jsonObject.getInteger("errcode");
+		}
+		return result;
+	}
+	
+	
+	public static String postFile(String url, String filePath) {  
+	    File file = new File(filePath);  
+	    if (!file.exists())  
+	        return null;  
+	    String result = null;  
+	    try {  
+	        URL url1 = new URL(url);  
+	        HttpURLConnection conn = (HttpURLConnection) url1.openConnection();  
+	        conn.setConnectTimeout(5000);  
+	        conn.setReadTimeout(30000);  
+	        conn.setDoOutput(true);  
+	        conn.setDoInput(true);  
+	        conn.setUseCaches(false);  
+	        conn.setRequestMethod("POST");  
+	        conn.setRequestProperty("Connection", "Keep-Alive");  
+	        conn.setRequestProperty("Cache-Control", "no-cache");  
+	        String boundary = "-----------------------------" + System.currentTimeMillis();  
+	        conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);  
+	  
+	        OutputStream output = conn.getOutputStream();  
+	        output.write(("--" + boundary + "\r\n").getBytes());  
+	        output.write(  
+	                String.format("Content-Disposition: form-data; name=\"media\"; filename=\"%s\"\r\n", file.getName())  
+	                        .getBytes());  
+	        output.write("Content-Type: image/jpeg \r\n\r\n".getBytes());  
+	        byte[] data = new byte[1024];  
+	        int len = 0;  
+	        FileInputStream input = new FileInputStream(file);  
+	        while ((len = input.read(data)) > -1) {  
+	            output.write(data, 0, len);  
+	        }  
+	        output.write(("\r\n--" + boundary + "\r\n\r\n").getBytes());  
+	        output.flush();  
+	        output.close();  
+	        input.close();  
+	        InputStream resp = conn.getInputStream();  
+	        StringBuffer sb = new StringBuffer();  
+	        while ((len = resp.read(data)) > -1)  
+	            sb.append(new String(data, 0, len, "utf-8"));  
+	        resp.close();  
+	        result = sb.toString();  
+	    } catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}   
+	    return result;  
+	}  
+	
+	public static String uploadImageFile(String token, String filePath){
+		String url = ADD_MATERIAL_URL.replace("ACCESS_TOKEN", token);
+		return postFile(url, filePath); 
+	}
+	
+/*	public static String createArticles(String token, News news){
+		String newsStr = JSONObject.toJSONString(news);
+		String url = ADD_NEWS_URL.replace("ACCESS_TOKEN", token);
+		JSONObject jsonObject = doPostStr(url, newsStr);
+		if(jsonObject != null){
+			return jsonObject.getString("media_id");
+		}
+		return "error";
+	}*/
+	
+/*	public static String sendAll(String token, SendAll sendAll){
+		String newsStr = JSONObject.toJSONString(sendAll);
+		String url = SEND_ALL_URL.replace("ACCESS_TOKEN", token);
+		JSONObject jsonObject = doPostStr(url, newsStr);
+		if(jsonObject != null){
+			return jsonObject.getString("errcode");
+		}
+		return "error";
+	}
+	
+	public static String send(String token, Send send){
+		String newsStr = JSONObject.toJSONString(send);
+		String url = SEND_URL.replace("ACCESS_TOKEN", token);
+		JSONObject jsonObject = doPostStr(url, newsStr);
+		if(jsonObject != null){
+			return jsonObject.getString("errcode");
+		}
+		return "error";
+	}*/
+	
+	public static String sendStatus(String token){
+		String newsStr = "{\"msg_id\":3147483649}";
+		String url = SEND_MES_STAUTS.replace("ACCESS_TOKEN", token);
+		JSONObject jsonObject = doPostStr(url, newsStr);
+		if(jsonObject != null){
+			return jsonObject.getString("msg_status");
+		}
+		return "error";
+	}
+	
+	public static JSONObject getOpenid(String token){
+		String url = USER_OPENID_URL.replace("ACCESS_TOKEN", token);
+		JSONObject jsonObject = doGetStr(url);
+		if(jsonObject != null){
+			return jsonObject;
+		}
+		return null;
+	}
+}

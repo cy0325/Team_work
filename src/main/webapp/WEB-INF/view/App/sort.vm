@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>天鲜易购-分类</title>
+
+	<!--样式引入-->
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loaders.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loading.css"/>
+    <link href="/static/app/css/mui.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/app/css/base.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/style.css"/>
+</head>
+
+<!--loading页开始-->
+<div class="loading">
+	<div class="loader">
+        <div class="loader-inner pacman">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+	</div>
+</div>
+<!--loading页结束-->
+
+<body style="background-color: #fff;">
+
+	<!--搜索-->
+	<header class="page-header fixed-header">
+		<input type="text" placeholder="搜索" value="$!keys" name=""/>
+		<span id="search">
+			<img src="/static/app/images/serach.png"/>
+		</span>
+	</header>
+	
+	<div id="main" class="container clearfix">
+
+		<!--分类-->
+		<aside class="assort">
+			<!--大类类别-->
+			<ul>
+				#foreach($item in $types)
+				<li #if($actid == $item.id) class="active" #end>
+					<a href="/App/sort?typeid=$!{item.id}">
+						<img src="$!item.pic"/>
+						<span>$!item.name</span>
+					</a>
+				</li>
+				#end
+			</ul>
+		</aside>
+
+		<!--所属大类的小类-->
+		<section class="assort-cont">
+			<!--<figure>
+				<a href="#">
+					<img src=""/>
+				</a>
+			</figure>-->
+			<dl class="wall">
+				<!--大类标题-->
+				<dt>$!title</dt>
+
+				<!--小类列表-->
+				#foreach($item in $smalltypes)
+				<dd class="wall-item">
+					<a href="/App/list?sid=$!{item.id}">
+						<img src="$!item.pic"/>
+						<p class="fz-primary">$!item.name</p>
+					</a>
+				</dd>
+				#end
+
+			</dl>
+		</section>
+	</div>
+
+    <!--底部菜单-->
+	<footer class="page-footer fixed-footer">
+		<ul>
+			<li>
+				<a href="/App/index">
+					<img src="/static/app/images/footer001.png"/>
+					<p>首页</p>
+				</a>
+			</li>
+			<li class="active">
+				<a href="/App/sort">
+					<img src="/static/app/images/footer02.png"/>
+					<p>分类</p>
+				</a>
+			</li>
+			<li>
+				<a href="javacript:;" onclick="cart_list()">
+					<img src="/static/app/images/footer003.png"/>
+					<p>购物车</p>
+				</a>
+				#if($!{cartNum} != 0)
+                	<span id="cart_num" class="mui-badge mui-badge-primary fz-primary">$!{cartNum}</span>
+               	#end
+			</li>
+			<li>
+				<a href="/App/person">
+					<img src="/static/app/images/footer004.png"/>
+					<p>个人中心</p>
+				</a>
+			</li>
+		</ul>
+	</footer>
+	
+	
+</body>
+
+<!--JS引入-->
+<script src="/static/app/js/fastclick.js"></script>
+<script src="/static/app/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript" src="/static/app/js/jaliswall.js"></script>
+<script src="/static/app/js/alert.js"></script>
+<script type="text/javascript">
+
+    $('.wall').jaliswall();
+    function compatible() {
+        var h = $(".page-header").outerHeight();
+        var h2 = $(".page-header span").outerHeight();
+        $(".page-header span").css("padding", (h - h2)/2 + "px" + " 0");
+
+        var h3 = $("header").outerHeight(true);
+        var h4 = $("footer").outerHeight(true);
+        $("#main").css("marginTop", h3 + "px").css("marginBottom", h4 + "px");
+    }
+
+    /*载入动画*/
+    $(window).load(function(){
+        $(".loading").addClass("loader-chanage").fadeOut(300);
+        compatible();
+        $(window).resize(function() {
+            compatible();
+        });
+    });
+    
+    $("#search").click(function() {
+    	var val = $(this).siblings("input").val();
+    	val = $.trim(val);
+    	window.location.href = "/App/sort?keys=" + val;
+    });
+    function cart_list(){
+ 	   #if($!{login_flag} == 0)
+ 	   		var flag = true;
+ 	   	#else
+ 	   		var flag = false;
+ 	   	#end
+ 	   	if(flag){
+ 	   		$.toast("请您先登录");
+ 	   		return;
+ 	   }
+ 	   location.href = '/App/cart_list.do'
+    }
+</script>
+
+</html>

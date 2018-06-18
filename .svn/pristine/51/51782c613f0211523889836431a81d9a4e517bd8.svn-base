@@ -1,0 +1,130 @@
+package org.nwnu.front.controller;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.Date;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import me.chanjar.weixin.common.exception.WxErrorException;
+import me.chanjar.weixin.mp.api.WxMpInMemoryConfigStorage;
+import me.chanjar.weixin.mp.api.WxMpService;
+import me.chanjar.weixin.mp.api.impl.WxMpServiceImpl;
+import me.chanjar.weixin.mp.bean.result.WxMpOAuth2AccessToken;
+import me.chanjar.weixin.mp.bean.result.WxMpUser;
+
+
+import org.dom4j.DocumentException;
+import org.junit.Test;
+import org.nwnu.pub.util.CheckUtil;
+import org.nwnu.pub.util.MessageUtil;
+import org.nwnu.pub.util.WeixinUtil;
+import org.nwnu.system.entity.ShopOrder;
+import org.nwnu.system.service.PayService;
+import org.nwnu.system.service.ShopOrderService;
+import org.nwnu.system.weixin.TextMessage;
+import org.nwnu.system.weixin.WeixinAuth;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+@Controller
+@RequestMapping("/Weixin")
+public class WeixinController {
+	
+	
+	@Autowired
+    private HttpServletRequest request;
+	
+	@Autowired
+    private HttpServletResponse response;
+	
+	@Autowired
+	private PayService payService;
+	
+	@Autowired
+	private ShopOrderService shopOrderService;
+	
+	@RequestMapping(value = "/wx.do", method = RequestMethod.GET)
+	@ResponseBody
+	public void wx() throws IOException{
+		String signature = request.getParameter("signature");
+		String timestamp = request.getParameter("timestamp");
+		String nonce = request.getParameter("nonce");
+		String echostr = request.getParameter("echostr");
+		
+		PrintWriter out = response.getWriter();
+		if(CheckUtil.checkSingnature(signature, timestamp, nonce)){
+			out.print(echostr);
+		}
+	}
+
+	
+	@RequestMapping(value = "/wx.do", method = RequestMethod.POST)
+	@ResponseBody
+	public void wxPost() throws IOException{
+		request.setCharacterEncoding("UTF-8");
+		response.setCharacterEncoding("UTF-8");
+		PrintWriter out = response.getWriter();
+		try {
+			Map<String, String> map = MessageUtil.xmlToMap(request);
+			String toUserName = map.get("ToUserName");
+			String fromUserName = map.get("FromUserName");
+			String msgType = map.get("MsgType");
+			String content = map.get("Content");
+			
+			String message = "";
+			if(MessageUtil.MESSAGE_TEXT.equals(msgType)){
+				//按照关键字进行回复
+				if("1".equals(content)){
+					//message = MessageUtil.initText(toUserName, fromUserName, MessageUtil.getMenuText());
+				} else if("2".equals(content)){
+					//message = MessageUtil.initText(toUserName, fromUserName, MessageUtil.getMenuText());
+				} else if("?".equals(content) || "？".equals(content)){
+					//message = MessageUtil.initText(toUserName, fromUserName, MessageUtil.getMenuText());
+				}
+			} else if(MessageUtil.MESSAGE_EVENT.equals(msgType)){
+				String eventType = map.get("Event");
+				if(MessageUtil.MESSAGE_SUBSCRIBE.equals(eventType)){
+					//message = MessageUtil.initText(toUserName, fromUserName, MessageUtil.getMenuText());
+				} else if(MessageUtil.MESSAGE_CLICK.equals(eventType)){
+					//message = MessageUtil.initText(toUserName, fromUserName, MessageUtil.getMenuText());
+				} else if(MessageUtil.MESSAGE_VIEW.equals(eventType)){
+					String url = map.get("EventKey");
+					//System.out.println("**********url************"+url);
+					//message = MessageUtil.initText(toUserName, fromUserName, url);
+				} else if(MessageUtil.MESSAGE_SCANCODE_PUSH.equals(eventType)) {
+					String key = map.get("EventKey");
+					//System.out.println("**********eventkey************"+key);
+					//message = MessageUtil.initText(toUserName, fromUserName, key);
+				}
+			} else if(MessageUtil.MESSAGE_LOCATION.equals(msgType)){
+				String label = map.get("Label");
+				//message = MessageUtil.initText(toUserName, fromUserName, label);
+			}
+			System.out.println(message);
+			out.print(message);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} finally{
+			out.close();
+		}
+		
+	}
+	
+	
+	/*@RequestMapping(value = "/userinfo.do", method = RequestMethod.GET)
+	public WxMpUser userinfo(String code) throws Exception{
+		WeixinAuth weAuth = new WeixinAuth();
+		WxMpUser user = weAuth.getAuth(code);
+		System.out.println(user.getOpenId());
+		return user;
+	}*/
+	
+
+}

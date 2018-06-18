@@ -1,0 +1,463 @@
+package org.nwnu.system.controller;
+
+
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.plugins.Page;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.pdf.PdfStructTreeController.returnType;
+
+import net.sf.ehcache.search.expression.Or;
+import okhttp3.Request;
+
+import org.apache.cxf.jaxws.javaee.TrueFalseType;
+import org.nwnu.system.entity.GoodsDetail;
+import org.nwnu.system.entity.PdfBean;
+import org.nwnu.system.entity.PdfGood;
+import org.nwnu.system.entity.ShopOrder;
+import org.nwnu.system.entity.ShopOrderdetail;
+import org.nwnu.system.entity.ShopUser;
+import org.nwnu.system.entity.ShopUseraddress;
+import org.nwnu.system.entity.Student;
+import org.nwnu.system.entity.SysUser;
+import org.nwnu.system.entity.UserCredit;
+import org.nwnu.system.service.GoodsDetailService;
+import org.nwnu.system.service.ShopOrderService;
+import org.nwnu.system.service.ShopOrderdetailService;
+import org.nwnu.system.service.ShopUserService;
+import org.nwnu.system.service.ShopUseraddressService;
+import org.nwnu.system.service.SysDictService;
+import org.nwnu.system.service.SysUserService;
+import org.nwnu.system.service.UserCreditService;
+import org.nwnu.base.controller.BaseController;//基础包
+import org.nwnu.pub.util.BigDecimalUtil;
+import org.nwnu.pub.util.Const;
+import org.nwnu.pub.util.PdfUtil;
+import org.nwnu.pub.util.StringUtil;//自定义字符串处理类，如果没有就取掉
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.mail.Session;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.math.BigDecimal;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * <p>
+ * 自提订单 前端控制器
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-22
+ */
+@Controller
+@RequestMapping("/CarryShopOrder")
+public class CarryShopOrderController extends BaseController {
+	@Autowired
+	private ShopOrderService this_ShopOrderService;
+	
+	@Autowired
+	private ShopOrderdetailService this_ShopOrderdetailService;
+	
+	@Autowired
+	private GoodsDetailService this_GoodsDetailService;
+	
+	@Autowired
+	private ShopUseraddressService this_ShopUseraddressService;
+	
+	@Autowired
+	private SysUserService this_SysUserService;
+	
+	@Autowired
+	private ShopUserService this_ShopUserService;
+	
+	@Autowired
+	private SysDictService this_SysDictService;
+	
+	@Autowired
+	private HttpServletResponse response;
+	/***
+	 * 每个controller的首页
+	 * 	 
+	 */
+	@RequestMapping(value = "/CarryShopOrderIndex")
+	public ModelAndView ShopOrderIndex(ModelAndView modelAndView) {
+		return modelAndView;
+	}
+
+	/***
+	 * 列表
+	 * 
+	 * @param 
+	 * @param page
+	 *            起始页
+	 * @param rows
+	 *            页面大小 * @param sort 排序字段 * @param rows 排序顺序
+	 * @return
+	 */
+	@RequestMapping(value = "/List", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> GetList(
+			@RequestParam(required = false, defaultValue = "1") int page,
+			@RequestParam(required = false, defaultValue = "10") int pagesizes,
+			@RequestParam(required = true) String status,
+			@RequestParam(required = false, defaultValue = "") String orderNum,
+			@RequestParam(required = false, defaultValue = "") String userName,
+			@RequestParam(required = false, defaultValue = "") String ordertel,
+			@RequestParam(required = false, defaultValue = "") String datemin,
+			@RequestParam(required = false, defaultValue = "") String datemax) {
+		EntityWrapper<ShopOrder> wrapper=new EntityWrapper<ShopOrder>();
+		Map<String, Object> result = new HashMap<String, Object>();	
+		List<ShopOrder> ShopOrderList = new ArrayList<ShopOrder>();
+		
+		//如果有查询条件，此处需要构造查询warpper
+		//例如wrapper.eq();	
+		//自提，未发货，未完成
+		if (status.equals("a")) {
+			wrapper.eq("carrytype", "b").eq("carrystatus", "a").eq("orderstatus", "a");
+		}else if(status.equals("b")){
+			//自提，已发货，已完成
+			wrapper.eq("carrytype", "b").eq("carrystatus", "b").eq("orderstatus", "b");
+		}
+		
+		if(!StringUtil.isEmpty(orderNum)){
+			wrapper.eq("ordernum", orderNum);
+		}
+		if(!StringUtil.isEmpty(userName)){
+			List<ShopUseraddress> shopUseraddressList = this_ShopUseraddressService
+					.selectList(new EntityWrapper<ShopUseraddress>().like("realname", userName));
+			if (shopUseraddressList.size() == 0) {
+				result.put("total", 0);
+				result.put("data", ShopOrderList);
+				return result;
+			}
+			List<Integer> idList = new ArrayList<Integer>();
+			for(ShopUseraddress sp : shopUseraddressList){
+				idList.add(sp.getId());
+			}
+			wrapper.in("addressid", idList);
+		}
+		if(!StringUtil.isEmpty(ordertel)){
+			List<ShopUseraddress> shopUseraddressList = this_ShopUseraddressService
+					.selectList(new EntityWrapper<ShopUseraddress>().eq("tel", ordertel));
+			if (shopUseraddressList.size() == 0) {
+				result.put("total", 0);
+				result.put("data", ShopOrderList);
+				return result;
+			}
+			List<Integer> idList = new ArrayList<Integer>();
+			for(ShopUseraddress sp : shopUseraddressList){
+				idList.add(sp.getId());
+			}
+			wrapper.in("addressid", idList);
+		}
+		
+		if (!StringUtil.isEmpty(datemin) && StringUtil.isEmpty(datemax)) {
+			wrapper.like("uptime", datemin);
+		}
+		if (StringUtil.isEmpty(datemin) && !StringUtil.isEmpty(datemax)) {
+			wrapper.like("uptime", datemax);
+		}
+		if (!StringUtil.isEmpty(datemin) && !StringUtil.isEmpty(datemax)) {
+			wrapper.between("uptime", datemin + Const.DateSearch.START_TIME,
+					datemax + Const.DateSearch.END_TIME);
+		}
+
+		ShopOrderList=this_ShopOrderService.selectPage(
+				new Page<ShopOrder>(page,pagesizes),
+				wrapper.orderBy("id", false)//根据id倒序输出
+				).getRecords();	
+		// 填充前台所需信息
+		for(ShopOrder order : ShopOrderList){
+			ShopUseraddress address = this_ShopUseraddressService.selectById(order.getAddressid());
+			order.setUseraddress(address);
+			if (order.getUid() != null) {
+				order.setuName(this_SysUserService.selectById(order.getUid()).getName());
+			}
+		}
+			
+		int total=this_ShopOrderService.selectList(wrapper).size();		
+		result.put("total", total);
+		result.put("data", ShopOrderList);		
+		return result;
+	}
+	
+	
+	/***
+	 * 根据ids批量修改状态，此方法根据前端需要
+	 * 
+	 * @param ids 逗号拼接项
+	 * @return
+	 */
+	@RequestMapping("/BatchChangeStatus")
+	@ResponseBody
+	public Object BatchChangeStatus(HttpSession session, 
+			@RequestParam(value = "ids", required = true) String ids,
+			@RequestParam(value = "value", required = true) String value) {
+		
+		List<Integer> idList=new ArrayList<Integer>();
+		if(StringUtil.isNotEmpty(ids))
+		{
+			if (ids.contains("all,")) {
+				ids=ids.replace("all,", "");//checkbox全选的时候带入，要去掉
+			}			
+			String[] lsStrings=ids.split(",");			
+			for (String id : lsStrings) {
+				idList.add(Integer.parseInt(id));
+			}
+		}
+		for(Integer id : idList){
+			ShopOrder order = this_ShopOrderService.selectById(id);
+			// 完成
+			if (value.equals("b")) {
+				order.setCarrystatus("b");
+				order.setCarrytime(new Date());
+				//信用值加1
+				ShopUser user = this_ShopUserService.selectOne(new EntityWrapper<ShopUser>().eq("openid", order.getOpenid()));
+				user.setCredit(user.getCredit()+1);
+				this_ShopUserService.updateById(user);
+			}
+			// 退款
+			if (value.equals("d")) {
+				if (order.getPaystatus().equals("a")) {
+					return renderError("订单未支付不能执行退款操作");
+				}
+				// 恢复库存
+				this.restoreGood(order.getId());
+			}
+			// 取消
+			if (value.equals("c")) {
+				if (order.getPaystatus().equals("b")) {
+					return renderError("订单已支付不能取消操作");
+				}
+				// 恢复库存
+				this.restoreGood(order.getId());
+			}
+			order.setOrderstatus(value);
+			order.setOptime(new Date());
+			order.setUid(((SysUser)session.getAttribute(Const.lOGIN_SYSUSER)).getUid());
+			if(this_ShopOrderService.updateById(order)){
+				continue;
+			}else{
+				renderError("订单操作失败！");
+			}
+		}
+		return renderSuccess("订单操作成功！");		
+	}
+	
+	
+	/**
+	 * excel表导出
+	 * @param ids
+	 * @param response
+	 * @return
+	 * @throws IOException
+	 * @throws ParseException
+	 */
+	@RequestMapping(value = "ExportExcel", method = RequestMethod.GET)
+	@ResponseBody
+	public Object ExportExcel(
+			@RequestParam(value = "ids", required = true) String ids,
+			HttpServletResponse response) throws IOException, ParseException {
+		String fileName = "自提订单统计";
+		List<ShopOrder> shopOrderlist = this_ShopOrderService
+				.selectList(new EntityWrapper<ShopOrder>().in("id", ids).orderBy("id", false));
+
+		List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("sheetName", "订单信息");
+		listMap.add(map);
+		for (ShopOrder shopOrder : shopOrderlist) {
+			shopOrder.setUseraddress(this_ShopUseraddressService.selectById(shopOrder.getAddressid()));
+			Map<String, Object> mapValue = new HashMap<String, Object>();
+			mapValue.put("orderNum", shopOrder.getOrdernum());
+			mapValue.put("tMoney", shopOrder.getTmoney());
+			mapValue.put("freight", shopOrder.getFreight());
+			mapValue.put("liftfee", shopOrder.getLiftfee());
+			mapValue.put("userName", shopOrder.getUseraddress().getRealname());
+			mapValue.put("tel", shopOrder.getUseraddress().getTel());
+			mapValue.put("address", shopOrder.getUseraddress().getRealaddress());
+			mapValue.put("carryTime", recover(shopOrder.getUptime().toString()));
+			if (shopOrder.getPayway() == null) {
+				mapValue.put("payWay", "");
+			} else if (shopOrder.getPayway().equals("b")) {
+				mapValue.put("payWay", "货到付款");
+			} else if(shopOrder.getPayway().equals("a")){
+				mapValue.put("payWay", "微信支付");
+			}
+
+			if (shopOrder.getPaystatus().equals("a")) {
+				mapValue.put("payStatus", "未支付");
+			} else if (shopOrder.getPaystatus().equals("b")) {
+				mapValue.put("payStatus", "已支付");
+			}
+			mapValue.put("carryType", "自提");
+			if (shopOrder.getCarrystatus().equals("a")) {
+				mapValue.put("carrystatus", "未发货");
+			} else if (shopOrder.getCarrystatus().equals("b")) {
+				mapValue.put("carrystatus", "已发货");
+			}
+			if (shopOrder.getOrderstatus().equals("a")) {
+				mapValue.put("orderstatus", "未完成");
+			} else if (shopOrder.getOrderstatus().equals("b")) {
+				mapValue.put("orderstatus", "已完成");
+			} else if (shopOrder.getOrderstatus().equals("c")) {
+				mapValue.put("orderstatus", "已取消");
+			} else if (shopOrder.getOrderstatus().equals("d")) {
+				mapValue.put("orderstatus", "已退款");
+			}
+			listMap.add(mapValue);
+		}
+		String columnNames[] = { "订单编号", "总金额", "运费", "自提优惠", "用户姓名", "用户电话", "用户配货地址",
+				"下单时间", "支付方式", "支付状态",  "发货方式", "是否发货", "订单状态" };// 列名
+		String keys[] = { "orderNum","tMoney", "freight", "liftfee", "userName", "tel", "address", 
+				 "carryTime", "payWay", "payStatus", "carryType", "carrystatus", "orderstatus" };// map中的key
+		int line = 6; // 标题列宽度重新设置，列数从0开始
+		if (ExcelDownload(response, fileName, columnNames, keys, listMap, line)) {
+			return renderSuccess("导出成功");
+		} else {
+			return renderError("导出失败");
+		}
+	}
+	
+
+	/**
+	 * 订单页
+	 * @param modelAndView
+	 * @param orderNum
+	 * @return
+	 */
+	@RequestMapping(value = "/OrderDetailIndex")
+	public ModelAndView OrderDetailIndex(ModelAndView modelAndView,
+			@RequestParam(required=true, value="orderNum") String orderNum) {
+		modelAndView.addObject("url", "/CarryShopOrder/CarryShopOrderIndex.do");
+		modelAndView.addObject("orderNum", orderNum);
+		return modelAndView;
+	}
+	
+	/**
+	 * 订单商品详情页
+	 * @param orderNum
+	 * @param modelAndView
+	 * @return
+	 */
+	@RequestMapping(value="/getOrderList", method=RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> getOrderList(@RequestParam(required=true, value="orderNum") String orderNum){
+		ShopOrder order = this_ShopOrderService.selectOne(new EntityWrapper<ShopOrder>()
+				.eq("ordernum", orderNum));
+		List<ShopOrderdetail> orderDetailList = this_ShopOrderdetailService.selectList(new EntityWrapper<ShopOrderdetail>()
+				.eq("oid", order.getId()));
+		for(ShopOrderdetail sd : orderDetailList){
+			GoodsDetail good = this_GoodsDetailService.selectById(sd.getGid());
+			sd.setGoodSpec(this_SysDictService.selectById(good.getSpec()).getDictvalue());
+			sd.setGoodsDetail(good);
+			
+		}
+		Map<String, Object> result = new HashMap<String, Object>();
+		result.put("total", orderDetailList.size());
+		result.put("data", orderDetailList);	
+		return result;
+	}
+	
+	
+	/**
+	 * 导出pdf
+	 * @param ids
+	 * @param response
+	 * @return
+	 * @throws DocumentException
+	 * @throws IOException
+	 * @throws ParseException
+	 */
+	@RequestMapping(value="/exportPdf",method=RequestMethod.GET)
+	@ResponseBody
+	public Object exportPdf(@RequestParam(value = "ids", required = true) String ids,
+			HttpServletResponse response) throws DocumentException, IOException, ParseException {
+		//设置页面编码格式
+        response.setContentType("text/plain;charaset=utf-8");
+        response.setContentType("application/vnd.ms-pdf");
+        response.setHeader("Content-Disposition", "attachment; filename=" + new String(("自提订单出货单.pdf").getBytes(), "iso-8859-1"));
+        //List集合
+        List<PdfBean> list = new ArrayList<PdfBean>();
+        // 通过id获取订单
+        List<ShopOrder> shopOrderslist = this_ShopOrderService
+				.selectList(new EntityWrapper<ShopOrder>().in("id", ids).orderBy("id", false));
+        for (ShopOrder order : shopOrderslist) {
+        	// 订单信息
+			PdfBean bean = new PdfBean();
+			bean.setOrderNum(order.getOrdernum().trim());
+			bean.setUpDate(recover(order.getUptime().toString()).trim());
+			bean.setTotalPrice(order.getTmoney().toString().trim());
+			bean.setFreight(order.getFreight().toString().trim());
+			bean.setLiftFee(order.getLiftfee().toString().trim());
+			ShopUseraddress address = this_ShopUseraddressService.selectById(order.getAddressid());
+			bean.setName(address.getRealname().trim());
+			bean.setTel(address.getTel().trim());
+			bean.setAddress(address.getRealaddress().trim());
+			if (order.getPaystatus().equals("a")) {
+				bean.setPaystatus("未支付");
+			} else if (order.getPaystatus().equals("b")) {
+				bean.setPaystatus("已支付");
+			}
+			if(order.getPayway().equals("a")){
+				bean.setPayway("微信支付");
+			} else if(order.getPayway().equals("b")){
+				bean.setPayway("货到付款");
+			}
+			// 商品信息
+			List<PdfGood> goodList = new ArrayList<PdfGood>();
+			List<ShopOrderdetail> shopOrderdetailList = this_ShopOrderdetailService
+					.selectList(new EntityWrapper<ShopOrderdetail>().eq("oid", order.getId()));
+			for (ShopOrderdetail Orderdetail : shopOrderdetailList) {
+				GoodsDetail good = this_GoodsDetailService.selectById(Orderdetail.getGid());
+				PdfGood pdfGood = new PdfGood();
+				pdfGood.setName(good.getGoodsname());
+				pdfGood.setSpec(this_SysDictService.selectById(good.getSpec()).getDictvalue());
+				pdfGood.setNumAndPrice(Orderdetail.getGnum() + "*" + Orderdetail.getRealprice());
+				pdfGood.setTotalPrice(BigDecimalUtil.mul(Orderdetail.getRealprice(), Orderdetail.getGnum()).toString());
+				goodList.add(pdfGood);
+			}
+			bean.setGoodList(goodList);
+			list.add(bean);
+		}
+        PdfUtil export = new PdfUtil();
+        ByteArrayOutputStream baos = export.exportPdf("a", list);
+        response.setContentLength(baos.size());
+        OutputStream out = response.getOutputStream();
+        baos.writeTo(out);
+        baos.close();
+        out.close();
+        return renderSuccess();
+    }
+	
+	/**
+	 * 恢复库存
+	 * @param orderId
+	 */
+	private void restoreGood(Integer orderId){
+		// 恢复库存
+		List<ShopOrderdetail> orderItemList = this_ShopOrderdetailService.selectList(
+				new EntityWrapper<ShopOrderdetail>().eq("oid", orderId));
+		for (ShopOrderdetail orderItem : orderItemList) {
+			GoodsDetail good = this_GoodsDetailService.selectById(orderItem.getGid());
+			good.setKucun(good.getKucun() + orderItem.getGnum());
+			this_GoodsDetailService.updateById(good);
+		}
+	}
+}

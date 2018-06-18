@@ -1,0 +1,18 @@
+package org.nwnu.system.mapper;
+
+import org.nwnu.system.entity.ShopOrder;
+import com.baomidou.mybatisplus.mapper.BaseMapper;
+
+/**
+ * <p>
+  * 客户订单 Mapper 接口
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-21
+ */
+public interface ShopOrderMapper extends BaseMapper<ShopOrder> {
+	String getCode();
+	
+	ShopOrder getOrderByNum(String num);
+}

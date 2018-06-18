@@ -1,0 +1,19 @@
+package org.nwnu.system.mapper;
+
+import org.apache.ibatis.annotations.Param;
+import org.nwnu.system.entity.GoodsPref;
+
+import com.baomidou.mybatisplus.mapper.BaseMapper;
+
+/**
+ * <p>
+  * 商品优惠 Mapper 接口
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-21
+ */
+public interface GoodsPrefMapper extends BaseMapper<GoodsPref> {
+	
+	GoodsPref getPrefPrice(@Param("id") Integer id, @Param("num") Integer num);
+}

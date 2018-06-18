@@ -1,0 +1,669 @@
+package org.nwnu.system.controller;
+
+
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.plugins.Page;
+
+import org.nwnu.system.entity.ShopOrder;
+import org.nwnu.system.entity.ShopOrderdetail;
+import org.nwnu.system.entity.ShopUseraddress;
+import org.nwnu.system.service.GoodsDetailService;
+import org.nwnu.system.service.ShopOrderService;
+import org.nwnu.system.service.ShopOrderdetailService;
+import org.nwnu.system.service.ShopUseraddressService;
+import org.nwnu.system.service.SysUserService;
+import org.nwnu.base.controller.BaseController;//基础包
+import org.nwnu.pub.util.Const;
+import org.nwnu.pub.util.StringUtil;//自定义字符串处理类，如果没有就取掉
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * <p>
+ * 客户订单 前端控制器
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-22
+ */
+@Controller
+@RequestMapping("/ShopOrder")
+public class ShopOrderController extends BaseController {
+	@Autowired
+	private ShopOrderService this_ShopOrderService;
+	@Autowired
+	private ShopOrderdetailService this_ShopOrderdetailService;
+	@Autowired
+	private GoodsDetailService this_GoodsDetailService;
+	@Autowired
+	private ShopUseraddressService this_ShopUseraddressService;
+	@Autowired
+	private SysUserService this_SysUserService;	
+	
+	/***
+	 * 全部订单的首页
+	 * 	 
+	 */
+	@RequestMapping(value = "/ShopOrderIndex")
+	public ModelAndView ShopOrderIndex(ModelAndView modelAndView) {
+		return modelAndView;
+	}
+	
+	/***
+	 * 已完成订单的首页
+	 * 	 
+	 */
+	@RequestMapping(value = "/CompShopOrderIndex")
+	public ModelAndView CompShopOrderIndex(ModelAndView modelAndView) {
+		return modelAndView;
+	}
+	
+	/***
+	 * 未完成订单的首页
+	 * 	 
+	 */
+	@RequestMapping(value = "/NoCompShopOrderIndex")
+	public ModelAndView NoCompShopOrderIndex(ModelAndView modelAndView) {
+		return modelAndView;
+	}
+	
+	/***
+	 * 已取消的首页
+	 * 	 
+	 */
+	@RequestMapping(value = "/CannelShopOrderIndex")
+	public ModelAndView CannelShopOrderIndex(ModelAndView modelAndView) {
+		return modelAndView;
+	}
+	
+	/***
+	 * 已退款订单的首页
+	 * 	 
+	 */
+	@RequestMapping(value = "/RefundsShopOrderIndex")
+	public ModelAndView RefundsShopOrderIndex(ModelAndView modelAndView) {
+		return modelAndView;
+	}
+
+	/***
+	 * 全部订单列表
+	 * 
+	 * @param 
+	 * @param page
+	 *            起始页
+	 * @param rows
+	 *            页面大小 * @param sort 排序字段 * @param rows 排序顺序
+	 * @return
+	 */
+	@RequestMapping(value = "/List", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> GetList(
+			@RequestParam(required = false, defaultValue = "1") int page,
+			@RequestParam(required = false, defaultValue = "10") int pagesizes,
+			@RequestParam(required = false, defaultValue = "") String orderNum,
+			@RequestParam(required = false, defaultValue = "") String userName,
+			@RequestParam(required = false, defaultValue = "") String ordertel,
+			@RequestParam(required = false, defaultValue = "") String datemin,
+			@RequestParam(required = false, defaultValue = "") String datemax) {
+		EntityWrapper<ShopOrder> wrapper=new EntityWrapper<ShopOrder>();
+		Map<String, Object> result = new HashMap<String, Object>();	
+		List<ShopOrder> ShopOrderList = new ArrayList<ShopOrder>();
+		
+		//如果有查询条件，此处需要构造查询warpper
+		//例如wrapper.eq();		
+		
+		// 查询操作
+		if(!StringUtil.isEmpty(orderNum)){
+			wrapper.eq("ordernum", orderNum);
+		}
+		if(!StringUtil.isEmpty(userName)){
+			List<ShopUseraddress> shopUseraddressList = this_ShopUseraddressService
+					.selectList(new EntityWrapper<ShopUseraddress>().like("realname", userName));
+			if (shopUseraddressList.size() == 0) {
+				result.put("total", 0);
+				result.put("data", ShopOrderList);
+				return result;
+			}
+			List<Integer> idList = new ArrayList<Integer>();
+			for(ShopUseraddress sp : shopUseraddressList){
+				idList.add(sp.getId());
+			}
+			wrapper.in("addressid", idList);
+		}
+		if(!StringUtil.isEmpty(ordertel)){
+			List<ShopUseraddress> shopUseraddressList = this_ShopUseraddressService
+					.selectList(new EntityWrapper<ShopUseraddress>().eq("tel", ordertel));
+			if (shopUseraddressList.size() == 0) {
+				result.put("total", 0);
+				result.put("data", ShopOrderList);
+				return result;
+			}
+			List<Integer> idList = new ArrayList<Integer>();
+			for(ShopUseraddress sp : shopUseraddressList){
+				idList.add(sp.getId());
+			}
+			wrapper.in("addressid", idList);
+		}
+		
+		if (!StringUtil.isEmpty(datemin) && StringUtil.isEmpty(datemax)) {
+			wrapper.like("uptime", datemin);
+		}
+		if (StringUtil.isEmpty(datemin) && !StringUtil.isEmpty(datemax)) {
+			wrapper.like("uptime", datemax);
+		}
+		if (!StringUtil.isEmpty(datemin) && !StringUtil.isEmpty(datemax)) {
+			wrapper.between("uptime", datemin + Const.DateSearch.START_TIME,
+					datemax + Const.DateSearch.END_TIME);
+		}
+		
+		ShopOrderList=this_ShopOrderService.selectPage(
+				new Page<ShopOrder>(page,pagesizes),
+				wrapper.orderBy("id", false)//根据id倒序输出
+				).getRecords();
+		// 填充前台所需信息
+		for(ShopOrder order : ShopOrderList){
+			ShopUseraddress address = this_ShopUseraddressService.selectById(order.getAddressid());
+			order.setUseraddress(address);
+			if (order.getUid() != null) {
+				order.setuName(this_SysUserService.selectById(order.getUid()).getName());
+			}
+		}
+		int total=this_ShopOrderService.selectList(wrapper).size();		
+		result.put("total", total);
+		result.put("data", ShopOrderList);		
+		return result;
+	}
+
+	/***
+	 * 根据ids批量删除，此方法根据前端需要
+	 * 
+	 * @param ids 逗号拼接项
+	 * @return
+	 */
+	@RequestMapping("/BatchDelete")
+	@ResponseBody
+	public Object BatchDelete(@RequestParam(value = "ids", required = true) String ids) {
+		List<Integer> idList=new ArrayList<Integer>();
+		List<Integer> oidList=new ArrayList<Integer>();
+		if(StringUtil.isNotEmpty(ids))
+		{
+			if (ids.contains("all,")) {
+				ids=ids.replace("all,", "");//checkbox全选的时候带入，要去掉
+			}			
+			String[] lsStrings=ids.split(",");			
+			for (String id : lsStrings) {
+				idList.add(Integer.parseInt(id));
+			}
+			List<ShopOrderdetail> shopOrderdetailList = this_ShopOrderdetailService
+					.selectList(new EntityWrapper<ShopOrderdetail>().in("oid", idList));
+			for(ShopOrderdetail sd : shopOrderdetailList){
+				oidList.add(sd.getId());
+			}
+			boolean a = this_ShopOrderService.deleteBatchIds(idList);
+			boolean b = this_ShopOrderdetailService.deleteBatchIds(oidList);
+			if(a && b){
+				return renderSuccess("删除成功");
+			}else{
+				return renderError("删除失败");
+			}
+		}else{
+			return renderError("请选择需要删除的数据");
+		}
+	}
+	
+	/**
+	 * excel表导出
+	 * @param ids
+	 * @param response
+	 * @return
+	 * @throws IOException
+	 * @throws ParseException
+	 */
+	@RequestMapping(value = "ExportExcel", method = RequestMethod.GET)
+	@ResponseBody
+	public Object ExportExcel(
+			@RequestParam(value = "ids", required = true) String ids,
+			@RequestParam(value = "type", required = true) String type,
+			HttpServletResponse response) throws IOException, ParseException {
+		Map<String, String> fileNameMap = new HashMap<String, String>();
+		fileNameMap.put("a", "未完成订单统计");
+		fileNameMap.put("b", "已完成订单统计");
+		fileNameMap.put("c", "已取消订单统计");
+		fileNameMap.put("d", "已退款订单统计");
+		fileNameMap.put("e", "全部订单统计");
+		String fileName = fileNameMap.get(type);
+		List<ShopOrder> shopOrderlist = this_ShopOrderService
+				.selectList(new EntityWrapper<ShopOrder>().in("id", ids).orderBy("id", false));
+
+		List<Map<String, Object>> listMap = new ArrayList<Map<String, Object>>();
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("sheetName", "订单信息");
+		listMap.add(map);
+		for (ShopOrder shopOrder : shopOrderlist) {
+			shopOrder.setUseraddress(this_ShopUseraddressService.selectById(shopOrder.getAddressid()));
+			Map<String, Object> mapValue = new HashMap<String, Object>();
+			mapValue.put("orderNum", shopOrder.getOrdernum());
+			mapValue.put("tMoney", shopOrder.getTmoney());
+			mapValue.put("freight", shopOrder.getFreight());
+			mapValue.put("liftfee", shopOrder.getLiftfee());
+			mapValue.put("userName", shopOrder.getUseraddress().getRealname());
+			mapValue.put("tel", shopOrder.getUseraddress().getTel());
+			mapValue.put("address", shopOrder.getUseraddress().getRealaddress());
+			mapValue.put("carryTime", recover(shopOrder.getUptime().toString()));
+			if (shopOrder.getPayway() == null) {
+				mapValue.put("payWay", "");
+			} else if (shopOrder.getPayway().equals("b")) {
+				mapValue.put("payWay", "货到付款");
+			} else if(shopOrder.getPayway().equals("a")){
+				mapValue.put("payWay", "微信支付");
+			}
+
+			if (shopOrder.getPaystatus().equals("a")) {
+				mapValue.put("payStatus", "未支付");
+			} else if (shopOrder.getPaystatus().equals("b")) {
+				mapValue.put("payStatus", "已支付");
+			}
+			mapValue.put("carryType", "自提");
+			if (shopOrder.getCarrystatus().equals("a")) {
+				mapValue.put("carrystatus", "未发货");
+			} else if (shopOrder.getCarrystatus().equals("b")) {
+				mapValue.put("carrystatus", "已发货");
+			}
+			if (shopOrder.getOrderstatus().equals("a")) {
+				mapValue.put("orderstatus", "未完成");
+			} else if (shopOrder.getOrderstatus().equals("b")) {
+				mapValue.put("orderstatus", "已完成");
+			} else if (shopOrder.getOrderstatus().equals("c")) {
+				mapValue.put("orderstatus", "已取消");
+			} else if (shopOrder.getOrderstatus().equals("d")) {
+				mapValue.put("orderstatus", "已退款");
+			}
+			listMap.add(mapValue);
+		}
+		String columnNames[] = { "订单编号", "总金额", "运费", "自提优惠", "用户姓名", "用户电话", "用户配货地址",
+				"下单时间", "支付方式", "支付状态",  "发货方式", "是否发货", "订单状态" };// 列名
+		String keys[] = { "orderNum","tMoney", "freight", "liftfee", "userName", "tel", "address", 
+				 "carryTime", "payWay", "payStatus", "carryType", "carrystatus", "orderstatus" };// map中的key
+		int line = 6; // 标题列宽度重新设置，列数从0开始
+		if (ExcelDownload(response, fileName, columnNames, keys, listMap, line)) {
+			return renderSuccess("导出成功");
+		} else {
+			return renderError("导出失败");
+		}
+	}
+	
+	/***
+	 * 已完成订单列表
+	 * 
+	 * @param 
+	 * @param page
+	 *            起始页
+	 * @param rows
+	 *            页面大小 * @param sort 排序字段 * @param rows 排序顺序
+	 * @return
+	 */
+	@RequestMapping(value = "/CompList", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> GetCompList(
+			@RequestParam(required = false, defaultValue = "1") int page,
+			@RequestParam(required = false, defaultValue = "10") int pagesizes,
+			@RequestParam(required = false, defaultValue = "") String orderNum,
+			@RequestParam(required = false, defaultValue = "") String userName,
+			@RequestParam(required = false, defaultValue = "") String ordertel,
+			@RequestParam(required = false, defaultValue = "") String datemin,
+			@RequestParam(required = false, defaultValue = "") String datemax) {
+		EntityWrapper<ShopOrder> wrapper=new EntityWrapper<ShopOrder>();
+		Map<String, Object> result = new HashMap<String, Object>();	
+		List<ShopOrder> ShopOrderList = new ArrayList<ShopOrder>();
+		
+		//如果有查询条件，此处需要构造查询warpper
+		//条件：已完成	
+		wrapper.eq("orderstatus", "b");
+		// 查询操作
+		if(!StringUtil.isEmpty(orderNum)){
+			wrapper.eq("ordernum", orderNum);
+		}
+		if(!StringUtil.isEmpty(userName)){
+			List<ShopUseraddress> shopUseraddressList = this_ShopUseraddressService
+					.selectList(new EntityWrapper<ShopUseraddress>().like("realname", userName));
+			if (shopUseraddressList.size() == 0) {
+				result.put("total", 0);
+				result.put("data", ShopOrderList);
+				return result;
+			}
+			List<Integer> idList = new ArrayList<Integer>();
+			for(ShopUseraddress sp : shopUseraddressList){
+				idList.add(sp.getId());
+			}
+			wrapper.in("addressid", idList);
+		}
+		if(!StringUtil.isEmpty(ordertel)){
+			List<ShopUseraddress> shopUseraddressList = this_ShopUseraddressService
+					.selectList(new EntityWrapper<ShopUseraddress>().eq("tel", ordertel));
+			if (shopUseraddressList.size() == 0) {
+				result.put("total", 0);
+				result.put("data", ShopOrderList);
+				return result;
+			}
+			List<Integer> idList = new ArrayList<Integer>();
+			for(ShopUseraddress sp : shopUseraddressList){
+				idList.add(sp.getId());
+			}
+			wrapper.in("addressid", idList);
+		}
+		
+		if (!StringUtil.isEmpty(datemin) && StringUtil.isEmpty(datemax)) {
+			wrapper.like("uptime", datemin);
+		}
+		if (StringUtil.isEmpty(datemin) && !StringUtil.isEmpty(datemax)) {
+			wrapper.like("uptime", datemax);
+		}
+		if (!StringUtil.isEmpty(datemin) && !StringUtil.isEmpty(datemax)) {
+			wrapper.between("uptime", datemin + Const.DateSearch.START_TIME,
+					datemax + Const.DateSearch.END_TIME);
+		}
+		
+		ShopOrderList=this_ShopOrderService.selectPage(
+				new Page<ShopOrder>(page,pagesizes),
+				wrapper.orderBy("id", false)//根据id倒序输出
+				).getRecords();
+		// 填充前台所需信息
+		for(ShopOrder order : ShopOrderList){
+			ShopUseraddress address = this_ShopUseraddressService.selectById(order.getAddressid());
+			order.setUseraddress(address);
+			if (order.getUid() != null) {
+				order.setuName(this_SysUserService.selectById(order.getUid()).getName());
+			}
+		}
+		int total=this_ShopOrderService.selectList(wrapper).size();		
+		result.put("total", total);
+		result.put("data", ShopOrderList);		
+		return result;
+	}
+	
+	/***
+	 * 未完成订单列表
+	 * 
+	 * @param 
+	 * @param page
+	 *            起始页
+	 * @param rows
+	 *            页面大小 * @param sort 排序字段 * @param rows 排序顺序
+	 * @return
+	 */
+	@RequestMapping(value = "/NoCompList", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> GetNoCompList(
+			@RequestParam(required = false, defaultValue = "1") int page,
+			@RequestParam(required = false, defaultValue = "10") int pagesizes,
+			@RequestParam(required = false, defaultValue = "") String orderNum,
+			@RequestParam(required = false, defaultValue = "") String userName,
+			@RequestParam(required = false, defaultValue = "") String ordertel,
+			@RequestParam(required = false, defaultValue = "") String datemin,
+			@RequestParam(required = false, defaultValue = "") String datemax) {
+		EntityWrapper<ShopOrder> wrapper=new EntityWrapper<ShopOrder>();
+		Map<String, Object> result = new HashMap<String, Object>();	
+		List<ShopOrder> ShopOrderList = new ArrayList<ShopOrder>();
+		
+		//如果有查询条件，此处需要构造查询warpper
+		//条件：未完成	
+		wrapper.eq("orderstatus", "a");
+		// 查询操作
+		if(!StringUtil.isEmpty(orderNum)){
+			wrapper.eq("ordernum", orderNum);
+		}
+		if(!StringUtil.isEmpty(userName)){
+			List<ShopUseraddress> shopUseraddressList = this_ShopUseraddressService
+					.selectList(new EntityWrapper<ShopUseraddress>().like("realname", userName));
+			if (shopUseraddressList.size() == 0) {
+				result.put("total", 0);
+				result.put("data", ShopOrderList);
+				return result;
+			}
+			List<Integer> idList = new ArrayList<Integer>();
+			for(ShopUseraddress sp : shopUseraddressList){
+				idList.add(sp.getId());
+			}
+			wrapper.in("addressid", idList);
+		}
+		if(!StringUtil.isEmpty(ordertel)){
+			List<ShopUseraddress> shopUseraddressList = this_ShopUseraddressService
+					.selectList(new EntityWrapper<ShopUseraddress>().eq("tel", ordertel));
+			if (shopUseraddressList.size() == 0) {
+				result.put("total", 0);
+				result.put("data", ShopOrderList);
+				return result;
+			}
+			List<Integer> idList = new ArrayList<Integer>();
+			for(ShopUseraddress sp : shopUseraddressList){
+				idList.add(sp.getId());
+			}
+			wrapper.in("addressid", idList);
+		}
+		
+		if (!StringUtil.isEmpty(datemin) && StringUtil.isEmpty(datemax)) {
+			wrapper.like("uptime", datemin);
+		}
+		if (StringUtil.isEmpty(datemin) && !StringUtil.isEmpty(datemax)) {
+			wrapper.like("uptime", datemax);
+		}
+		if (!StringUtil.isEmpty(datemin) && !StringUtil.isEmpty(datemax)) {
+			wrapper.between("uptime", datemin + Const.DateSearch.START_TIME,
+					datemax + Const.DateSearch.END_TIME);
+		}
+		
+		ShopOrderList=this_ShopOrderService.selectPage(
+				new Page<ShopOrder>(page,pagesizes),
+				wrapper.orderBy("id", false)//根据id倒序输出
+				).getRecords();
+		// 填充前台所需信息
+		for(ShopOrder order : ShopOrderList){
+			ShopUseraddress address = this_ShopUseraddressService.selectById(order.getAddressid());
+			order.setUseraddress(address);
+			if (order.getUid() != null) {
+				order.setuName(this_SysUserService.selectById(order.getUid()).getName());
+			}
+		}
+		int total=this_ShopOrderService.selectList(wrapper).size();		
+		result.put("total", total);
+		result.put("data", ShopOrderList);		
+		return result;
+	}
+	
+	
+	
+	/***
+	 * 已取消订单列表
+	 * 
+	 * @param 
+	 * @param page
+	 *            起始页
+	 * @param rows
+	 *            页面大小 * @param sort 排序字段 * @param rows 排序顺序
+	 * @return
+	 */
+	@RequestMapping(value = "/CannelList", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> GetCannelList(
+			@RequestParam(required = false, defaultValue = "1") int page,
+			@RequestParam(required = false, defaultValue = "10") int pagesizes,
+			@RequestParam(required = false, defaultValue = "") String orderNum,
+			@RequestParam(required = false, defaultValue = "") String userName,
+			@RequestParam(required = false, defaultValue = "") String ordertel,
+			@RequestParam(required = false, defaultValue = "") String datemin,
+			@RequestParam(required = false, defaultValue = "") String datemax) {
+		EntityWrapper<ShopOrder> wrapper=new EntityWrapper<ShopOrder>();
+		Map<String, Object> result = new HashMap<String, Object>();	
+		List<ShopOrder> ShopOrderList = new ArrayList<ShopOrder>();
+		
+		//如果有查询条件，此处需要构造查询warpper
+		//条件：已取消	
+		wrapper.eq("orderstatus", "c");
+		// 查询操作
+		if(!StringUtil.isEmpty(orderNum)){
+			wrapper.eq("ordernum", orderNum);
+		}
+		if(!StringUtil.isEmpty(userName)){
+			List<ShopUseraddress> shopUseraddressList = this_ShopUseraddressService
+					.selectList(new EntityWrapper<ShopUseraddress>().like("realname", userName));
+			if (shopUseraddressList.size() == 0) {
+				result.put("total", 0);
+				result.put("data", ShopOrderList);
+				return result;
+			}
+			List<Integer> idList = new ArrayList<Integer>();
+			for(ShopUseraddress sp : shopUseraddressList){
+				idList.add(sp.getId());
+			}
+			wrapper.in("addressid", idList);
+		}
+		if(!StringUtil.isEmpty(ordertel)){
+			List<ShopUseraddress> shopUseraddressList = this_ShopUseraddressService
+					.selectList(new EntityWrapper<ShopUseraddress>().eq("tel", ordertel));
+			if (shopUseraddressList.size() == 0) {
+				result.put("total", 0);
+				result.put("data", ShopOrderList);
+				return result;
+			}
+			List<Integer> idList = new ArrayList<Integer>();
+			for(ShopUseraddress sp : shopUseraddressList){
+				idList.add(sp.getId());
+			}
+			wrapper.in("addressid", idList);
+		}
+		
+		if (!StringUtil.isEmpty(datemin) && StringUtil.isEmpty(datemax)) {
+			wrapper.like("uptime", datemin);
+		}
+		if (StringUtil.isEmpty(datemin) && !StringUtil.isEmpty(datemax)) {
+			wrapper.like("uptime", datemax);
+		}
+		if (!StringUtil.isEmpty(datemin) && !StringUtil.isEmpty(datemax)) {
+			wrapper.between("uptime", datemin + Const.DateSearch.START_TIME,
+					datemax + Const.DateSearch.END_TIME);
+		}
+		
+		ShopOrderList=this_ShopOrderService.selectPage(
+				new Page<ShopOrder>(page,pagesizes),
+				wrapper.orderBy("id", false)//根据id倒序输出
+				).getRecords();
+		// 填充前台所需信息
+		for(ShopOrder order : ShopOrderList){
+			ShopUseraddress address = this_ShopUseraddressService.selectById(order.getAddressid());
+			order.setUseraddress(address);
+			if (order.getUid() != null) {
+				order.setuName(this_SysUserService.selectById(order.getUid()).getName());
+			}
+		}
+		int total=this_ShopOrderService.selectList(wrapper).size();		
+		result.put("total", total);
+		result.put("data", ShopOrderList);		
+		return result;
+	}
+	
+	/***
+	 * 已退款订单列表
+	 * 
+	 * @param 
+	 * @param page
+	 *            起始页
+	 * @param rows
+	 *            页面大小 * @param sort 排序字段 * @param rows 排序顺序
+	 * @return
+	 */
+	@RequestMapping(value = "/RefundsList", method = RequestMethod.GET)
+	@ResponseBody
+	public Map<String, Object> GetRefundsList(
+			@RequestParam(required = false, defaultValue = "1") int page,
+			@RequestParam(required = false, defaultValue = "10") int pagesizes,
+			@RequestParam(required = false, defaultValue = "") String orderNum,
+			@RequestParam(required = false, defaultValue = "") String userName,
+			@RequestParam(required = false, defaultValue = "") String ordertel,
+			@RequestParam(required = false, defaultValue = "") String datemin,
+			@RequestParam(required = false, defaultValue = "") String datemax) {
+		EntityWrapper<ShopOrder> wrapper=new EntityWrapper<ShopOrder>();
+		Map<String, Object> result = new HashMap<String, Object>();	
+		List<ShopOrder> ShopOrderList = new ArrayList<ShopOrder>();
+		
+		//如果有查询条件，此处需要构造查询warpper
+		//条件：已完成	
+		wrapper.eq("orderstatus", "d");
+		// 查询操作
+		if(!StringUtil.isEmpty(orderNum)){
+			wrapper.eq("ordernum", orderNum);
+		}
+		if(!StringUtil.isEmpty(userName)){
+			List<ShopUseraddress> shopUseraddressList = this_ShopUseraddressService
+					.selectList(new EntityWrapper<ShopUseraddress>().like("realname", userName));
+			if (shopUseraddressList.size() == 0) {
+				result.put("total", 0);
+				result.put("data", ShopOrderList);
+				return result;
+			}
+			List<Integer> idList = new ArrayList<Integer>();
+			for(ShopUseraddress sp : shopUseraddressList){
+				idList.add(sp.getId());
+			}
+			wrapper.in("addressid", idList);
+		}
+		if(!StringUtil.isEmpty(ordertel)){
+			List<ShopUseraddress> shopUseraddressList = this_ShopUseraddressService
+					.selectList(new EntityWrapper<ShopUseraddress>().eq("tel", ordertel));
+			if (shopUseraddressList.size() == 0) {
+				result.put("total", 0);
+				result.put("data", ShopOrderList);
+				return result;
+			}
+			List<Integer> idList = new ArrayList<Integer>();
+			for(ShopUseraddress sp : shopUseraddressList){
+				idList.add(sp.getId());
+			}
+			wrapper.in("addressid", idList);
+		}
+		
+		if (!StringUtil.isEmpty(datemin) && StringUtil.isEmpty(datemax)) {
+			wrapper.like("uptime", datemin);
+		}
+		if (StringUtil.isEmpty(datemin) && !StringUtil.isEmpty(datemax)) {
+			wrapper.like("uptime", datemax);
+		}
+		if (!StringUtil.isEmpty(datemin) && !StringUtil.isEmpty(datemax)) {
+			wrapper.between("uptime", datemin + Const.DateSearch.START_TIME,
+					datemax + Const.DateSearch.END_TIME);
+		}
+		
+		ShopOrderList=this_ShopOrderService.selectPage(
+				new Page<ShopOrder>(page,pagesizes),
+				wrapper.orderBy("id", false)//根据id倒序输出
+				).getRecords();
+		// 填充前台所需信息
+		for(ShopOrder order : ShopOrderList){
+			ShopUseraddress address = this_ShopUseraddressService.selectById(order.getAddressid());
+			order.setUseraddress(address);
+			if (order.getUid() != null) {
+				order.setuName(this_SysUserService.selectById(order.getUid()).getName());
+			}
+		}
+		int total=this_ShopOrderService.selectList(wrapper).size();		
+		result.put("total", total);
+		result.put("data", ShopOrderList);		
+		return result;
+	}
+	
+}

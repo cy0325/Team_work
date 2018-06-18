@@ -1,0 +1,46 @@
+package org.nwnu.system.entity;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+public class CartVo {
+	
+	private List<CartGoodVo> cartGoodVoList;
+	private BigDecimal cartTotalPrice;
+	private BigDecimal carryPrice;
+	private BigDecimal distPrice;
+	private ShopUseraddress shopUseraddress;
+	
+	
+	public List<CartGoodVo> getCartGoodVoList() {
+		return cartGoodVoList;
+	}
+	public void setCartGoodVoList(List<CartGoodVo> cartGoodVoList) {
+		this.cartGoodVoList = cartGoodVoList;
+	}
+	public BigDecimal getCartTotalPrice() {
+		return cartTotalPrice;
+	}
+	public void setCartTotalPrice(BigDecimal cartTotalPrice) {
+		this.cartTotalPrice = cartTotalPrice;
+	}
+	public BigDecimal getCarryPrice() {
+		return carryPrice;
+	}
+	public void setCarryPrice(BigDecimal carryPrice) {
+		this.carryPrice = carryPrice;
+	}
+	public BigDecimal getDistPrice() {
+		return distPrice;
+	}
+	public void setDistPrice(BigDecimal distPrice) {
+		this.distPrice = distPrice;
+	}
+	public ShopUseraddress getShopUseraddress() {
+		return shopUseraddress;
+	}
+	public void setShopUseraddress(ShopUseraddress shopUseraddress) {
+		this.shopUseraddress = shopUseraddress;
+	}
+
+}

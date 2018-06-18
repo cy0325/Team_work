@@ -1,0 +1,128 @@
+package org.nwnu.system.controller;
+
+
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.nwnu.base.controller.BaseController;
+import org.nwnu.system.entity.GoodsActivity;
+import org.nwnu.system.entity.GoodsDetail;
+import org.nwnu.system.entity.GoodsType;
+import org.nwnu.system.service.GoodsDetailService;
+import org.nwnu.system.service.GoodsTypeService;
+import org.nwnu.system.service.GoodsActivityService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.plugins.Page;
+
+
+@Controller
+@RequestMapping(value = "/Index")
+public class IndexController extends BaseController {
+	@Autowired
+	private GoodsTypeService this_GoodsTypeService;
+	@Autowired
+	private GoodsDetailService this_GoodsDetailService;
+	@Autowired
+	private GoodsActivityService this_GoodsActivityService;
+	/**
+	 * 首页
+	 * @param modelAndView
+	 * @return
+	 */
+    @RequestMapping(value = "/index", method = RequestMethod.GET)
+    public ModelAndView main(ModelAndView modelAndView) {
+    	modelAndView.addObject("goodsActivity", getActivity());
+    	modelAndView.addObject("goodsMenu", getMenu());
+    	modelAndView.addObject("newGoods",getNewGoods());
+    	modelAndView.addObject("hotGoods", getHotGoods());
+    	modelAndView.addObject("allGoods", getAllGoods());
+        return modelAndView;
+    }
+//	@RequestMapping(value = "/getdoodss", method = RequestMethod.POST)
+//	public void getdoodss(
+//			@RequestParam(required = false) Integer fid) {
+//		System.out.println("*******************************************"+fid);
+//		menuGoodsList = this_GoodsDetailService.selectList(new EntityWrapper<GoodsDetail>().eq("fid", fid));
+//	}
+    /**
+	 * 商品分类
+	 * @param modelAndView
+	 * @return
+	 */
+    @RequestMapping(value = "/sort", method = RequestMethod.GET)
+    public ModelAndView getSort(ModelAndView modelAndView,
+    		@RequestParam(value = "fid", required = false) Integer fid) {
+    	if(fid!=null){
+    		System.out.println("******************************************"+fid);
+    		modelAndView.addObject("menuGoods", this_GoodsDetailService.selectById(new EntityWrapper<GoodsDetail>().eq("fid", fid).orderBy("id", false)));
+    	}
+    	System.out.println("*******************************************");
+    	modelAndView.addObject("goodsMenu", getMenu());
+        return modelAndView;
+    }
+    
+    /**
+     * 活动
+     */
+    private List<GoodsActivity> getActivity(){
+    	List<GoodsActivity> goodsActivityList=this_GoodsActivityService.selectList(new EntityWrapper<GoodsActivity>().eq("status", "a").orderBy("id", false));
+    	return  goodsActivityList;
+    }
+    /**
+     * 大类
+     * @return
+     */
+    private List<GoodsType> getMenu(){
+		List<GoodsType> goodsTypeList=this_GoodsTypeService.selectList(new EntityWrapper<GoodsType>().eq("pid", "0").orderBy("sequence", true));
+		return goodsTypeList;
+    }
+    /**
+     * 新品商品
+     */
+    private List<GoodsDetail> getNewGoods(){
+    	List<GoodsDetail> newGoodsList=this_GoodsDetailService.selectList(
+    			new EntityWrapper<GoodsDetail>().eq("status","a").eq("newstatus", "a").orderBy("id", false));
+    	return newGoodsList;
+    }
+    /**
+     * 热卖商品
+     */
+    private List<GoodsDetail> getHotGoods(){
+    	List<GoodsDetail> hotGoodsList=this_GoodsDetailService.selectList(
+    			new EntityWrapper<GoodsDetail>().eq("status","a").eq("sellstatus", "a").orderBy("id", false));
+    	return hotGoodsList;
+    }
+    /**
+     * 所有商品
+     * @return
+     */
+    private List<GoodsDetail> getAllGoods(){
+    	List<GoodsDetail> allGoodsList=this_GoodsDetailService.selectList(
+    			new EntityWrapper<GoodsDetail>().eq("status","a").notIn("newstatus", "a").notIn("sellstatus", "a").orderBy("id", true));
+    	return allGoodsList;
+    }
+    /**
+     * 商品详细信息
+     */
+    private List<GoodsDetail> getDeatilGoods(){
+    	List<GoodsDetail> allGoodsList=this_GoodsDetailService.selectList(
+    			new EntityWrapper<GoodsDetail>().eq("status","a").notIn("newstatus", "a").notIn("sellstatus", "a").orderBy("id", true));
+    	return allGoodsList;
+    }
+}
+
+
+

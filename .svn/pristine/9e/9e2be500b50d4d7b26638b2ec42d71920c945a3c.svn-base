@@ -1,0 +1,84 @@
+package org.nwnu.system.weixin;
+
+import java.io.File;
+
+import org.apache.bcel.generic.RETURN;
+import org.nwnu.pub.util.WeixinUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import me.chanjar.weixin.common.exception.WxErrorException;
+import me.chanjar.weixin.mp.api.WxMpInMemoryConfigStorage;
+import me.chanjar.weixin.mp.api.WxMpService;
+import me.chanjar.weixin.mp.api.impl.WxMpServiceImpl;
+import me.chanjar.weixin.mp.bean.material.WxMpMaterial;
+import me.chanjar.weixin.mp.bean.material.WxMpMaterialNews;
+import me.chanjar.weixin.mp.bean.material.WxMpMaterialUploadResult;
+
+public class WeixinMaterial {
+	
+	@Autowired
+    private WxMpService wxService;
+	
+	public void init(){
+		WxMpInMemoryConfigStorage config = new WxMpInMemoryConfigStorage();
+		config.setAppId(WeixinUtil.AppID); // 设置微信公众号的appid
+		config.setSecret(WeixinUtil.AppSecret); // 设置微信公众号的app corpSecret
+		config.setToken(WeixinUtil.TOKEN); // 设置微信公众号的token
+		config.setAesKey(WeixinUtil.AESKey); // 设置微信公众号的EncodingAESKey
+
+		wxService = new WxMpServiceImpl();
+		wxService.setWxMpConfigStorage(config);
+	}
+
+	public WxMpMaterialUploadResult uploadImg(String filePath, String fileName){
+		WxMpMaterial wxMaterial = new WxMpMaterial();
+		wxMaterial.setFile(new File(filePath));
+		wxMaterial.setName(fileName);
+		try {
+			return wxService.getMaterialService().materialFileUpload("image", wxMaterial);
+		} catch (WxErrorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public WxMpMaterialUploadResult uploadNewSingle(String thumbMediaId){
+		WxMpMaterialNews wxMpMaterialNewsSingle = new WxMpMaterialNews();
+	    WxMpMaterialNews.WxMpMaterialNewsArticle mpMaterialNewsArticleSingle = 
+	    							new WxMpMaterialNews.WxMpMaterialNewsArticle();
+	    mpMaterialNewsArticleSingle.setAuthor("author");
+	    mpMaterialNewsArticleSingle.setThumbMediaId(thumbMediaId);
+	    mpMaterialNewsArticleSingle.setTitle("single title");
+	    mpMaterialNewsArticleSingle.setContent("single content");
+	    mpMaterialNewsArticleSingle.setContentSourceUrl("content url");
+	    mpMaterialNewsArticleSingle.setShowCoverPic(true);
+	    mpMaterialNewsArticleSingle.setDigest("single news");
+	    wxMpMaterialNewsSingle.addArticle(mpMaterialNewsArticleSingle);
+	    try {
+			return wxService.getMaterialService().materialNewsUpload(wxMpMaterialNewsSingle);
+		} catch (WxErrorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	    return null;
+	}
+	
+	public static void main(String[] args) {
+		
+		WeixinMaterial material = new WeixinMaterial();
+		material.init();
+		
+		/*WxMpMaterialUploadResult result = material.uploadImg("E:/ns/Ce04vK9UkAA_gAF.jpg", "pictest1");
+		System.out.println(result.getMediaId());
+		System.out.println(result.getUrl());*/
+		//sqZ86s8-x0w-vZtl2vsPIrV3DTfb4Ct87EUqjeJAhcY
+		//http://mmbiz.qpic.cn/mmbiz_jpg/k3vFoNIicZgTVdTqBXNstzagCcc2IzgEYfEz1YJT85nd2JtV8FIlzT9p6kFlic3ttNlkldicIvDPXEf7jh1fPeBFQ/0?wx_fmt=jpeg
+		
+		WxMpMaterialUploadResult result = material.uploadNewSingle("sqZ86s8-x0w-vZtl2vsPIrV3DTfb4Ct87EUqjeJAhcY");
+		System.out.println(result.getMediaId());
+		//System.out.println(result.getUrl()); //null
+		//"media_id":"sqZ86s8-x0w-vZtl2vsPItCao4hqSbrDlTfXuQMPEgI"
+		
+	}
+}

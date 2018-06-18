@@ -1,0 +1,98 @@
+package org.nwnu.system.weixin;
+
+import org.nwnu.pub.util.WeixinUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.alibaba.fastjson.JSONObject;
+
+import me.chanjar.weixin.common.api.WxConsts;
+import me.chanjar.weixin.common.bean.menu.WxMenu;
+import me.chanjar.weixin.common.bean.menu.WxMenuButton;
+import me.chanjar.weixin.common.exception.WxErrorException;
+import me.chanjar.weixin.mp.api.WxMpInMemoryConfigStorage;
+import me.chanjar.weixin.mp.api.WxMpMenuService;
+import me.chanjar.weixin.mp.api.WxMpService;
+import me.chanjar.weixin.mp.api.impl.WxMpServiceImpl;
+import me.chanjar.weixin.mp.bean.menu.WxMpGetSelfMenuInfoResult;
+import me.chanjar.weixin.mp.bean.menu.WxMpMenu;
+
+public class WeixinMenu{
+	
+	@Autowired
+    private WxMpService wxService;
+	
+	public void init(){
+		WxMpInMemoryConfigStorage config = new WxMpInMemoryConfigStorage();
+		config.setAppId(WeixinUtil.AppID); // 设置微信公众号的appid
+		config.setSecret(WeixinUtil.AppSecret); // 设置微信公众号的app corpSecret
+		config.setToken(WeixinUtil.TOKEN); // 设置微信公众号的token
+		config.setAesKey(WeixinUtil.AESKey); // 设置微信公众号的EncodingAESKey
+
+		wxService = new WxMpServiceImpl();
+		wxService.setWxMpConfigStorage(config);
+	}
+	
+	public void create(WxMenu menu){
+		try {
+			wxService.getMenuService().menuCreate(menu);
+		} catch (WxErrorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	public void delete(){
+		try {
+			wxService.getMenuService().menuDelete();
+		} catch (WxErrorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+/*	public static void main(String[] args) {
+		WxMenu menu = new WxMenu();
+        WxMenuButton button1 = new WxMenuButton();
+        button1.setType(WxConsts.BUTTON_CLICK);
+        button1.setName("今日歌曲");
+        button1.setKey("V1001_TODAY_MUSIC");
+
+//        WxMenuButton button2 = new WxMenuButton();
+//        button2.setType(WxConsts.BUTTON_MINIPROGRAM);
+//        button2.setName("小程序");
+//        button2.setAppId("wx286b93c14bbf93aa");
+//        button2.setPagePath("pages/lunar/index.html");
+//        button2.setUrl("http://mp.weixin.qq.com");
+
+        WxMenuButton button3 = new WxMenuButton();
+        button3.setName("菜单");
+
+        menu.getButtons().add(button1);
+//        menu.getButtons().add(button2);
+        menu.getButtons().add(button3);
+
+        WxMenuButton button31 = new WxMenuButton();
+        button31.setType(WxConsts.BUTTON_VIEW);
+        button31.setName("搜索");
+        button31.setUrl("http://www.soso.com/");
+
+        WxMenuButton button32 = new WxMenuButton();
+        button32.setType(WxConsts.BUTTON_VIEW);
+        button32.setName("视频");
+        button32.setUrl("http://v.qq.com/");
+
+        WxMenuButton button33 = new WxMenuButton();
+        button33.setType(WxConsts.BUTTON_CLICK);
+        button33.setName("赞一下我们");
+        button33.setKey("V1001_GOOD");
+
+        button3.getSubButtons().add(button31);
+        button3.getSubButtons().add(button32);
+        button3.getSubButtons().add(button33);
+
+        WeixinMenu weixinMenu = new WeixinMenu();
+        weixinMenu.init();
+    	System.out.println(JSONObject.toJSON(menu));
+    	weixinMenu.create(menu);
+		
+	}*/
+}

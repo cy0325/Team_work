@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>天鲜易购-活动</title>
+    <meta name="keywords" content="">
+    <meta name="description" content="">
+
+    <!--样式引入-->
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loaders.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loading.css"/>
+    <link href="/static/app/css/mui.min.css" rel="stylesheet">
+    <link href="/static/app/css/all.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/app/css/base.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/style.css"/>
+</head>
+
+<!--loading页开始-->
+<div class="loading">
+    <div class="loader">
+        <div class="loader-inner pacman">
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </div>
+</div>
+<!--loading页结束-->
+
+<body>
+
+    <header class="top-header fixed-header">
+        <a class="icona" href="javascript:history.go(-1)">
+            <img src="/static/app/images/left.png"/>
+        </a>
+        <h3>$!{act.name}</h3>
+    </header>
+        <!--主题类容-->
+    <div class="mui-content" id="main">
+
+        <!--活动轮播-->
+        <div class="banner swiper-container">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+	                <a href="javascript:void(0)">
+	                	<img class="swiper-lazy" data-src="$!{act.pic}" alt="$!{act.name}">
+	                </a>
+                </div>
+                
+                <div class="swiper-slide">
+	                <a href="javascript:void(0)">
+	                	<img class="swiper-lazy" data-src="$!{act.pic2}" alt="$!{act.name}">
+	                </a>
+                </div>
+            </div>
+            <div class="swiper-pagination"></div>
+        </div>
+
+        <!--产品列表-->
+        <div class="home-newgoods ui-box" style="margin-top: 0.1rem;">
+
+            <!--活动描述-->
+            <img class="home-imgtit" src="/static/app/img/intro.png" />
+            <div class="container">
+                <p>$!act.intro</p>
+            </div>
+
+        </div>
+
+        <div class="home-fashion ui-box ui-border-t">
+            <!--活动产品-->
+            <img class="home-imgtit" src="/static/app/img/allg.png" />
+            <div class="container">
+                <section class="list">
+                    <ul class="h-list">
+                    
+                    	#foreach($item in $goods)
+                        <li class="pic">
+                            <a href="/App/detail.do?id=$!{item.id}">
+                                <img class="col-3" src="$!item.pic1"/>
+                                <div class="col-9 mui-pull-right">
+                                    <p>$!item.goodsname</p>
+                                    <p class="vj-price">
+                                        <b>￥$!item.price</b>
+                                    </p>
+                                </div>
+                            </a>
+                            <button class="add-cart" title="加入购物车">
+                                加入购物车
+                            </button>
+                        </li>
+                        #end
+                        
+                    </ul>
+                </section>
+            </div>
+        </div>
+    </div>
+</body>
+
+<!--JS引入-->
+<script src="/static/app/js/fastclick.js"></script>
+<script src="/static/app/js/rem.js"></script>
+<script src="/static/app/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+
+<!--轮播插件-->
+<link rel="stylesheet" href="/static/app/js/swiper/swiper.min.css">
+<script src="/static/app/js/swiper/swiper.jquery.min.js"></script>
+<script src="/static/app/js/home.js"></script>
+
+<!--插件-->
+<script src="/static/app/js/alert.js"></script>
+<script >
+	$(window).load(function(){
+	    $(".loading").addClass("loader-chanage").fadeOut(300);
+	    compatible();
+	});
+	
+	$(window).resize(function() {
+	    compatible();
+	});
+	
+	function compatible() {
+	    var h = $("header").outerHeight(true);
+	    $("#main").css("marginTop", h + 0 + "px");
+	}
+
+    $(function () {
+        var banner = new Swiper('.banner',{
+            autoplay: 3000,
+            pagination : '.swiper-pagination',
+            paginationClickable: true,
+            lazyLoading : true,
+            loop:true
+        });
+
+        $('.container .list .h-list .pic .add-cart').click(function() {
+            $.toast("添加购物车成功");
+        });
+
+    });
+</script>
+</html>

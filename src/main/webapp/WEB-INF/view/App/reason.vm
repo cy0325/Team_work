@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>天鲜易购-缘由</title>
+	#if($!{reason.type} == "a")
+		<title>取消订单</title>
+	#else
+		<title>申请退款</title>
+	#end
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loaders.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loading.css"/>
+	<link href="/static/app/css/mui.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/app/css/base.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/style.css"/>
+</head>
+<!--loading页开始-->
+<div class="loading">
+	<div class="loader">
+        <div class="loader-inner pacman">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+	</div>
+</div>
+<!--loading页结束-->
+<body>
+	<header class="top-header">
+		<a class="icona" href="javascript:history.go(-1)">
+			<img src="/static/app/images/left.png"/>
+		</a>
+		#if($!{reason.type} == "a")
+			<h3>取消订单</h3>
+		#else
+			<h3>申请退款</h3>
+		#end
+	</header>
+	
+	<div class="login">
+		<form id="reason_form">
+			<ul>
+				<li>
+					<label>原因：</label>
+					<textarea rows="5" name="reason" id="reason" placeholder="请输入原因"></textarea>
+				</li>
+				<input name="orderid"  value="$!{reason.orderid}" style="visibility:hidden;"/>
+				<input name="type" value="$!{reason.type}" style="visibility:hidden;"/>
+			</ul>
+			<input type="submit" value="提交"/>
+		</form>
+		<div id="label_error"></div>
+	</div>
+
+</body>
+
+<script src="/static/app/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/app/js/alert.js"></script>
+<!--请在下方写此页面业务相关的脚本,首先需要引入juery.validate表单验证插件-->
+<script type="text/javascript" src="/static/lib/jquery.validation/1.14.0/jquery.validate.js"></script> 
+<script type="text/javascript" src="/static/lib/jquery.validation/1.14.0/validate-methods.js"></script> 
+<script type="text/javascript" src="/static/lib/jquery.validation/1.14.0/messages_zh.js"></script>
+<script type="text/javascript">
+    $(window).load(function(){
+        $(".loading").addClass("loader-chanage").fadeOut(300);
+    });
+    
+    $(function(){
+	    $('#reason_form').validate({
+			rules:{
+				reason:{
+					required:true,
+				},
+			},
+			 messages: {
+				 reason:"",
+			 },
+			errorLabelContainer: $("#label_error"),
+			onkeyup:false,
+	        focusCleanup:true,
+	        success:"valid",
+	        submitHandler:function(form){
+	        	var param = $('#reason_form').serialize();
+	            $.ajax({
+	                url: '/App/reasonSave.do',
+	                type: 'POST',
+	                dataType:'json',
+	                data:param,
+	                success:function(result){
+	                    if(result.success)
+	                    {
+	                        //以下为关闭当前frame，并刷新父页面
+	                        $.toast(result.msg);
+	                       	location.href = '/App/person.do'
+	                    }else
+	                    {
+	                    	$.toast(result.msg);
+	                    }
+	                },
+	                error:function(data) {
+	                    $.toast("服务器错误");
+	                }
+	            });
+	        	
+	        },
+	        showErrors:function(errorMap,errorList) {
+	    		if(this.numberOfInvalids() != 0){
+	    			$.toast("抱歉，您的原因未填写");
+	    		}
+	    		this.defaultShowErrors();
+	    	}
+	    });
+	});
+</script>
+
+</html>

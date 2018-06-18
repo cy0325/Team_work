@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta name="format-detection" content="telephone=no" />
+    <title>天鲜易购-支付</title>
+
+	<!--CSS引入-->
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loaders.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loading.css"/>
+	<link href="/static/app/css/mui.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/app/css/base.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/style.css"/>
+</head>
+
+<!--loading页开始-->
+<div class="loading">
+	<div class="loader">
+        <div class="loader-inner pacman">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+	</div>
+</div>
+<!--loading页结束-->
+
+<body>
+
+	<!--头部-->
+	<header class="top-header fixed-header">
+		<a class="icona" href="javascript:history.go(-1)">
+			<img src="/static/app/images/left.png"/>
+		</a>
+		<h3>结算</h3>
+	</header>
+	
+	<div id="main" class="container">
+		<section class="to-buy">
+			<header>
+				<div class="vj-pay">
+					需支付：<span>$!{totalPrice}</span> 元
+					<br/>
+					<span style="font-size: 1em;">（24小时未支付，订单将自动删除）</span>
+				</div>
+				<span class="oid" hidden>$!{oid}</span>
+			</header>
+			<div class="vj-buy">
+				<input type="button" value="微信支付" onclick="we_pay()"/>
+				#if($!{Candisc} == "a")
+				<input type="button" style="background-color:#FC605A; margin-top: 3%;"
+				 value="货到付款" onclick="dist_pay()"/>
+				#end
+			</div>
+		</section>
+	</div>
+</body>
+
+<!--JS-->
+<script src="/static/app/js/fastclick.js"></script>
+<script src="/static/app/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/app/js/home.js"></script>
+<script type="text/javascript">
+    $(window).load(function(){
+        $(".loading").addClass("loader-chanage").fadeOut(300);
+        compatible();
+    });
+
+    $(window).resize(function() {
+        compatible();
+    });
+
+    function compatible() {
+        var h = $("header").outerHeight(true);
+        var h2 = $("footer").outerHeight(true);
+        $("#main").css("marginTop", h + 0 + "px").css("marginBottom", h2 + 0 + "px");
+    }
+
+    function we_pay(){
+    	var oid = $('.oid').text()
+		location.href = '/WeixinPay/create.do?orderId=' + oid;
+	}
+
+	function dist_pay() {
+		var oid = $('.oid').text()
+		location.href = '/App/success.do?oid=' + oid + '&type=c'
+	}
+</script>
+</html>

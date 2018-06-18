@@ -1,0 +1,16 @@
+package org.nwnu.system.mapper;
+
+import org.nwnu.system.entity.GoodsActivity;
+import com.baomidou.mybatisplus.mapper.BaseMapper;
+
+/**
+ * <p>
+  * 市场活动 Mapper 接口
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+public interface GoodsActivityMapper extends BaseMapper<GoodsActivity> {
+
+}

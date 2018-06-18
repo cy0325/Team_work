@@ -1,0 +1,21 @@
+package org.nwnu.system.service;
+
+import org.nwnu.system.entity.GoodsDisc;
+import org.nwnu.system.mapper.GoodsDiscMapper;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.baomidou.mybatisplus.service.IService;
+
+/**
+ * <p>
+ * 商品运费和自提优惠 服务类
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-21
+ */
+public interface GoodsDiscService extends IService<GoodsDisc> {
+	
+	
+	GoodsDisc getDiscPrice(String type, float sum);
+}

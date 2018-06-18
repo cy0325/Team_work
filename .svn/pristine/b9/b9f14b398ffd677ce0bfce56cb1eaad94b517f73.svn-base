@@ -1,0 +1,16 @@
+package org.nwnu.system.service;
+
+import org.nwnu.system.entity.WexinContent;
+import com.baomidou.mybatisplus.service.IService;
+
+/**
+ * <p>
+ * 微信推送消息 服务类
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+public interface WexinContentService extends IService<WexinContent> {
+	
+}

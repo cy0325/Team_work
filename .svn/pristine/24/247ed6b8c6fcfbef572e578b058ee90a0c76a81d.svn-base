@@ -1,0 +1,176 @@
+package org.nwnu.system.weixin;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+
+import me.chanjar.weixin.common.api.WxConsts;
+import me.chanjar.weixin.common.bean.result.WxMediaUploadResult;
+import me.chanjar.weixin.common.exception.WxErrorException;
+import me.chanjar.weixin.mp.api.WxMpInMemoryConfigStorage;
+import me.chanjar.weixin.mp.api.WxMpService;
+import me.chanjar.weixin.mp.api.impl.WxMpServiceImpl;
+import me.chanjar.weixin.mp.bean.WxMpMassNews;
+import me.chanjar.weixin.mp.bean.WxMpMassOpenIdsMessage;
+import me.chanjar.weixin.mp.bean.material.WxMediaImgUploadResult;
+import me.chanjar.weixin.mp.bean.material.WxMpMaterial;
+import me.chanjar.weixin.mp.bean.material.WxMpMaterialUploadResult;
+import me.chanjar.weixin.mp.bean.result.WxMpMassSendResult;
+import me.chanjar.weixin.mp.bean.result.WxMpMassUploadResult;
+import me.chanjar.weixin.mp.bean.result.WxMpUserList;
+
+import org.nwnu.pub.util.FileUploadUtil;
+import org.nwnu.pub.util.WeixinUtil;
+import org.nwnu.system.weixin.AccessToken;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
+public class WeixinMessage {
+	
+	
+	@Autowired
+    private WxMpService wxService;
+	
+	public void init(){
+		WxMpInMemoryConfigStorage config = new WxMpInMemoryConfigStorage();
+		config.setAppId(WeixinUtil.AppID); // 设置微信公众号的appid
+		config.setSecret(WeixinUtil.AppSecret); // 设置微信公众号的app corpSecret
+		config.setToken(WeixinUtil.TOKEN); // 设置微信公众号的token
+		config.setAesKey(WeixinUtil.AESKey); // 设置微信公众号的EncodingAESKey
+
+		wxService = new WxMpServiceImpl();
+		wxService.setWxMpConfigStorage(config);
+	}
+	
+	private static JSONArray getUserOpenid(){
+		AccessToken accessToken = WeixinUtil.getAccessToken();
+		JSONObject js = WeixinUtil.getOpenid(accessToken.getToken()).getJSONObject("data");
+		JSONArray opList = js.getJSONArray("openid");
+		return opList;
+	}
+	
+	
+	public WxMpMassSendResult sendTextMsg(){
+		JSONArray opList = getUserOpenid();
+		WxMpMassOpenIdsMessage massMessage = new WxMpMassOpenIdsMessage();
+		massMessage.setMsgType(WxConsts.MASS_MSG_TEXT);
+		massMessage.setContent("消息内容");
+		for(Object openid : opList){
+			System.out.println(openid.toString());
+			massMessage.getToUsers().add(openid.toString());
+		}
+		try {
+			return wxService.massOpenIdsMessageSend(massMessage);
+		} catch (WxErrorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public WxMpMassSendResult sendImgMsg(String filePath) throws Exception{
+		JSONArray opList = getUserOpenid();
+		FileInputStream fileInputStream = new FileInputStream(filePath);
+		String suffix = filePath.substring(filePath.indexOf(".")+1, filePath.length());
+		InputStream inputStream = FileUploadUtil.getInputStream(fileInputStream);
+		WxMediaUploadResult uploadMediaRes = wxService.getMaterialService().mediaUpload(WxConsts.MEDIA_IMAGE, suffix, inputStream);
+
+		WxMpMassOpenIdsMessage msMessage = new WxMpMassOpenIdsMessage();
+		msMessage.setMsgType(WxConsts.MASS_MSG_IMAGE);
+		msMessage.setMediaId(uploadMediaRes.getMediaId());
+		for(Object openid : opList){
+			System.out.println(openid.toString());
+			msMessage.getToUsers().add(openid.toString());
+		}
+
+		try {
+			return wxService.massOpenIdsMessageSend(msMessage);
+		} catch (WxErrorException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	
+	
+	public WxMpMassSendResult sendNews(WxMpMassNews news) throws Exception{
+		JSONArray opList = getUserOpenid();
+		WxMpMassUploadResult uploadResult = wxService.massNewsUpload(news);
+
+		WxMpMassOpenIdsMessage massMessage = new WxMpMassOpenIdsMessage();
+		massMessage.setMsgType(WxConsts.MASS_MSG_NEWS);
+		massMessage.setMediaId(uploadResult.getMediaId());
+		for(Object openid : opList){
+			System.out.println(openid.toString());
+			massMessage.getToUsers().add(openid.toString());
+		}
+		return wxService.massOpenIdsMessageSend(massMessage);
+	}
+	
+	
+	public WxMediaUploadResult uploadArtImg(String filePath){
+		try {
+			FileInputStream fileInputStream = new FileInputStream(filePath);
+			String suffix = filePath.substring(filePath.lastIndexOf(".")+1, filePath.length());
+			InputStream inputStream = FileUploadUtil.getInputStream(fileInputStream);
+			// 上传图文消息的封面图片
+			return wxService.getMaterialService().mediaUpload(WxConsts.MEDIA_IMAGE, suffix, inputStream);
+		} catch (Exception e) {
+			// TODO: handle exception
+		}
+		return null;
+	}
+	
+	
+/*	public static void main(String[] args) {
+		WeixinMessage weixinMessage = new WeixinMessage();
+		weixinMessage.init();
+//		//weixinMessage.sendTextMsg();
+//		try {
+//			WxMpMassSendResult result = weixinMessage.sendImgMsg("E:/ns/Ce04vK9UkAA_gAF.jpg");
+//			System.out.println(result.getErrorCode());
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		
+//		String suffix = "E:/ns/Ce04vK9UkAA_gAF.jpg";
+//		System.out.println();
+		
+		
+		
+		WxMpMassNews news = new WxMpMassNews();
+		WxMpMassNews.WxMpMassNewsArticle article1 = new WxMpMassNews.WxMpMassNewsArticle();
+		article1.setTitle("标题1");
+		article1.setContent("内容1");
+		article1.setThumbMediaId(weixinMessage.uploadArtImg("E:/ns/Ce04vK9UkAA_gAF.jpg").getMediaId());
+		article1.setShowCoverPic(true);
+		article1.setAuthor("作者1");
+		article1.setContentSourceUrl("www.baidu.com");
+		article1.setDigest("摘要1");
+		news.addArticle(article1);
+
+		WxMpMassNews.WxMpMassNewsArticle article2 = new WxMpMassNews.WxMpMassNewsArticle();
+		article2.setTitle("标题2");
+		article2.setContent("内容2");
+		article2.setThumbMediaId(weixinMessage.uploadArtImg("E:/ns/Ce-xHbfXEAA85-V (1).jpg").getMediaId());
+		article2.setShowCoverPic(true);
+		article2.setAuthor("作者2");
+		article2.setContentSourceUrl("www.baidu.com");
+		article2.setDigest("摘要2");
+		news.addArticle(article2);
+		
+		try {
+			weixinMessage.sendNews(news);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}*/
+
+}

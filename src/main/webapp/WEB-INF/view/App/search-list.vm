@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>天鲜易购-搜索</title>
+
+	<!--引入CSS-->
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loaders.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loading.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/base.css"/>
+    <link href="/static/app/css/mui.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/app/css/all.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/style.css"/>
+</head>
+
+<!--loading页开始-->
+<div class="loading">
+	<div class="loader">
+        <div class="loader-inner pacman">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+	</div>
+</div>
+<!--loading页结束-->
+
+<body>
+	<header class="top-header fixed-header">
+		<a class="icona" href="javascript:history.go(-1)">
+            <img src="/static/app/images/left.png"/>
+        </a>
+		<h3>搜索</h3>
+	</header>
+	
+	<div id="main" class="container">
+		<section class="list">
+
+            <!--搜索-->
+			<div class="search" style="margin-bottom:1%;">
+				<input type="text" placeholder="请输入关键字" value="$!keys" />
+				<label id="search"><img src="/static/app/images/list-search.png"/></label>
+			</div>
+
+            <!--产品列表-->
+            <ul class="h-list" style="padding: 0 0.15rem 0.05rem;">
+            	#foreach($item in $goods)
+                <li class="pic">
+                    <a href="/App/detail.do?id=$!{item.id}">
+                        <img class="col-3" src="$item.pic1"/>
+                        <div class="col-9 mui-pull-right">
+                            <p>$item.goodsname</p>
+                            <p class="vj-price">
+                                <b>￥$item.price</b>
+                            </p>
+                        </div>
+                    </a>
+                    <button class="add-cart" title="加入购物车">
+                        加入购物车
+                    </button>
+                </li>
+                #end
+                
+            </ul>
+		</section>
+	</div>
+</body>
+
+<!--JS引入-->
+<script src="/static/app/js/fastclick.js"></script>
+<script src="/static/app/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+    $(window).load(function(){
+        $(".loading").addClass("loader-chanage").fadeOut(300);
+        compatible();
+    });
+
+    $(window).resize(function() {
+        compatible();
+    });
+
+    function compatible() {
+        var h = $("header").outerHeight(true);
+        $("#main").css("marginTop", h + 0 + "px");
+    }
+    
+    $("#search").click(function() {
+    	var val = $(this).siblings("input").val();
+    	val = $.trim(val);
+    	window.location.href = "/App/search-list?keys=" + val;
+    });
+</script>
+</html>

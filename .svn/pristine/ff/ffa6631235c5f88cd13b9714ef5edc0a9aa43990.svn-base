@@ -1,0 +1,22 @@
+package org.nwnu.system.weixin;
+
+public class AccessToken {
+	
+	private String token;
+	private String expriresIn;
+	
+	public String getToken() {
+		return token;
+	}
+	public void setToken(String token) {
+		this.token = token;
+	}
+	public String getExpriresIn() {
+		return expriresIn;
+	}
+	public void setExpriresIn(String expriresIn) {
+		this.expriresIn = expriresIn;
+	}
+	
+
+}

@@ -1,0 +1,20 @@
+package org.nwnu.system.service.impl;
+
+import org.nwnu.system.entity.ShopUseraddress;
+import org.nwnu.system.mapper.ShopUseraddressMapper;
+import org.nwnu.system.service.ShopUseraddressService;
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import org.springframework.stereotype.Service;
+
+/**
+ * <p>
+ * 用户地址 服务实现类
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+@Service
+public class ShopUseraddressServiceImpl extends ServiceImpl<ShopUseraddressMapper, ShopUseraddress> implements ShopUseraddressService {
+	
+}

@@ -1,0 +1,113 @@
+package org.nwnu.system.entity;
+
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableName;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * <p>
+ * 商品运费和自提优惠
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-21
+ */
+
+@TableName("goods_disc")
+public class GoodsDisc implements Serializable {
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
+
+	/**
+	 * 主键
+	 */
+	private Integer id;
+
+	/**
+	 * 总金额
+	 */
+	private Float sum;
+
+	/**
+	 * 折扣类型
+	 */
+	private String type;
+
+	/**
+	 * 价格
+	 */
+	private Float price;
+
+	/**
+	 * 操作员id
+	 */
+	private Integer uid;
+
+	/**
+	 * 操作时间
+	 */
+	private Date uptime;
+
+	
+	@TableField(exist = false)
+	private String uName;
+
+	public String getuName() {
+		return uName;
+	}
+
+	public void setuName(String uName) {
+		this.uName = uName;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Float getSum() {
+		return sum;
+	}
+
+	public void setSum(Float sum) {
+		this.sum = sum;
+	}
+
+	public String getType() {
+		return type;
+	}
+
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	public Float getPrice() {
+		return price;
+	}
+
+	public void setPrice(Float price) {
+		this.price = price;
+	}
+
+	public Integer getUid() {
+		return uid;
+	}
+
+	public void setUid(Integer uid) {
+		this.uid = uid;
+	}
+
+	public Date getUptime() {
+		return uptime;
+	}
+
+	public void setUptime(Date uptime) {
+		this.uptime = uptime;
+	}
+
+}

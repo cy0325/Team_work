@@ -1,0 +1,18 @@
+package org.nwnu.system.mapper;
+
+import org.apache.ibatis.annotations.Param;
+import org.nwnu.system.entity.GoodsDisc;
+
+import com.baomidou.mybatisplus.mapper.BaseMapper;
+
+/**
+ * <p>
+  * 商品运费和自提优惠 Mapper 接口
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-21
+ */
+public interface GoodsDiscMapper extends BaseMapper<GoodsDisc> {
+	GoodsDisc getDiscPrice(@Param("type") String type, @Param("sum") float sum);
+}

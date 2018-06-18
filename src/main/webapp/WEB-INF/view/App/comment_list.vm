@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>天鲜易购-待评价</title>
+
+	<!--CSS-->
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loaders.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loading.css"/>
+	<link href="/static/app/css/mui.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/app/css/base.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/style.css"/>
+
+</head>
+<!--loading页开始-->
+<div class="loading">
+	<div class="loader">
+        <div class="loader-inner pacman">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+	</div>
+</div>
+<!--loading页结束-->
+<body>
+	<header class="top-header fixed-header">
+		<a class="icona" href="javascript:history.go(-1)">
+            <img src="/static/app/images/left.png"/>
+        </a>
+		<h3>待评价</h3>
+	</header>
+	
+	<div id="main" class="container">
+		<section class="order">
+			#if($!goodList.size() == 0)
+			<div class="noorder">
+                <div>
+                    <img src="/static/app/img/notorder.png">
+                </div>
+                <div>
+                                        您还没有相关的评论商品
+                </div>
+            </div>
+            #end
+			#foreach($!good in $!goodList)
+            <dl>
+                <dt>
+                    <time>$!{good.placetime}</time>
+                    <span>待评价</span>
+                </dt>
+                <ul>
+                    <a href="/App/detail.do?id=$!{good.id}">
+                        <figure><img src="$!{good.pic1}"/></figure>
+                        <li>
+                            <p>$!{good.goodsname}</p>
+                        </li>
+                        <a class="com-btn" href="/App/comment.do?gId=$!{good.id}&oId=$!{good.oid}">去评价</a>
+                    </a>
+                </ul>
+            </dl>
+			#end
+		</section>
+	</div>
+</body>
+
+<script src="/static/app/js/fastclick.js"></script>
+<script src="/static/app/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+    $(window).load(function(){
+        $(".loading").addClass("loader-chanage").fadeOut(300);
+        compatible();
+    });
+
+    $(window).resize(function() {
+        compatible();
+    });
+
+    function compatible() {
+        var h = $("header").outerHeight(true);
+        $("#main").css("marginTop", h + 0 + "px");
+    }
+</script>
+
+</html>

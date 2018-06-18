@@ -1,0 +1,16 @@
+package org.nwnu.system.service;
+
+import org.nwnu.system.entity.GoodsActivity;
+import com.baomidou.mybatisplus.service.IService;
+
+/**
+ * <p>
+ * 市场活动 服务类
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+public interface GoodsActivityService extends IService<GoodsActivity> {
+	
+}

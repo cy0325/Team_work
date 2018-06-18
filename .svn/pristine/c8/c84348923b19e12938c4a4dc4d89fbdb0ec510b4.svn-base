@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.nwnu.system.mapper.GoodsDetailMapper">
+	<!--开启二级缓存-->
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+
+	<resultMap id="BaseResultMap" type="org.nwnu.system.entity.GoodsDetail">
+		<id column="id" property="id" />
+		<result column="fid" property="fid" />
+		<result column="sid" property="sid" />
+		<result column="aid" property="aid" />
+		<result column="goodscode" property="goodscode" />
+		<result column="goodsname" property="goodsname" />
+		<result column="pic1" property="pic1" />
+		<result column="pic2" property="pic2" />
+		<result column="pic3" property="pic3" />
+		<result column="spec" property="spec" />
+		<result column="price" property="price" />
+		<result column="kucun" property="kucun" />
+		<result column="chandi" property="chandi" />
+		<result column="psdesc" property="psdesc" />
+		<result column="desc" property="desc" />
+		<result column="status" property="status" />
+		<result column="sellstatus" property="sellstatus" />
+		<result column="newstatus" property="newstatus" />
+		<result column="remark" property="remark" />
+		<result column="uid" property="uid" />
+		<result column="uptime" property="uptime" />
+	</resultMap>
+
+    <!-- 通用查询结果列-->
+    <sql id="Base_Column_List">
+        id, fid, sid, aid, goodsname, pic1, pic2, pic3, spec, price, kucun, chandi, psdesc, desc, status, sellstatus, newstatus, remark, uid, uptime
+    </sql>
+    
+    <select id="getCode"  resultType="string">
+     SELECT   right(concat('0000',rtrim(max(goodscode) + 1)), 4) AS codestr
+      FROM      goods_detail
+  	</select>
+
+</mapper>

@@ -1,0 +1,20 @@
+﻿/*
+Copyright (c) 2003-2015, CKSource - Frederico Knabben. All rights reserved.
+For licensing, see license.txt or http://cksource.com/ckfinder/license
+*/
+
+CKFinder.customConfig = function( config )
+{
+	// Define changes to default configuration here.
+	// For the list of available options, check:
+	// http://docs.cksource.com/ckfinder_2.x_api/symbols/CKFinder.config.html
+
+	// Sample configuration options:
+	config.uiColor = 'red';
+	config.language = 'zh-cn';
+	// config.removePlugins = 'basket';
+	config.skin = 'bootstrap';
+	//config.language = 'en';
+	config.disableHelpButton = true;
+
+};

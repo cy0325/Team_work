@@ -1,0 +1,28 @@
+package org.nwnu.system.entity;
+
+import java.math.BigDecimal;
+
+public class OrderInfo {
+	
+	private BigDecimal distPrice;
+	private BigDecimal totalPrice;
+	private BigDecimal liftfee;
+	public BigDecimal getDistPrice() {
+		return distPrice;
+	}
+	public void setDistPrice(BigDecimal distPrice) {
+		this.distPrice = distPrice;
+	}
+	public BigDecimal getTotalPrice() {
+		return totalPrice;
+	}
+	public void setTotalPrice(BigDecimal totalPrice) {
+		this.totalPrice = totalPrice;
+	}
+	public BigDecimal getLiftfee() {
+		return liftfee;
+	}
+	public void setLiftfee(BigDecimal liftfee) {
+		this.liftfee = liftfee;
+	}
+}

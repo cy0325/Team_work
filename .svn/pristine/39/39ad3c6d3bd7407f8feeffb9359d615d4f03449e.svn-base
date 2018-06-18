@@ -1,0 +1,87 @@
+package org.nwnu.system.entity;
+
+import java.util.List;
+
+public class PdfBean {
+	
+	private String orderNum;
+	private String upDate;
+	private String totalPrice;
+	private String freight;
+	private String liftFee;
+	private String name;
+	private String tel;
+	private String address;
+	private String payway;
+	private String paystatus;
+	private List<PdfGood> goodList;
+	
+	public String getPayway() {
+		return payway;
+	}
+	public void setPayway(String payway) {
+		this.payway = payway;
+	}
+	public String getPaystatus() {
+		return paystatus;
+	}
+	public void setPaystatus(String paystatus) {
+		this.paystatus = paystatus;
+	}
+	public String getOrderNum() {
+		return orderNum;
+	}
+	public void setOrderNum(String orderNum) {
+		this.orderNum = orderNum;
+	}
+	public String getUpDate() {
+		return upDate;
+	}
+	public void setUpDate(String upDate) {
+		this.upDate = upDate;
+	}
+	public String getTotalPrice() {
+		return totalPrice;
+	}
+	public void setTotalPrice(String totalPrice) {
+		this.totalPrice = totalPrice;
+	}
+	public String getFreight() {
+		return freight;
+	}
+	public void setFreight(String freight) {
+		this.freight = freight;
+	}
+	public String getLiftFee() {
+		return liftFee;
+	}
+	public void setLiftFee(String liftFee) {
+		this.liftFee = liftFee;
+	}
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	public String getTel() {
+		return tel;
+	}
+	public void setTel(String tel) {
+		this.tel = tel;
+	}
+	public String getAddress() {
+		return address;
+	}
+	public void setAddress(String address) {
+		this.address = address;
+	}
+	public List<PdfGood> getGoodList() {
+		return goodList;
+	}
+	public void setGoodList(List<PdfGood> goodList) {
+		this.goodList = goodList;
+	}
+	
+
+}

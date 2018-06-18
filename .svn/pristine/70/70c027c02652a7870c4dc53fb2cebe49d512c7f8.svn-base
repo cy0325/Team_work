@@ -1,0 +1,31 @@
+package org.nwnu.system.service.impl;
+
+import org.nwnu.system.entity.UserCredit;
+import org.nwnu.system.mapper.UserCreditMapper;
+import org.nwnu.system.service.UserCreditService;
+
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+/**
+ * <p>
+ * 用户信用值 服务实现类
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-22
+ */
+@Service
+public class UserCreditServiceImpl extends ServiceImpl<UserCreditMapper, UserCredit> implements UserCreditService {
+
+	@Autowired
+	private UserCreditMapper this_UserCreditMapper;
+	@Override
+	public UserCredit getCreditPrice(float sum) {
+		// TODO Auto-generated method stub
+		return this_UserCreditMapper.getCreditPrice(sum);
+	}
+	
+}

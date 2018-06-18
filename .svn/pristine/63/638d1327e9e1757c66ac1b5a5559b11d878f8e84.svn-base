@@ -1,0 +1,101 @@
+package org.nwnu.system.entity;
+
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableName;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * <p>
+ * 购物车
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+
+@TableName("shop_cart")
+public class ShopCart implements Serializable {
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
+
+	/**
+	 * 主键
+	 */
+	private Integer id;
+
+	/**
+	 * 商品ID
+	 */
+	private Integer gid;
+
+	/**
+	 * 商品数量
+	 */
+	private Integer gnum;
+
+	/**
+	 * shop_user_id
+	 */
+	private Integer suid;
+	
+	/**
+	 * 是否勾选
+	 */
+	private Integer checked;
+
+	/**
+	 * 操作时间
+	 */
+	private Date upTime;
+
+	public Integer getChecked() {
+		return checked;
+	}
+
+	public void setChecked(Integer checked) {
+		this.checked = checked;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getGid() {
+		return gid;
+	}
+
+	public void setGid(Integer gid) {
+		this.gid = gid;
+	}
+
+	public Integer getGnum() {
+		return gnum;
+	}
+
+	public void setGnum(Integer gnum) {
+		this.gnum = gnum;
+	}
+
+	public Integer getSuid() {
+		return suid;
+	}
+
+	public void setSuid(Integer suid) {
+		this.suid = suid;
+	}
+
+	public Date getUpTime() {
+		return upTime;
+	}
+
+	public void setUpTime(Date upTime) {
+		this.upTime = upTime;
+	}
+
+}

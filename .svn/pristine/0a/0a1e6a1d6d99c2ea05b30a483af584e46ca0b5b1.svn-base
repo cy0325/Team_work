@@ -1,0 +1,12 @@
+package org.nwnu.system.service;
+
+import org.nwnu.system.entity.ShopOrder;
+
+import com.lly835.bestpay.model.PayResponse;
+
+public interface PayService {
+	
+	PayResponse create(ShopOrder shopOrder);
+
+	PayResponse notify(String notifyData) throws Exception;
+}

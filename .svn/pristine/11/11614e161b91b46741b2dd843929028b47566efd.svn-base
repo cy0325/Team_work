@@ -1,0 +1,134 @@
+#override("content")
+<article class="page-container">
+	<form class="form form-horizontal" id="form-view" enctype="multipart/form-data">
+	    <input type="hidden" id="id" name="id" value="$!{GoodsActivity.id}"/>
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>活动名称：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<input id="name" name="name" type="text" class="input-text radius" value="$!{GoodsActivity.name}" placeholder="请输入活动名称" >
+			</div>
+		</div>
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>活动图片：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<span class="btn-upload form-group">
+ 					<input class="input-text upload-url radius" type="text" name="file-1" id="file-1" readonly value="$!{GoodsActivity.pic}">
+ 						<a href="javascript:void();" class="btn btn-primary radius">上传图片</a>
+  					<input type="file" name="filepic1" class="input-file">
+				</span>
+				<label style="color:red;font-size:12px;">&nbsp;&nbsp;&nbsp;请上传400 X 200规格的图片</label>
+			</div>
+		</div>
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>活动图片2：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<span class="btn-upload form-group">
+ 					<input class="input-text upload-url radius" type="text" name="filepic2" id="file-2" readonly value="$!{GoodsActivity.pic2}">
+ 						<a href="javascript:void();" class="btn btn-primary radius">上传图片</a>
+  					<input type="file" name="filepic2" class="input-file">
+				</span>
+				<label style="color:red;font-size:12px;">&nbsp;&nbsp;&nbsp;请上传400 X 200规格的图片</label>
+			</div>
+		</div>
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>简介：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+				<textarea id="intro" name="intro" type="text" class="textarea radius" value="$!{GoodsActivity.intro}" placeholder="请输入活动简介" >$!{GoodsActivity.intro}</textarea>
+			</div>
+		</div>
+		<div class="row cl">
+			<label class="form-label col-xs-4 col-sm-2"><span class="c-red">*</span>是否开启：</label>
+			<div class="formControls col-xs-8 col-sm-9">
+		        	#if(${GoodsActivity.status}=="b")
+					 <div class="radio-box">
+					    <input type="radio" id="radio-1" name="status" value="a">
+					    <label for="radio-1">是</label>
+					 </div>
+					  <div class="radio-box">
+					    <input type="radio" id="radio-2" name="status" value="b" checked>
+					    <label for="radio-2">否</label>
+					  </div>			
+					#else
+					<div class="radio-box">
+					    <input type="radio" id="radio-1" name="status" value="a" checked>
+					    <label for="radio-1">是</label>
+					 </div>
+					  <div class="radio-box">
+					    <input type="radio" id="radio-2" name="status" value="b">
+					    <label for="radio-2">否</label>
+					  </div>	
+					#end
+			</div>
+		</div>
+		<div class="row cl">
+			<div class="col-xs-8 col-sm-9 col-xs-offset-4 col-sm-offset-2">				
+				<button type="submit" class="btn btn-danger radius" ><i class="Hui-iconfont">&#xe632;</i> 提交</button>
+				<button onClick="layer_close();" class="btn btn-default radius" type="button">&nbsp;&nbsp;取消&nbsp;&nbsp;</button>
+			</div>
+		</div>
+	</form>
+</article>
+#end
+#override("js")
+<!--请在下方写此页面业务相关的脚本,首先需要引入juery.validate表单验证插件-->s
+<script type="text/javascript" src="/static/lib/jquery.validation/1.14.0/jquery.validate.js"></script> 
+<script type="text/javascript" src="/static/lib/jquery.validation/1.14.0/validate-methods.js"></script> 
+<script type="text/javascript" src="/static/lib/jquery.validation/1.14.0/messages_zh.js"></script>
+<script type="text/javascript">
+	$(function(){
+		//表单验证,如果有其他需要直接添加即可，比如可以填入digits:true必须输入数字，这个根据jquery.validate插件验证规则
+		$("#form-view").validate({
+				rules:{
+					name:{
+						required:true,
+					},
+				  	pic:{
+						required:true,
+						isPic:true,
+					},
+				  	pic2:{
+						required:true,
+						isPic:true,
+					},
+				  	intro:{
+						required:true,
+					},
+				  	status:{
+						required:true,
+					},
+				},
+				onkeyup:false,
+				focusCleanup:true,
+				success:"valid",
+				submitHandler:function(form){
+				//var param = $("#form-view").serialize(); //表单内容序列化
+				$(form).ajaxSubmit({
+					        url: '/GoodsActivity/Save.do',
+					 		type: 'POST',
+					 		dataType:'json',
+			                success:function(result){
+			                if(result.success)
+							{
+								parent.layer.msg(result.msg,{icon:1,time:2500});
+								//以下为关闭当前frame，并刷新父页面
+								var index = parent.layer.getFrameIndex(window.name);
+								parent.$("#pagecontent").load(window.parent.location.href+"#pagecontent");//刷新父页面表格tbody
+								parent.$("#mypage").load(window.parent.location.href+"#mypage");//分页也需要刷新一下
+								parent.layer.close(index);
+								
+							}else
+							{
+								layer.msg(result.msg,{icon:2,time:1500});
+							}
+							},
+							error:function(data) {
+								layer.msg("对不起，服务请求错误！",{icon:2,time:1500});
+							}
+		                }); 
+				  }
+		});
+		
+	})
+</script>
+#end
+#extends("/Home/Layout.vm")

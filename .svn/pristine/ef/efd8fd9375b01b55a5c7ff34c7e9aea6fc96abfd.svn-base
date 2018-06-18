@@ -1,0 +1,18 @@
+package org.nwnu.system.service;
+
+import org.nwnu.system.entity.ShopCart;
+import com.baomidou.mybatisplus.service.IService;
+
+/**
+ * <p>
+ * 购物车 服务类
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+public interface ShopCartService extends IService<ShopCart> {
+	
+	int selectCartGoodsCount(Integer userId);
+	
+}

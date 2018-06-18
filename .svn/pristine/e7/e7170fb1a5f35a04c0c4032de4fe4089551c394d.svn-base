@@ -1,0 +1,145 @@
+package org.nwnu.system.entity;
+
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableName;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * <p>
+ * 商品类目
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+
+@TableName("goods_type")
+public class GoodsType implements Serializable, Comparable<GoodsType> {
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
+
+	/**
+	 * 主键
+	 */
+	private Integer id;
+
+	/**
+	 * 父类
+	 */
+	private Integer pid;
+
+	/**
+	 * 类目名称
+	 */
+	private String name;
+	
+	/**
+	 * 类目图片
+	 */
+	private String pic;
+
+	/**
+	 * 显示顺序
+	 */
+	private Integer sequence;
+
+	/**
+	 * 操作员id
+	 */
+	private Integer uid;
+
+	/**
+	 * 操作时间
+	 */
+	private Date uptime;
+	
+	public String getPic() {
+		return pic;
+	}
+
+	public void setPic(String pic) {
+		this.pic = pic;
+	}
+
+	@TableField(exist = false)
+	private SysUser sysUser;
+	
+	@TableField(exist = false)
+	private String goodTypeName;
+	
+
+	public String getGoodTypeName() {
+		return goodTypeName;
+	}
+
+	public void setGoodTypeName(String goodTypeName) {
+		this.goodTypeName = goodTypeName;
+	}
+
+	public SysUser getSysUser() {
+		return sysUser;
+	}
+
+	public void setSysUser(SysUser sysUser) {
+		this.sysUser = sysUser;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getPid() {
+		return pid;
+	}
+
+	public void setPid(Integer pid) {
+		this.pid = pid;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public Integer getSequence() {
+		return sequence;
+	}
+
+	public void setSequence(Integer sequence) {
+		this.sequence = sequence;
+	}
+
+	public Integer getUid() {
+		return uid;
+	}
+
+	public void setUid(Integer uid) {
+		this.uid = uid;
+	}
+
+	public Date getUptime() {
+		return uptime;
+	}
+
+	public void setUptime(Date uptime) {
+		this.uptime = uptime;
+	}
+
+	@Override
+	public int compareTo(GoodsType o) {
+		// TODO Auto-generated method stub
+		
+		Integer squence = o.getSequence();
+		return this.getSequence().compareTo(squence);
+	}
+
+}

@@ -1,0 +1,131 @@
+package org.nwnu.system.controller;
+
+
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.baomidou.mybatisplus.plugins.Page;
+
+import org.nwnu.base.controller.BaseController;
+import org.nwnu.pub.util.StringUtil;
+import org.nwnu.system.entity.SysRolePrivilege;
+import org.nwnu.system.entity.SysUser;
+import org.nwnu.system.service.SysRolePrivilegeService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.servlet.http.HttpSession;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * <p>
+ * 角色权限表 前端控制器
+ * </p>
+ *
+ * @author 董晓辉
+ * @since 2017-03-07
+ */
+@Controller
+@RequestMapping("/SysRolePrivilege")
+public class SysRolePrivilegeController extends BaseController {
+    @Autowired
+    private SysRolePrivilegeService this_SysRolePrivilegeService;
+
+    @RequestMapping(value = "/SysRolePrivilegeIndex")
+    public String Index() {
+        return "SysRolePrivilege/SysRolePrivilegeIndex";
+    }
+
+    /***
+     * 列表
+     *
+     * @param
+     * @param page
+     *            起始页
+     * @param rows
+     *            页面大小 * @param sort 排序字段 * @param rows 排序顺序
+     * @return
+     */
+    @RequestMapping(value = "/list", method = RequestMethod.GET)
+    @ResponseBody
+    public Map<String, Object> getList(
+            @RequestParam(required = false, defaultValue = "1") int page,
+            @RequestParam(required = false, defaultValue = "10") int rows,
+            @RequestParam(required = false, defaultValue = "id") String sort,
+            @RequestParam(required = false, defaultValue = "asc") String order) {
+        Boolean isAsc = true;
+        if (order == "desc") isAsc = false;
+        EntityWrapper<SysRolePrivilege> wrapper = new EntityWrapper<SysRolePrivilege>();
+        List<SysRolePrivilege> SysRolePrivilegeList = this_SysRolePrivilegeService.selectPage(
+                new Page<SysRolePrivilege>(page, rows),
+                wrapper.orderBy(sort, isAsc)
+        ).getRecords();
+        Map<String, Object> result = new HashMap<String, Object>();
+        int total = this_SysRolePrivilegeService.selectList(wrapper).size();
+        result.put("total", total);
+        result.put("rows", SysRolePrivilegeList);
+        return result;
+    }
+
+    /***
+     * 单页，如果是修改，显示内容及表单，如果是添加显示表单
+     *
+     * @param
+     * @return
+     */
+    @RequestMapping(value = "/SysRolePrivilegeView", method = RequestMethod.GET)
+    public ModelAndView view(ModelAndView modelAndView, SysRolePrivilege this_SysRolePrivilege, @RequestParam(value = "id", required = false) Integer id) {
+        if (id != null) {
+            modelAndView.addObject("SysRolePrivilege", this_SysRolePrivilegeService.selectById(id));
+        } else {
+            modelAndView.addObject("SysRolePrivilege", this_SysRolePrivilege);
+        }
+        return modelAndView;
+    }
+
+    /***
+     * 保存，如果是现在，调用insert，如果是修改，调用updateById
+     *
+     * @param
+     * @return
+     */
+    @RequestMapping(value = "/save", method = RequestMethod.POST)
+    @ResponseBody
+    public Object save(SysRolePrivilege this_SysRolePrivilege, HttpSession session) {
+        if (StringUtil.isEmpty(this_SysRolePrivilege.getRolecode())) {
+            return renderError("角色编码不能为空");
+        }
+        if (StringUtil.isEmpty(this_SysRolePrivilege.getPrivilegecode())) {
+            return renderError("权限编码集不能为空");
+        }
+        if (StringUtil.isEmpty(this_SysRolePrivilege.getUid())) {
+            return renderError("操作员不能为空");
+        }
+        this_SysRolePrivilege.setUid(((SysUser) session.getAttribute("sysLoginUser")).getId());
+        this_SysRolePrivilege.setUpdate_date(new Date());
+        if (this_SysRolePrivilege.getId() == null) {
+            return this_SysRolePrivilegeService.insert(this_SysRolePrivilege) ? renderSuccess("添加成功") : renderError("添加失败");
+        } else {
+            return this_SysRolePrivilegeService.updateById(this_SysRolePrivilege) ? renderSuccess("修改成功") : renderError("修改失败");
+        }
+    }
+
+    /***
+     * 根据id删除
+     *
+     * @param id
+     * @return
+     */
+    @RequestMapping("/delete")
+    @ResponseBody
+    public Object delete(@RequestParam(value = "id", required = false) Integer id) {
+        return this_SysRolePrivilegeService.deleteById(id) ? renderSuccess("删除成功") : renderError("删除失败");
+    }
+
+}

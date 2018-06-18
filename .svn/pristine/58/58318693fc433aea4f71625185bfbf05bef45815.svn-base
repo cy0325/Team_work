@@ -1,0 +1,98 @@
+package org.nwnu.pub.util;
+
+import java.util.ArrayList;
+
+import org.apache.ibatis.javassist.expr.NewArray;
+import org.aspectj.weaver.patterns.ThisOrTargetAnnotationPointcut;
+import org.junit.Test;
+import org.nwnu.system.entity.ShopOrder;
+import org.nwnu.system.service.PayService;
+import org.nwnu.system.service.ShopOrderService;
+import org.nwnu.system.weixin.AccessToken;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import antlr.collections.List;
+
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
+public class WeixinTest {
+	
+
+	public static void main(String[] args) {
+		/*AccessToken accessToken = WeixinUtil.getAccessToken();
+		System.out.println("*****票据****"+accessToken.getToken());
+		System.out.println("****时间******"+accessToken.getExpriresIn());
+		*/
+		/*String menu = JSONObject.toJSONString(WeixinUtil.initMenu());
+		int result = WeixinUtil.createMenu(accessToken.getToken(), menu);
+ 		if (result == 0) {
+			System.out.println("创建菜单成功");
+		} else{
+			System.out.println("错误码："+result);
+		}*/
+		
+		/*JSONObject jsonObject = WeixinUtil.queryMenu(accessToken.getToken());
+		System.out.println(jsonObject);*/
+		
+		/*int result = WeixinUtil.deleteMenu(accessToken.getToken());
+		if (result == 0) {
+			System.out.println("删除成功");
+		}else{
+			System.out.println("删除失败"+result);
+		}*/
+		
+		
+//		String url = WeixinUtil.ADD_MATERIAL_URL.replace("ACCESS_TOKEN", accessToken.getToken());
+//		WeixinUtil.postFile(url, "E:/ns/Ce04vK9UkAA_gAF.jpg"); 
+		
+		/*Articles articles = new Articles();
+		articles.setTitle("微信测试");
+		articles.setThumb_media_id("sqZ86s8-x0w-vZtl2vsPIr9vG2YYFHAliMmoYOZrwtE");
+		articles.setAuthor("fengxiao");
+		articles.setDigest("测试微信图文消息");
+		articles.setShow_cover_pic(1);
+		articles.setContent("测试微信图文消息测试微信图文消息测试微信图文消息测试微信图文消息测试微信图文消息测试微信图文消息");
+		articles.setContent_source_url("htpp://123.56.24.117/blog/Home/");
+		
+		News news = new News();
+		news.setArticles(new Articles[]{articles});
+		
+		System.out.println(WeixinUtil.createArticles(accessToken.getToken(), news));*/
+		
+		/*
+		SendAll sendAll = new SendAll();
+		Filter filter = sendAll.new Filter();
+		filter.setIs_to_all(true);
+		sendAll.setFilter(filter);
+		MpNews mpNews = sendAll.new MpNews();
+		mpNews.setMedia_id("sqZ86s8-x0w-vZtl2vsPInOItD12LHZdlBSkTvDRYqA");
+		sendAll.setMpnews(mpNews);
+		sendAll.setMsgtype("mpnews");
+		sendAll.setSend_ignore_reprint(1);
+		//System.out.println(JSONObject.toJSONString(sendAll));
+		System.out.println(WeixinUtil.sendAll(accessToken.getToken(), sendAll));*/
+		
+		/*
+		 * OK--------------SUCCESS
+		 */
+		/*Send send = new Send();
+		send.setTouser(new String[]{"o0Bke0hLX2-Mz5eY6aP72nmp3plE", "o0Bke0m2boyYKISGkyci4l2YmFbA"});
+		mpnews mpnews = send.new mpnews();
+		mpnews.setMedia_id("sqZ86s8-x0w-vZtl2vsPIswIKe2AEMifKkqbGoXbzu8");
+		send.setMpnews(mpnews);
+		send.setMsgtype("mpnews");
+		send.setSend_ignore_reprint(1);
+		//System.out.println(JSONObject.toJSONString(sendAll));
+		System.out.println(WeixinUtil.send(accessToken.getToken(), send));*/
+		
+		//System.out.println(WeixinUtil.sendStatus(accessToken.getToken()));
+		/*JSONObject js = WeixinUtil.getOpenid(accessToken.getToken()).getJSONObject("data");
+		JSONArray opList = js.getJSONArray("openid");
+		for(Object string : opList){
+			System.out.println(string.toString());
+		}*/
+		//System.out.println(opList.toString());
+		
+	}
+}

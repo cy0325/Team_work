@@ -1,0 +1,218 @@
+package org.nwnu.system.entity;
+
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableName;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * <p>
+ * 用户
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-22
+ */
+
+@TableName("shop_user")
+public class ShopUser implements Serializable {
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
+
+	/**
+	 * 主键
+	 */
+	private Integer id;
+
+	/**
+	 * 微信号
+	 */
+	private String openid;
+
+	/**
+	 * 信誉值
+	 */
+	private Integer credit;
+
+	/**
+	 * 微信昵称
+	 */
+	private String weiname;
+
+	/**
+	 * 微信头像
+	 */
+	private String weipic;
+
+	/**
+	 * 电话
+	 */
+	private String tel;
+
+	/**
+	 * 真实姓名
+	 */
+	private String realname;
+
+	/**
+	 * 店铺名称
+	 */
+	private String storename;
+
+	/**
+	 * 用户地址
+	 */
+	private String address;
+
+	/**
+	 * 注册时间
+	 */
+	private Date registtime;
+
+	/**
+	 * 是否禁用
+	 */
+	private String status;
+
+	/**
+	 * 操作员id
+	 */
+	private Integer uid;
+
+	/**
+	 * 操作时间
+	 */
+	private Date uptime;
+
+	/**
+	 * 验证码
+	 */
+	@TableField(exist = false)
+	private String code;
+	
+	@TableField(exist = false)
+	private String veriCode;
+	
+	
+	public String getVeriCode() {
+		return veriCode;
+	}
+
+	public void setVeriCode(String veriCode) {
+		this.veriCode = veriCode;
+	}
+
+	public String getCode() {
+		return code;
+	}
+
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getOpenid() {
+		return openid;
+	}
+
+	public void setOpenid(String openid) {
+		this.openid = openid;
+	}
+
+	public Integer getCredit() {
+		return credit;
+	}
+
+	public void setCredit(Integer credit) {
+		this.credit = credit;
+	}
+
+	public String getWeiname() {
+		return weiname;
+	}
+
+	public void setWeiname(String weiname) {
+		this.weiname = weiname;
+	}
+
+	public String getWeipic() {
+		return weipic;
+	}
+
+	public void setWeipic(String weipic) {
+		this.weipic = weipic;
+	}
+
+	public String getTel() {
+		return tel;
+	}
+
+	public void setTel(String tel) {
+		this.tel = tel;
+	}
+
+	public String getRealname() {
+		return realname;
+	}
+
+	public void setRealname(String realname) {
+		this.realname = realname;
+	}
+
+	public String getStorename() {
+		return storename;
+	}
+
+	public void setStorename(String storename) {
+		this.storename = storename;
+	}
+
+	public String getAddress() {
+		return address;
+	}
+
+	public void setAddress(String address) {
+		this.address = address;
+	}
+
+	public Date getRegisttime() {
+		return registtime;
+	}
+
+	public void setRegisttime(Date registtime) {
+		this.registtime = registtime;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public Integer getUid() {
+		return uid;
+	}
+
+	public void setUid(Integer uid) {
+		this.uid = uid;
+	}
+
+	public Date getUptime() {
+		return uptime;
+	}
+
+	public void setUptime(Date uptime) {
+		this.uptime = uptime;
+	}
+
+}

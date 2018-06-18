@@ -1,0 +1,231 @@
+package org.nwnu.front.controller;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Date;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.nwnu.base.controller.BaseController;
+import org.nwnu.pub.util.BigDecimalUtil;
+import org.nwnu.pub.util.Const;
+import org.nwnu.pub.util.CookiesUtil;
+import org.nwnu.system.entity.CartGoodVo;
+import org.nwnu.system.entity.CartVo;
+import org.nwnu.system.entity.GoodsDetail;
+import org.nwnu.system.entity.GoodsPref;
+import org.nwnu.system.entity.ShopCart;
+import org.nwnu.system.entity.ShopOrder;
+import org.nwnu.system.entity.ShopUser;
+import org.nwnu.system.service.GoodsDetailService;
+import org.nwnu.system.service.GoodsPrefService;
+import org.nwnu.system.service.ShopCartService;
+import org.nwnu.system.service.ShopUserService;
+import org.nwnu.system.service.SysDictService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+
+@Controller
+@RequestMapping("/App")
+public class CartController extends BaseController{
+	
+	@Autowired
+	private GoodsDetailService this_GoodsDetailService;
+	
+	@Autowired
+	private ShopCartService this_ShopCartService;
+	
+	@Autowired
+	private ShopUserService this_ShopUserService;
+	
+	@Autowired
+	private GoodsPrefService this_GoodsPrefService;
+	
+	@Autowired
+	private SysDictService this_SysDictService;
+	
+	@Autowired
+	private HttpServletRequest request;
+	
+	/**
+	 * 添加商品到购物车
+	 * @param goodId
+	 * @param count
+	 * @return
+	 */
+	@RequestMapping("/cart_add")
+	@ResponseBody
+	public Object add(Integer gId, Integer count){
+		// 是否登录
+		//Integer suid = 1;
+		String suidStr = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_USER_ID).getValue();
+		// 验证参数
+		if(gId == null || count == null){
+			return renderError("error");
+		}
+		Integer suid = Integer.parseInt(suidStr);
+		ShopCart cart = this_ShopCartService
+				.selectOne(new EntityWrapper<ShopCart>().eq("suid", suid).eq("gid", gId));
+		// 添加到购物车的商品默认是不勾选的
+		if(cart == null){
+			ShopCart cart2 = new ShopCart();
+			cart2.setGid(gId);
+			cart2.setGnum(count);
+			cart2.setSuid(suid);
+			cart2.setUpTime(new Date());
+			this_ShopCartService.insert(cart2);
+		} else{
+			count = cart.getGnum() + count;
+			cart.setGnum(count);
+			this_ShopCartService.updateById(cart);
+		}
+		this.getCartLimit(suid);
+		int num = this_ShopCartService.selectCartGoodsCount(suid);
+		return renderSuccess(num);
+	}
+	
+	
+	/**
+	 * 更新购物车某个商品的数量
+	 * @param gId
+	 * @param count
+	 * @return
+	 */
+	@RequestMapping("/cart_update")
+	@ResponseBody
+	public Object update(Integer id, Integer type){
+		// 是否登录
+		String suidStr = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_USER_ID).getValue();
+		// 验证参数
+		if(id == null || type == null){
+			return renderError("error");
+		}
+		Integer suid = Integer.parseInt(suidStr);
+		ShopCart cart = this_ShopCartService
+				.selectOne(new EntityWrapper<ShopCart>().eq("suid", suid).eq("id", id));
+		GoodsDetail good = this_GoodsDetailService.selectById(cart.getGid());
+		if(cart != null){
+			if(type == 0){
+				if (cart.getGnum() != 1) {
+					cart.setGnum(cart.getGnum()-1);
+				}
+			} else{
+				if (cart.getGnum() != good.getKucun()) {
+					cart.setGnum(cart.getGnum()+1);
+				}
+			}
+		}
+		this_ShopCartService.updateById(cart);
+		int num = this_ShopCartService.selectCartGoodsCount(suid);
+		return renderSuccess(num);
+	}
+	
+	/**
+	 * 购物车列表页
+	 * @param modelAndView
+	 * @return
+	 */
+	@RequestMapping("/cart_list")
+	@ResponseBody
+	public ModelAndView getList(ModelAndView modelAndView){
+		// 查询该用户购物车里商品数量
+		// 用户id
+		Integer cartNum = 0;
+		String suidStr = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_USER_ID).getValue();
+		Integer suid = Integer.parseInt(suidStr);
+		// 删除用户购物车中下架的商品
+		List<ShopCart> shopCartList = this_ShopCartService.selectList(
+				new EntityWrapper<ShopCart>().eq("suid", suid));
+		for (ShopCart shopCart : shopCartList) {
+			GoodsDetail goodsDetail = this_GoodsDetailService.selectById(shopCart.getGid());
+			if (goodsDetail.getStatus().equals("b")) {
+				this_ShopCartService.deleteById(shopCart.getId());
+			}
+		}
+		cartNum = this_ShopCartService.selectCartGoodsCount(suid);
+		modelAndView.addObject("cartNum", cartNum);
+		modelAndView.addObject("CartVo", this.getCartLimit(suid));
+		return modelAndView;
+	}
+	
+	/**
+	 * 从购物车中移除某个商品
+	 * @param gId
+	 * @return
+	 */
+	@RequestMapping("/cart_delete")
+	@ResponseBody
+	public Object delete(Integer id){
+		// 验证参数
+		if(id == null){
+			return renderError("error");
+		}
+		this_ShopCartService.deleteById(id);
+		return renderSuccess();
+		
+	}
+	
+	
+	/**
+	 * 每次更新购物车数据， 重新返回数据
+	 * @param userId
+	 * @return
+	 */
+	private CartVo getCartLimit(Integer userId){
+		CartVo cartVo = new CartVo();
+		
+		List<ShopCart> cartList = this_ShopCartService.selectList(new EntityWrapper<ShopCart>()
+				.eq("suid", userId));
+		List<CartGoodVo> cartGoodVoList = new ArrayList<CartGoodVo>();
+				
+		if(cartList.size() > 0){
+			for(ShopCart cartItem : cartList){
+				CartGoodVo cartGoodVo = new CartGoodVo();
+				cartGoodVo.setId(cartItem.getId());
+				cartGoodVo.setGid(cartItem.getGid());
+				
+				GoodsDetail good = this_GoodsDetailService.selectById(cartItem.getGid());
+				
+				if(good != null){
+					cartGoodVo.setGoodMainImg(good.getPic1());
+					cartGoodVo.setGoodName(good.getGoodsname());
+					cartGoodVo.setGoodStatus(good.getStatus());
+					cartGoodVo.setGoodSpec(this_SysDictService.selectById(good.getSpec()).getDictvalue());
+					cartGoodVo.setGoodPrice(new BigDecimal(good.getPrice().toString()).floatValue());
+					cartGoodVo.setGoodStock(good.getKucun());
+					
+					// 判断库存
+					int buyLimitCount = 0;
+					
+					if(good.getKucun() >= cartItem.getGnum()){
+						// 库存充足的时候
+						buyLimitCount = cartItem.getGnum();
+					} else{
+						buyLimitCount = good.getKucun();
+						
+						// 购物车更新有效库存
+						ShopCart cart = this_ShopCartService.selectById(cartItem.getId());
+						cart.setGnum(buyLimitCount);
+						this_ShopCartService.updateById(cart);
+					}
+					cartGoodVo.setQuantity(buyLimitCount);
+				}
+				cartGoodVoList.add(cartGoodVo);
+			}
+		}
+
+		cartVo.setCartGoodVoList(cartGoodVoList);
+		return cartVo;
+	}
+	
+	
+	
+}

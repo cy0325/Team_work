@@ -1,0 +1,123 @@
+package org.nwnu.system.service.impl;
+
+import java.math.BigDecimal;
+
+import org.junit.Test;
+import org.nwnu.pub.util.JsonUtil;
+import org.nwnu.pub.util.WeixinUtil;
+import org.nwnu.system.entity.ShopOrder;
+import org.nwnu.system.mapper.ShopOrderMapper;
+import org.nwnu.system.service.PayService;
+import org.nwnu.system.service.ShopOrderService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.alibaba.druid.support.logging.Log;
+import com.lly835.bestpay.config.WxPayH5Config;
+import com.lly835.bestpay.enums.BestPayTypeEnum;
+import com.lly835.bestpay.model.PayRequest;
+import com.lly835.bestpay.model.PayResponse;
+import com.lly835.bestpay.service.BestPayService;
+import com.lly835.bestpay.service.impl.BestPayServiceImpl;
+
+@Service
+public class PayServiceImpl implements PayService{
+	
+	@Autowired
+	private ShopOrderMapper this_ShopOrderMapper;
+	
+	
+	@Override
+	public PayResponse create(ShopOrder shopOrder) {
+		
+		//默认的订单名称
+		final String orderName = "微信支付测试商品";
+		
+		WxPayH5Config wxPayH5Config = new WxPayH5Config();
+		wxPayH5Config.setAppId(WeixinUtil.AppID);
+		wxPayH5Config.setAppSecret(WeixinUtil.AppSecret);
+		wxPayH5Config.setMchId(WeixinUtil.MchId);
+		wxPayH5Config.setMchKey(WeixinUtil.MchKey);
+		wxPayH5Config.setKeyPath(WeixinUtil.KeyPath);
+		wxPayH5Config.setNotifyUrl(WeixinUtil.NotifyURL);
+		
+		BestPayServiceImpl bestPayService = new BestPayServiceImpl();
+		bestPayService.setWxPayH5Config(wxPayH5Config);
+		
+		PayRequest payRequest = new PayRequest();
+		payRequest.setOpenid(shopOrder.getOpenid());
+		payRequest.setOrderId(shopOrder.getOrdernum()+buildRandom(6));
+		payRequest.setOrderAmount(new BigDecimal(shopOrder.getTmoney().toString()).doubleValue());
+		payRequest.setOrderName(orderName);
+		payRequest.setPayTypeEnum(BestPayTypeEnum.WXPAY_H5);
+		System.out.println("******[微信支付 ] 发起支付request***" + JsonUtil.toJson(payRequest));
+		PayResponse payResponse = bestPayService.pay(payRequest);
+		System.out.println("******[微信支付 ] 发起支付response***" + JsonUtil.toJson(payResponse));
+		return payResponse;
+	}
+
+	@Override
+	public PayResponse notify(String notifyData) throws Exception {
+		WxPayH5Config wxPayH5Config = new WxPayH5Config();
+		wxPayH5Config.setAppId(WeixinUtil.AppID);
+		wxPayH5Config.setAppSecret(WeixinUtil.AppSecret);
+		wxPayH5Config.setMchId(WeixinUtil.MchId);
+		wxPayH5Config.setMchKey(WeixinUtil.MchKey);
+		wxPayH5Config.setKeyPath(WeixinUtil.KeyPath);
+		wxPayH5Config.setNotifyUrl(WeixinUtil.NotifyURL);
+		
+		BestPayServiceImpl bestPayService = new BestPayServiceImpl();
+		bestPayService.setWxPayH5Config(wxPayH5Config);
+		
+		PayResponse payResponse = bestPayService.asyncNotify(notifyData);
+		System.out.println("******[微信支付 ] 异步通知***" + JsonUtil.toJson(payResponse));
+		
+		//查询订单
+		ShopOrder order = this_ShopOrderMapper.getOrderByNum(payResponse
+				.getOrderId().subSequence(0, 10).toString());
+		System.out.println("*******************ordernum******************"+order.getOrdernum());
+		
+		
+		//判断订单是否存在
+		if(order == null){
+			System.out.println("******[微信支付 ] 异步通知***,订单不存在, orderNum "+ payResponse.getOrderId());
+			throw new Exception("order not exist");
+		}
+		
+		// 判断金额是否一致
+		System.out.println("******[微信支付 ] 异步通知***,订单金额, tMoney" + order.getTmoney() +
+				" orderAmount: " + payResponse.getOrderAmount());
+		if((new BigDecimal(order.getTmoney().toString()))
+		.compareTo(new BigDecimal(payResponse.getOrderAmount().toString())) != 0){
+			System.out.println("******[微信支付 ] 异步通知***,订单金额不一致, tMoney" + order.getTmoney() +
+					" orderAmount: " + payResponse.getOrderAmount());
+			throw new Exception("Weixin asynchronous notification, the amount of checks do not pass");
+		}
+		//修改订单支付状态,在微信Controller里修改
+		return payResponse;
+	}
+	
+	private int buildRandom(int length) {
+		int num = 1;
+		double random = Math.random();
+		if (random < 0.1) {
+			random = random + 0.1;
+		}
+		for (int i = 0; i < length; i++) {
+			num = num * 10;
+		}
+		return (int) ((random * num));
+	}
+
+	
+/*	public static void main(String[] args) {
+		ShopOrder order = new ShopOrder();
+		order.setOpenid("oOJ5UwVat46TgV1PN00y4Tu9Ojfw");
+		order.setOrdernum("1708170001");
+		order.setTmoney(new BigDecimal("0.01").floatValue());
+
+		PayServiceImpl payServiceImpl = new PayServiceImpl();
+		payServiceImpl.create(order);
+	}*/
+
+}

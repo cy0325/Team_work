@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>天鲜易购-短信验证</title>
+
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loaders.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loading.css"/>
+    <link href="/static/app/css/mui.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/app/css/base.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/style.css"/>
+    
+</head>
+<!--loading页开始-->
+<div class="loading">
+	<div class="loader">
+        <div class="loader-inner pacman">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+	</div>
+</div>
+<!--loading页结束-->
+<body>
+<!--头部-->
+<header class="top-header">
+    <a class="icona" href="javascript:history.go(-1)">
+        <img src="/static/app/images/left.png"/>
+    </a>
+    <h3>短信验证</h3>
+</header>
+	
+	<div class="login">
+		<form action="" method="post">
+			
+			<ul>
+				<li>
+					<img src="/static/app/images/phone.png"/>
+					<input type="number" placeholder="手机号"/>
+				</li>
+				<li>
+					<img src="/static/app/images/code.png"/>
+					<input type="number" class="code" placeholder="验证码"/>
+                    <input type="button" value="发送">
+				</li>
+			</ul>
+			<input type="submit" value="完成订单"/>
+		</form>
+	</div>
+</body>
+
+<script src="/static/app/js/fastclick.js"></script>
+<script src="/static/app/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+    $(window).load(function(){
+        $(".loading").addClass("loader-chanage").fadeOut(300);
+    });
+
+    var si = null;
+    $(".login form ul li input.code+input[type=button]").click(function() {
+
+        if (si !== null) {
+            return;
+        }
+        var s = 60;
+        $(this).css("background-color", "#999");
+        $(this).val(s + " s");
+        var thisc = $(this);
+        si = setInterval(function() {
+            s--;
+            if (s < 0) {
+                clearInterval(si);
+                si = null;
+                thisc.val("发送");
+                thisc.css("background-color", "#0066ff");
+            } else {
+                thisc.val(s + " s");
+            }
+        }, 1000);
+    });
+</script>
+
+</html>

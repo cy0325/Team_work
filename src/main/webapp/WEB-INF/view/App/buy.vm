@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<meta name="format-detection" content="telephone=no" />
+    <title>天鲜易购-购买</title>
+
+	<!--CSS引入-->
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loaders.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loading.css"/>
+	<link href="/static/app/css/mui.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/app/css/base.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/style.css"/>
+</head>
+
+<!--loading页开始-->
+<div class="loading">
+	<div class="loader">
+        <div class="loader-inner pacman">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+	</div>
+</div>
+<!--loading页结束-->
+
+<body>
+
+	<!--头部-->
+	<header class="top-header fixed-header">
+		<a class="icona" href="javascript:history.go(-1)">
+			<img src="/static/app/images/left.png"/>
+		</a>
+		<h3>结算</h3>
+	</header>
+	
+	<div id="main" class="container">
+		<section class="to-buy">
+			<header>
+				<a href="javascript:;" onclick="go_address()">
+					<div class="now">
+						<span><img src="/static/app/images/map-icon.png"/></span>
+						<dl>	
+							#if(${goodVo.shopUseraddress})
+							<div class="default-address">
+								<dt>
+									<b id="addressId" hidden>${goodVo.shopUseraddress.id}</b>
+									<b>${goodVo.shopUseraddress.realname}</b>
+									<strong>$!{goodVo.shopUseraddress.tel}</strong>
+								</dt>
+								<dd>$!{goodVo.shopUseraddress.realaddress}</dd>
+							</div>
+							#else
+								<div class="default-address">
+	                                <div class="no-address">请选择您的收货地址</div>
+								</div>
+							#end
+							<p id="extra-address">
+								<img src="/static/app/images/rightblue.png" alt="">
+							</p>
+						</dl>
+					</div>
+				</a>
+			</header>
+			<div class="buy-list">
+				#foreach($good in $goodVo.cartGoodVoList)
+				<ul>
+					<li class="goodId" hidden>$!{good.gid}</li>
+					<li class="goodNum" hidden>$!{good.quantity}</li>
+					<a href="/App/detail?id=$!{good.gid}">
+						<figure>
+							<img src="$!{good.goodMainImg}"/>
+						</figure>
+						<li>
+							<h3>$!{good.goodName}</h3>
+							<span>
+								$!{good.goodSpec}
+							</span>
+							<b>￥$!{good.goodPrice}</b>
+							<small>×$!{good.quantity}</small>
+						</li>
+					</a>
+				</ul>
+				#end
+			</div>
+			
+		</section>
+		<!--底部不够-->
+		<div style="margin-bottom: 9%;"></div>
+	</div>
+	
+	<footer class="buy-footer fixed-footer">
+		<p>
+			<small>总金额</small>
+			<b id="total_price">￥$!{goodVo.cartTotalPrice}</b>
+		</p>
+		
+		 <br/>
+
+		<ul class="vj-check">
+			<li>
+				<input type="checkbox" name="default" value="a"/>
+				<label data-fee="$!{goodVo.distPrice}" class="check" onselectstart="return false"  >配送</label>
+			</li>
+
+			<li>
+				<input type="checkbox" name="default" value="b"/>
+				<label data-fee="-$!{goodVo.carryPrice}" class="check" onselectstart="return false"  >自提</label>
+			</li>
+		</ul>
+
+		<input type="button" onclick="create_order()" value="立即下单"/>
+	</footer>
+</body>
+
+<!--JS-->
+<script src="/static/app/js/fastclick.js"></script>
+<script src="/static/app/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/app/js/home.js"></script>
+<script src="/static/app/js/alert.js"></script>
+<script type="text/javascript">
+    $(window).load(function(){
+        $(".loading").addClass("loader-chanage").fadeOut(300);
+        compatible();
+    });
+
+    $(window).resize(function() {
+        compatible();
+    });
+    
+    function hasAddress() {
+        return $(".default-address .no-address").length === 0;
+    }
+
+    function compatible() {
+        var h = $("header").outerHeight(true);
+        var h2 = $("footer").outerHeight(true);
+        $("#main").css("marginTop", h + 0 + "px").css("marginBottom", h2 + 0 + "px");
+    }
+
+    
+    $(".vj-check li").click(function() {
+        var child = $(this).children("label");
+        var compute = function(op, fee) {
+            var f = parseFloat(fee);
+            f = op === '+' ? f : -f;
+            var obj = $(".buy-footer p b");
+            var price = parseFloat(obj.text().replace("￥", ""));
+            obj.text("￥" + (f + price).toFixed(2));
+        };
+        if (!child.hasClass("checkd")) {
+            $(".vj-check li label").each(function(index, val) {
+                if ($(val).hasClass("checkd")) {
+                    $(val).removeClass("checkd");
+                    compute("-", $(val).data("fee"));
+                    return false;
+                }
+            });
+            child.addClass("checkd");
+            compute("+", child.data("fee"));
+        }
+    });
+    
+    $(".vj-check li").eq(0).click(function() {
+        var el = $(this).parents("footer").children("p").children("small");
+        el.text("总金额（包含配送运费" + $(this).children("label").data("fee") + "元）");
+	});
+
+    $(".vj-check li").eq(1).click(function() {
+        var el = $(this).parents("footer").children("p").children("small");
+        var fee = parseFloat($(this).children("label").data("fee")).toFixed(2);
+        el.text("总金额（已减自提优惠" + ( fee < 0 ? -fee : fee) + "元）");
+    });
+    
+    function go_address(){
+    	var good_arr = $('.goodId')
+    	// 商品id
+    	var gids = good_arr.map(function(){
+    		return $(this).text()
+    	}).get().join(',')
+    	// 商品数量
+    	var good_num_arr = $('.goodNum')
+    	var counts = good_num_arr.map(function(){
+    		return $(this).text()
+    	}).get().join(',')
+    	
+    	location.href = '/App/address?ids='+gids+'&counts='+counts;
+    			
+    }
+    
+    function create_order(){
+    	// 地址id
+    	if(!hasAddress()){
+    		$.toast("请填写您的默认地址")
+    		return;
+    	}
+    	var addressId = $('#addressId').text()
+    	var good_arr = $('.goodId')
+    	// 商品id
+    	var gids = good_arr.map(function(){
+    		return $(this).text()
+    	}).get().join(',')
+    	// 商品数量
+    	var good_num_arr = $('.goodNum')
+    	var counts = good_num_arr.map(function(){
+    		return $(this).text()
+    	}).get().join(',')
+    	// 送货方式
+    	var carrytype = $('.checkd').siblings('input').val()
+    	if(carrytype == null){
+    		$.toast("请选择您的配货方式")
+    		return;
+    	}
+    	// 总金额
+    	var totalPrice = $('#total_price').text().substr(1)
+    	
+    	$.ajax({
+            url: '/App/create.do',
+            type: 'POST',
+            dataType:'json',
+            data:{gids:gids,counts:counts,carrytype:carrytype,addressId:addressId,totalPrice:totalPrice},
+            success:function(result){
+                if(result.success)
+                {
+                	
+                	var oid = result.obj;
+                    //以下为关闭当前frame，并刷新父页面
+                   	location.href = '/App/pay.do?oid='+oid;
+                }else
+                {
+                	$.toast(result.msg);
+                }
+            },
+            error:function(data) {
+                $.toast("服务器端错误");
+            }
+        });
+    	
+    }
+</script>
+</html>

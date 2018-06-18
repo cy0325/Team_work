@@ -1,0 +1,179 @@
+package org.nwnu.system.service.impl;
+
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+
+import org.nwnu.pub.util.BigDecimalUtil;
+import org.nwnu.system.entity.GoodsActivity;
+import org.nwnu.system.entity.GoodsDetail;
+import org.nwnu.system.entity.GoodsDisc;
+import org.nwnu.system.entity.GoodsPref;
+import org.nwnu.system.entity.OrderInfo;
+import org.nwnu.system.entity.ShopCart;
+import org.nwnu.system.entity.ShopOrder;
+import org.nwnu.system.entity.ShopOrderdetail;
+import org.nwnu.system.mapper.GoodsActivityMapper;
+import org.nwnu.system.mapper.GoodsDetailMapper;
+import org.nwnu.system.mapper.GoodsDiscMapper;
+import org.nwnu.system.mapper.GoodsPrefMapper;
+import org.nwnu.system.mapper.ShopCartMapper;
+import org.nwnu.system.mapper.ShopOrderMapper;
+import org.nwnu.system.mapper.ShopOrderdetailMapper;
+import org.nwnu.system.service.ShopCartService;
+import org.nwnu.system.service.ShopOrderService;
+
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.interceptor.TransactionAspectSupport;
+
+/**
+ * <p>
+ * 客户订单 服务实现类
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+@Service
+public class ShopOrderServiceImpl extends ServiceImpl<ShopOrderMapper, ShopOrder> implements ShopOrderService {
+	
+	@Autowired
+	private ShopOrderMapper this_ShopOrderMapper;
+	
+	@Autowired
+	private GoodsDetailMapper this_GoodsDetailMapper;
+	
+	@Autowired
+	private GoodsActivityMapper this_GoodsActivityMapper;
+	
+	@Autowired
+	private ShopOrderdetailMapper this_ShopOrderdetailMapper;
+	
+	@Autowired
+	private GoodsDiscMapper this_GoodsDiscMapper;
+	
+	@Autowired
+	private GoodsPrefMapper this_GoodsPrefMapper;
+	
+	@Override
+	public String getOrderCode() {
+		// TODO Auto-generated method stub
+		Date date = new Date();
+		SimpleDateFormat outFormat = new SimpleDateFormat("yyMMdd");
+		String s = outFormat.format(date);
+		String code = this_ShopOrderMapper.getCode();
+		if(code == null){
+			code = "0001";
+		}
+		return s + code;
+	}
+	
+	
+	/**
+	 * 创建订单
+	 */
+	public Integer createOrder(List<Integer>gidList, List<Integer>countList, Integer addressId, 
+			String carrytype, String openid, OrderInfo info){
+		Integer orderId = null;
+		try {
+			// 创建shop_order
+			ShopOrder order = new ShopOrder();
+			order.setOrdernum(getOrderCode());
+			order.setOpenid(openid);
+			order.setTmoney(info.getTotalPrice().floatValue());
+			order.setUptime(new Date());
+			order.setAddressid(addressId);
+			if(carrytype.equals("a")){
+				order.setFreight(info.getDistPrice().floatValue());
+			} else{
+				order.setFreight(new Float(0));
+			}
+			if (carrytype.equals("b")) {
+				order.setLiftfee(info.getLiftfee().floatValue());
+			} else{
+				order.setLiftfee(new Float(0));
+			}
+			order.setCarrytype(carrytype);
+			//保存并获取orderId
+			if(this_ShopOrderMapper.insert(order) == 0){
+				return 0;
+			}
+			orderId = order.getId();
+			// 创建shop_orderDetail
+			int i = 0;
+			for(Integer gid : gidList){
+				ShopOrderdetail orderdetail = new ShopOrderdetail();
+				// 订单id
+				orderdetail.setOid(order.getId());
+				// 商品id
+				orderdetail.setGid(gid);
+				// 商品数量
+				orderdetail.setGnum(countList.get(i));
+				GoodsDetail good = new GoodsDetail();
+				good.setId(gid);
+				good = this_GoodsDetailMapper.selectOne(good);
+				// 活动id
+				orderdetail.setActivityId(good.getAid());
+				// 活动名称
+				String activityName = "";
+				if(good.getAid() != 0){
+					
+					GoodsActivity activity = new GoodsActivity();
+					activity.setId(good.getAid());
+					activity = this_GoodsActivityMapper.selectOne(activity);
+					activityName = activity.getName();
+				}else{
+					activityName = "暂不参与活动";
+				}
+				orderdetail.setActivityname(activityName);
+				BigDecimal realPrice = new BigDecimal("0");
+				GoodsPref goodsPref = this_GoodsPrefMapper.getPrefPrice(gid, countList.get(i));
+				if (goodsPref == null) {
+					realPrice = new BigDecimal(good.getPrice().toString());
+				} else{
+					realPrice = new BigDecimal(goodsPref.getPrice().toString());
+				}
+				// 每单商品的成交价
+				orderdetail.setRealprice(realPrice.floatValue());
+				if(this_ShopOrderdetailMapper.insert(orderdetail) != 0){
+					i++;
+				}else{
+					return 0;
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			//异常处理手动回滚
+            TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
+            return 0;
+		}
+		return orderId;
+		
+	}
+	
+	
+	/**
+	 * 支付完成后修改订单状态
+	 */
+	public ShopOrder payStatus(ShopOrder order) throws Exception{
+		
+		//判断订单状态, 未支付, 微信支付
+		if(!order.getPayway().equals("a") || !order.getPaystatus().equals("a")){
+			throw new Exception("order status error");
+		}
+		//修改订单状态
+		order.setPaystatus("b");
+		order.setPaytime(new Date());
+		if(this_ShopOrderMapper.updateById(order) != 1){
+			throw new Exception("order update status error");
+		}
+		return order;
+	}
+}

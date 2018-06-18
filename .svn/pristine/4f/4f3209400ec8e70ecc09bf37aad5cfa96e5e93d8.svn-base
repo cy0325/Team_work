@@ -1,0 +1,135 @@
+package org.nwnu.system.entity;
+
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableName;
+
+import java.io.Serializable;
+import java.util.Date;
+import java.util.List;
+
+/**
+ * <p>
+ * 商户商品评价
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+
+@TableName("shop_goodsdiscuss")
+public class ShopGoodsdiscuss implements Serializable {
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
+
+	/**
+	 * 主键
+	 */
+	private Integer id;
+
+	/**
+	 * 商品ID
+	 */
+	private String gid;
+
+	/**
+	 * 评论等级
+	 */
+	private Integer star;
+
+	/**
+	 * 评论内容
+	 */
+	private String discontent;
+
+	/**
+	 * shop_user_id
+	 */
+	private Integer suid;
+
+	/**
+	 * 评论时间
+	 */
+	private Date distime;
+	
+	@TableField(exist = false)
+	private String userName;
+	
+	@TableField(exist = false)
+	private String userImg;
+	
+	@TableField(exist = false)
+	private String date;
+	
+	public String getUserImg() {
+		return userImg;
+	}
+
+	public void setUserImg(String userImg) {
+		this.userImg = userImg;
+	}
+
+	public String getDate() {
+		return date;
+	}
+
+	public void setDate(String date) {
+		this.date = date;
+	}
+
+	public String getUserName() {
+		return userName;
+	}
+
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getGid() {
+		return gid;
+	}
+
+	public void setGid(String gid) {
+		this.gid = gid;
+	}
+
+	public Integer getStar() {
+		return star;
+	}
+
+	public void setStar(Integer star) {
+		this.star = star;
+	}
+
+	public String getDiscontent() {
+		return discontent;
+	}
+
+	public void setDiscontent(String discontent) {
+		this.discontent = discontent;
+	}
+
+	public Integer getSuid() {
+		return suid;
+	}
+
+	public void setSuid(Integer suid) {
+		this.suid = suid;
+	}
+
+	public Date getDistime() {
+		return distime;
+	}
+
+	public void setDistime(Date distime) {
+		this.distime = distime;
+	}
+
+}

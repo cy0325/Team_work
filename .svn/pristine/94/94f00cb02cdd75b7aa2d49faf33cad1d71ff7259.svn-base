@@ -1,0 +1,141 @@
+#override("content")
+<nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span>微信管理 <span class="c-gray en">&gt;</span>菜单管理<a class="btn btn-success radius r" id="btn-refresh" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+<div class="page-container">
+	<div class="cl pd-5 bg-1 bk-gray"> 
+		<span class="l">
+		<a href="javascript:;" onclick="BatchDelete()" class="btn btn-danger radius"><i class="Hui-iconfont">&#xe6e2;</i> 批量删除</a> 
+		<a class="btn btn-primary radius" href="javascript:;" onclick="pub_add('添加','/WexinMenu/WexinMenuView.do')"><i class="Hui-iconfont">&#xe600;</i> 添加微信菜单</a>		 
+		</span> 
+	</div>
+	<table id="tablelist" class="table table-border table-bordered table-hover table-bg">
+		<thead>
+			<tr>
+				<th scope="col" colspan="8"><span class="l">微信菜单列表<span class="pipe">|</span>共 <span id="total"></span> 条</span>					
+				</th>
+			</tr>
+			<tr class="text-c">
+				<th width="25"><input type="checkbox" value="all" name="ckall" id="ckall"></th>
+					<th width="100">父菜单</th>
+	 				<th width="100">菜单名称</th>
+	 				<th width="100">菜单类型</th>
+	 				<th width="400">菜单url</th>
+	 				<th width="100">操作员</th>
+	 				<th width="150">操作时间</th>
+			<th>操作</th>
+			</tr>
+		</thead>
+		<tbody id="pagecontent">
+		</tbody>		
+	</table>
+	<!-- <div id="mypage" class="mt-10 text-r"></div> -->
+</div>
+#end
+#override("js")
+<!--请在下方写此页面业务相关的脚本,首先需要引入laypage插件-->
+<script type="text/javascript" src="/static/lib/laypage/1.2/laypage.js"></script>
+<script type="text/javascript">
+	$(function(){
+		getpage();//调用分页
+		/*每页显示条数变化*/
+		/*$('#pageSize').change(function(){getpage(1);});  */         
+	})
+	function getpage()//分页函数
+	{	
+		
+		$.getJSON('/WexinMenu/List.do', function(res){ //从第1页开始请求。返回的json格式可以任意定义
+		     $('#total').html(res.total);//显示总数
+		     $('#pagecontent').html(PackagData(res));//附加翻页内容
+		});
+	}
+	function PackagData(res){//分页内容展示
+		var content="";
+	    $.each(res.data,function(i,o){
+	        content+="<tr class=\"text-c " 
+	        if(o.fid == "1"){
+	        	content += "success"
+	        }
+	        content += "\"><td >";
+	        content+="<input type=\"checkbox\" value=\""+o.id+"\" name=\"ck\"/></td>";
+	        	         	        	        content+="<td>"+o.fName+"</td>";
+	        	        	         	        content+="<td>"+o.menuname+"</td>";
+	        	        	         	        if(o.menutype === "a"){
+	        	        	         	        	content+="<td>一级菜单</td>";
+	        	        	         	        }else if(o.menutype === "b"){
+	        	        	         	        	content+="<td>二级菜单</td>"
+	        	        	         	        }
+	        	        	         	        content+="<td>"+o.menuurl+"</td>";
+	        	        	         	        content+="<td>"+o.uName+"</td>";
+	        	        	         	        content+="<td>"+o.uptime+"</td>";
+	        	        	        content+="<td class=\"td-manage\">";	        
+	        content+="<a title=\"编辑\" href=\"javascript:;\" onclick=\"pub_edit('编辑','/WexinMenu/WexinMenuView.do?id="+o.id+"')\" class=\"ml-5\" style=\"text-decoration:none\"><i class=\"Hui-iconfont\">&#xe6df;</i></a>"; 
+	        content+="<a title=\"删除\" href=\"javascript:;\" onclick=\"pub_del(this,"+o.id+")\" class=\"ml-5\" style=\"text-decoration:none\"><i class=\"Hui-iconfont\">&#xe6e2;</i></a>";
+	        content+="</td></tr>";
+	         
+	    });
+	    return content;
+	}
+
+/*添加*/
+function pub_add(title,url){
+	layer_maxshow(title,url);
+}
+/*编辑*/
+function pub_edit(title,url){
+	layer_maxshow(title,url);
+}
+/*删除*/
+function pub_del(obj,id){
+	layer.confirm('删除须谨慎，确认要删除吗？',function(){
+		$.ajax({
+			type: 'POST',
+			url: '/WexinMenu/Delete.do?id='+id,
+			dataType: 'json',
+			success: function(result){
+				if(result.success)
+				{
+					$(obj).parents("tr").remove();				
+					layer.msg(result.msg,{icon:1,time:1500});
+				}else
+				{
+					layer.msg(result.msg,{icon:2,time:1500});
+				}
+			},
+			error:function(data) {
+				layer.msg("对不起，服务请求错误！",{icon:2,time:1500});
+			}
+		});		
+	});
+}
+/*批量删除*/
+function BatchDelete()
+{	
+	var ids = '';
+	$('table input[type="checkbox"]:checked').each(function(){		
+		ids += $(this).val() + ',';
+	});
+	layer.confirm('删除须谨慎，确认要删除吗？',function(){
+		$.ajax({
+			type: 'POST',
+			url: '/WexinMenu/BatchDelete.do?ids='+ids,
+			dataType: 'json',
+			success: function(result){
+				if(result.success)
+				{					    
+					getpage(1);//批量删除成功后重新加载第一页							
+					layer.msg(result.msg,{icon:1,time:1500});
+				}else
+				{
+					layer.msg(result.msg,{icon:2,time:1500});
+				}
+			},
+			error:function(data) {
+				layer.msg("对不起，服务请求错误！",{icon:2,time:1500});
+			}
+		});		
+	});
+	
+}
+
+</script>
+#end
+#extends("/Home/Layout.vm")

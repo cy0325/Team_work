@@ -1,0 +1,150 @@
+package org.nwnu.system.entity;
+
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableName;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * <p>
+ * 订单详情
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-28
+ */
+
+@TableName("shop_orderdetail")
+public class ShopOrderdetail implements Serializable {
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
+
+	/**
+	 * 主键
+	 */
+	private Integer id;
+
+	/**
+	 * 订单id
+	 */
+	private Integer oid;
+
+	/**
+	 * 商品id
+	 */
+	private Integer gid;
+
+	/**
+	 * 数量
+	 */
+	private Integer gnum;
+
+	/**
+	 * 参与活动id
+	 */
+	private Integer activityId;
+
+	/**
+	 * 参与活动名称
+	 */
+	private String activityname;
+
+	/**
+	 * 成交价
+	 */
+	private Float realprice;
+	
+	/**
+	 * 评论状态
+	 */
+	private String commentstatus;
+	
+	
+	@TableField(exist = false)
+	private GoodsDetail goodsDetail;
+	
+	@TableField(exist = false)
+	private String goodSpec;
+
+	public String getCommentstatus() {
+		return commentstatus;
+	}
+
+	public void setCommentstatus(String commentstatus) {
+		this.commentstatus = commentstatus;
+	}
+
+	public String getGoodSpec() {
+		return goodSpec;
+	}
+
+	public void setGoodSpec(String goodSpec) {
+		this.goodSpec = goodSpec;
+	}
+
+	public GoodsDetail getGoodsDetail() {
+		return goodsDetail;
+	}
+
+	public void setGoodsDetail(GoodsDetail goodsDetail) {
+		this.goodsDetail = goodsDetail;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getOid() {
+		return oid;
+	}
+
+	public void setOid(Integer oid) {
+		this.oid = oid;
+	}
+
+	public Integer getGid() {
+		return gid;
+	}
+
+	public void setGid(Integer gid) {
+		this.gid = gid;
+	}
+
+	public Integer getGnum() {
+		return gnum;
+	}
+
+	public void setGnum(Integer gnum) {
+		this.gnum = gnum;
+	}
+
+	public Integer getActivityId() {
+		return activityId;
+	}
+
+	public void setActivityId(Integer activityId) {
+		this.activityId = activityId;
+	}
+
+	public String getActivityname() {
+		return activityname;
+	}
+
+	public void setActivityname(String activityname) {
+		this.activityname = activityname;
+	}
+
+	public Float getRealprice() {
+		return realprice;
+	}
+
+	public void setRealprice(Float realprice) {
+		this.realprice = realprice;
+	}
+
+}

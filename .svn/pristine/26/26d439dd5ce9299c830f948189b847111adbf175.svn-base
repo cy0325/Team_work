@@ -1,0 +1,28 @@
+#override("content")
+<nav class="breadcrumb"><i class="Hui-iconfont">&#xe67f;</i> 首页 <span class="c-gray en">&gt;</span> ${parentMenu} <span class="c-gray en">&gt;</span> ${thisMenu} <a class="btn btn-success radius r" id="btn-refresh" style="line-height:1.6em;margin-top:3px" href="javascript:location.replace(location.href);" title="刷新" ><i class="Hui-iconfont">&#xe68f;</i></a></nav>
+<div class="page-container">
+	<div class="cl pd-5 bg-1 bk-gray"> 
+		<span class="l">
+		<a href="javascript:;" onclick="pub_edit('添加','/Ckedit/Ckeditor.do')" class="btn btn-danger radius"><i class="Hui-iconfont">&#xe6e2;</i> 修改</a> 
+		<a class="btn btn-primary radius" href="javascript:;" onclick="pub_add('添加','/Ckedit/Ckeditor.do')"><i class="Hui-iconfont">&#xe600;</i> 添加</a>		 
+		</span> 
+	</div>	
+</div>
+#end
+#override("js")
+<!--请在下方写此页面业务相关的脚本-->
+<script type="text/javascript" src="/static/lib/laypage/1.2/laypage.js"></script>
+<script type="text/javascript">
+	
+/*添加*/
+function pub_add(title,url){
+	layer_maxshow(title,url);
+}
+/*编辑*/
+function pub_edit(title,url){
+	layer_maxshow(title,url);
+}
+
+</script>
+#end
+#extends("/Home/Layout.vm")

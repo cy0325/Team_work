@@ -1,0 +1,116 @@
+package org.nwnu.system.entity;
+
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableName;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * <p>
+ * 用户地址
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+
+@TableName("shop_useraddress")
+public class ShopUseraddress implements Serializable {
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
+
+	/**
+	 * 主键
+	 */
+	private Integer id;
+
+	/**
+	 * 收货人
+	 */
+	private String realname;
+
+	/**
+	 * 收货地址
+	 */
+	private String realaddress;
+
+	/**
+	 * 联系电话
+	 */
+	private String tel;
+
+	/**
+	 * 默认地址
+	 */
+	private String status;
+
+	/**
+	 * shop_user_id
+	 */
+	private Integer suid;
+
+	/**
+	 * 操作时间
+	 */
+	private Date uptime;
+
+
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getRealname() {
+		return realname;
+	}
+
+	public void setRealname(String realname) {
+		this.realname = realname;
+	}
+
+	public String getRealaddress() {
+		return realaddress;
+	}
+
+	public void setRealaddress(String realaddress) {
+		this.realaddress = realaddress;
+	}
+
+	public String getTel() {
+		return tel;
+	}
+
+	public void setTel(String tel) {
+		this.tel = tel;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public Integer getSuid() {
+		return suid;
+	}
+
+	public void setSuid(Integer suid) {
+		this.suid = suid;
+	}
+
+	public Date getUptime() {
+		return uptime;
+	}
+
+	public void setUptime(Date uptime) {
+		this.uptime = uptime;
+	}
+
+}

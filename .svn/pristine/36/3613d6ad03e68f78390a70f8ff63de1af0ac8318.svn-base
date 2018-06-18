@@ -1,0 +1,388 @@
+package org.nwnu.front.controller;
+
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.regexp.recompile;
+import org.apache.xml.resolver.apps.resolver;
+import org.apache.xmlbeans.GDate;
+import org.nwnu.base.controller.BaseController;
+import org.nwnu.pub.util.BigDecimalUtil;
+import org.nwnu.pub.util.Const;
+import org.nwnu.pub.util.CookiesUtil;
+import org.nwnu.pub.util.StringUtil;
+import org.nwnu.system.entity.CartGoodVo;
+import org.nwnu.system.entity.CartVo;
+import org.nwnu.system.entity.GoodsDetail;
+import org.nwnu.system.entity.GoodsDisc;
+import org.nwnu.system.entity.GoodsPref;
+import org.nwnu.system.entity.OrderInfo;
+import org.nwnu.system.entity.ShopCart;
+import org.nwnu.system.entity.ShopOrder;
+import org.nwnu.system.entity.ShopOrderdetail;
+import org.nwnu.system.entity.ShopUser;
+import org.nwnu.system.entity.ShopUseraddress;
+import org.nwnu.system.entity.UserCredit;
+import org.nwnu.system.service.GoodsDetailService;
+import org.nwnu.system.service.GoodsDiscService;
+import org.nwnu.system.service.GoodsPrefService;
+import org.nwnu.system.service.ShopCartService;
+import org.nwnu.system.service.ShopOrderService;
+import org.nwnu.system.service.ShopOrderdetailService;
+import org.nwnu.system.service.ShopUserService;
+import org.nwnu.system.service.ShopUseraddressService;
+import org.nwnu.system.service.SysDictService;
+import org.nwnu.system.service.UserCreditService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.lly835.bestpay.rest.type.Get;
+
+
+@Controller
+@RequestMapping("/App")
+public class OrderController extends BaseController {
+	
+	@Autowired
+	private GoodsDetailService this_GoodsDetailService;
+	
+	@Autowired
+	private SysDictService this_SysDictService;
+	
+	@Autowired
+	private ShopOrderService this_ShopOrderService;
+	
+	@Autowired
+	private GoodsPrefService this_GoodsPrefService;
+	
+	@Autowired
+	private GoodsDiscService this_GoodsDiscService;
+	
+	@Autowired
+	private ShopUseraddressService this_ShopUseraddressService;
+	
+	@Autowired
+	private ShopUserService this_ShopUserService;
+	
+	@Autowired
+	private UserCreditService this_UserCreditService;
+	
+	@Autowired
+	private ShopOrderdetailService this_ShopOrderdetailService;
+	
+	@Autowired
+	private ShopCartService this_ShopCartService;
+	
+	@Autowired
+	private HttpServletRequest request;
+	
+	@Autowired
+	private HttpServletResponse response;
+	
+	
+	
+	/**
+	 * 购买视图
+	 * @param modelAndView
+	 * @param gids
+	 * @param counts
+	 * @return
+	 */
+	@RequestMapping("/buy")
+	public ModelAndView buyList(ModelAndView modelAndView,
+			@RequestParam(value="ids", required = true) String gids,
+			@RequestParam(value="counts", required = true) String counts,
+			@RequestParam(value="id", required = false) Integer addressId){
+		String[] gidStrings = gids.split(",");
+		List<Integer> gidList = new ArrayList<Integer>();
+		for (String id : gidStrings) {
+			gidList.add(Integer.parseInt(id));
+		}
+		
+		String[] countStrings =counts.split(",");
+		List<Integer> countList = new ArrayList<Integer>();
+		for(String count : countStrings){
+			countList.add(Integer.parseInt(count));
+		}
+		CartVo cartVo = this.getCartLimit(gidList, countList);
+		if(addressId != null){
+			cartVo.setShopUseraddress(this_ShopUseraddressService.selectById(addressId));
+		} else{
+			cartVo.setShopUseraddress(this.getUseraddress());
+		}
+		cartVo.setCarryPrice(this.getCarryPrice(cartVo.getCartTotalPrice()));
+		cartVo.setDistPrice(this.getDistPrice(cartVo.getCartTotalPrice()));
+		
+		modelAndView.addObject("goodVo", cartVo);
+		return modelAndView;
+	}
+	
+	/**
+	 * 创建订单
+	 * @param cartIds
+	 * @param payway
+	 * @param addressId
+	 * @param carryType
+	 * @return
+	 */
+	@RequestMapping("/create")
+	@ResponseBody
+	public Object create(String gids, String counts, String carrytype, Integer addressId, String totalPrice){
+		if (StringUtil.isEmpty(gids) || StringUtil.isEmpty(counts) || StringUtil.isEmpty(carrytype)
+				|| StringUtil.isEmpty(addressId) || StringUtil.isEmpty(totalPrice)) {
+			return renderError("参数错误");
+		}
+		List<Integer> gidList = new ArrayList<Integer>();
+		String[] gidArr = gids.split(",");
+		for(String id : gidArr){
+			gidList.add(Integer.parseInt(id));
+		}
+		
+		List<Integer> countList = new ArrayList<Integer>();
+		String[] countArr = counts.split(",");
+		for(String count : countArr){
+			countList.add(Integer.parseInt(count));
+		}
+		OrderInfo info = this.getOrderTotalPrice(gidList, countList, carrytype);
+		BigDecimal endTotalPrice = info.getTotalPrice();
+		BigDecimal frontTotalPrice = new BigDecimal(totalPrice);
+		if(endTotalPrice.compareTo(frontTotalPrice) != 0){
+			return renderError("抱歉，订单提交失败");
+		}
+		// 用户id
+		String suidStr = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_USER_ID).getValue();
+		Integer suid = Integer.parseInt(suidStr);
+		ShopUser user = this_ShopUserService.selectById(suid);
+		Integer result = this_ShopOrderService.createOrder(gidList, countList, addressId, 
+				carrytype, user.getOpenid(), info);
+		
+		// 根据订单id获得订单商品id
+		List<ShopOrderdetail> orderdetails = this_ShopOrderdetailService.selectList(
+				new EntityWrapper<ShopOrderdetail>().eq("oid", result));
+		List<Integer> gidList2 = new ArrayList<Integer>();
+		for(ShopOrderdetail orderdetail : orderdetails){
+			gidList2.add(orderdetail.getGid());
+		}
+		// 删除购物车已提交订单的商品
+		this_ShopCartService.delete(new EntityWrapper<ShopCart>().in("gid", gidList2).eq("suid", suid));
+		if(result != 0){
+			return renderSuccess(result);
+		}else{
+			return renderError("订单提交失败");
+		}
+	}
+	
+	/**
+	 * 提交订单后跳转页面
+	 * @return
+	 */
+	@RequestMapping("/pay")
+	public ModelAndView pay(ModelAndView modelAndView,
+			@RequestParam(value="oid", required = true) Integer oid){
+		ShopOrder order = this_ShopOrderService.selectById(oid);
+		// 判断用户是否有信用值支持货到付款
+		String userId = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_USER_ID).getValue();
+		//String userId = "3";
+		ShopUser user = this_ShopUserService.selectById(userId);
+		UserCredit credit = this_UserCreditService.getCreditPrice(order.getTmoney());
+		if (credit != null) {
+			int creditVal = credit.getNum();
+			if (user.getCredit() >= creditVal) {
+				modelAndView.addObject("Candisc", "a");
+			}
+		}
+		modelAndView.addObject("totalPrice", order.getTmoney());
+		modelAndView.addObject("oid", oid);
+		return modelAndView;
+	}
+	
+	
+	/**
+	 * 交易成功页面
+	 * 微信支付成功后的跳转页面
+	 * 货到付款提交后的跳转页面
+	 * @return
+	 * @throws Exception 
+	 */
+	@RequestMapping("/success")
+	public ModelAndView success(ModelAndView modelAndView,
+			@RequestParam(value = "oid", required = false) Integer oId,
+			@RequestParam(value = "type", required = true) String type) throws Exception{
+		if (type.equals("a")) {
+			modelAndView.addObject("type", "a");
+		} else if(type.equals("c")){
+			// 修改订单的支付方式为货到付款
+			ShopOrder order = this_ShopOrderService.selectById(oId);
+			order.setPayway("b");
+			this_ShopOrderService.updateById(order);
+			// 恢复库存
+			List<ShopOrderdetail> orderItemList = this_ShopOrderdetailService.selectList(
+					new EntityWrapper<ShopOrderdetail>().eq("oid", order.getId()));
+			for (ShopOrderdetail orderItem : orderItemList) {
+				GoodsDetail good = this_GoodsDetailService.selectById(orderItem.getGid());
+				good.setKucun(good.getKucun() - orderItem.getGnum());
+				this_GoodsDetailService.updateById(good);
+			}
+			modelAndView.addObject("type", "a");
+		} else{
+			modelAndView.addObject("type", "b");
+		}
+		return modelAndView;
+	}
+	
+	
+	
+	
+	/**
+	 * 计算商品价格及页面数据整合
+	 * @param userId
+	 * @return
+	 */
+	private CartVo getCartLimit(List<Integer> gids, List<Integer> counts){
+		// 数据准备
+		CartVo cartVo = new CartVo();
+		List<GoodsDetail> goodsList = this_GoodsDetailService.selectBatchIds(gids);
+		List<CartGoodVo> cartGoodVoList = new ArrayList<CartGoodVo>();
+		BigDecimal cartTotalPrice = new BigDecimal("0");
+				
+		if (!goodsList.isEmpty()) {
+			
+			int i = 0; //计数索引
+			for(GoodsDetail good : goodsList){
+				CartGoodVo cartGoodVo = new CartGoodVo();
+				cartGoodVo.setGid(good.getId());
+				cartGoodVo.setGoodName(good.getGoodsname());
+				cartGoodVo.setGoodMainImg(good.getPic1());
+				cartGoodVo.setGoodSpec(this_SysDictService.selectById(good.getSpec()).getDictvalue());
+				cartGoodVo.setQuantity(counts.get(i));
+				
+				// 根据商品的购买数量，获取商品的优惠价格
+				GoodsPref goodsPref = this_GoodsPrefService
+						.getPrefPrice(cartGoodVo.getGid(), cartGoodVo.getQuantity());
+				
+				if (goodsPref != null) {
+					cartGoodVo.setGoodPrice(goodsPref.getPrice());
+				} else{
+					cartGoodVo.setGoodPrice(good.getPrice());
+				}
+				
+				cartGoodVo.setGoodTotalPrice(BigDecimalUtil
+						.mul(cartGoodVo.getGoodPrice(), cartGoodVo.getQuantity()));
+				cartTotalPrice = BigDecimalUtil.add(new BigDecimal(
+						cartGoodVo.getGoodTotalPrice().toString()), cartTotalPrice);
+				cartGoodVoList.add(cartGoodVo);
+				i++;
+			}
+		}
+	
+		cartVo.setCartTotalPrice(cartTotalPrice);
+		cartVo.setCartGoodVoList(cartGoodVoList);
+		return cartVo;
+	}
+	
+	
+	/**
+	 * 根据购物总价获取自提优惠
+	 * @param totalPrice
+	 * @return
+	 */
+	private BigDecimal getCarryPrice(BigDecimal totalPrice){
+		GoodsDisc goodsDisc = this_GoodsDiscService.getDiscPrice("b", totalPrice.floatValue());
+		//System.out.println("**********goodscarry******"+goodsDisc.getPrice());
+		if (goodsDisc == null){
+			return new BigDecimal("0");
+		}
+		return new BigDecimal(goodsDisc.getPrice().toString());
+	}
+	
+	
+	/**
+	 * 根据购物总价获取运输优惠
+	 * @param totalPrice
+	 * @return
+	 */
+	private BigDecimal getDistPrice(BigDecimal totalPrice){
+		GoodsDisc goodsDisc = this_GoodsDiscService.getDiscPrice("a", totalPrice.floatValue());
+		//System.out.println("**********goodsDisc******"+goodsDisc.getPrice());
+		if (goodsDisc == null) {
+			return new BigDecimal("0");
+		}
+		return new BigDecimal(goodsDisc.getPrice().toString());
+	}
+	
+	
+	/**
+	 * 获取用户的默认地址
+	 * @return
+	 */
+	private ShopUseraddress getUseraddress(){
+		String suidStr = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_USER_ID).getValue();
+		return this_ShopUseraddressService.selectOne(new EntityWrapper<ShopUseraddress>()
+				.eq("suid", Integer.parseInt(suidStr)).eq("status", "a"));
+	}
+	
+	
+	/**
+	 * 后台计算支付费用接口
+	 * @param gids
+	 * @param counts
+	 * @return
+	 */
+	private OrderInfo getOrderTotalPrice(List<Integer> gids, List<Integer> counts, String type){
+		BigDecimal orderTotalPrice = new BigDecimal("0");
+		List<GoodsDetail> goodsList = this_GoodsDetailService.selectBatchIds(gids);
+		if (!goodsList.isEmpty()) {
+			int i = 0; //计数索引
+			for(GoodsDetail good : goodsList){
+				float orderPrice = 0;
+				BigDecimal orderNumPrice = new BigDecimal("0");
+				// 根据商品的购买数量，获取商品的优惠价格
+				GoodsPref goodsPref = this_GoodsPrefService
+						.getPrefPrice(good.getId(), counts.get(i));
+				
+				if (goodsPref != null) {
+					orderPrice = goodsPref.getPrice();
+				} else{
+					orderPrice = good.getPrice();
+				}
+				orderNumPrice = BigDecimalUtil.mul(orderPrice, counts.get(i));
+				orderTotalPrice = BigDecimalUtil.add(orderNumPrice, orderTotalPrice);
+				i++;
+			}
+		}
+		
+		BigDecimal carryPrice = this.getCarryPrice(orderTotalPrice);
+		BigDecimal distPrice = this.getDistPrice(orderTotalPrice);
+		
+		//总金额加运费优惠
+		if (type.equals("a")) {
+			orderTotalPrice = BigDecimalUtil.add(orderTotalPrice, distPrice);
+		}
+		
+		//总金额减去自提优惠
+		if (type.equals("b")) {
+			orderTotalPrice = BigDecimalUtil.sub(orderTotalPrice.floatValue(), carryPrice.floatValue());
+		}
+		
+		OrderInfo info = new OrderInfo();
+		info.setDistPrice(distPrice);
+		info.setLiftfee(carryPrice);
+		info.setTotalPrice(orderTotalPrice);
+		return info;
+	}
+	
+
+}

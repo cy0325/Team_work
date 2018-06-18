@@ -1,0 +1,362 @@
+package org.nwnu.system.entity;
+
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableName;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * <p>
+ * 客户订单
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-28
+ */
+
+@TableName("shop_order")
+public class ShopOrder implements Serializable {
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
+
+	/**
+	 * 主键
+	 */
+	private Integer id;
+
+	/**
+	 * 订单编号
+	 */
+	private String ordernum;
+
+	/**
+	 * openid
+	 */
+	private String openid;
+
+	/**
+	 * 总金额
+	 */
+	private Float tmoney;
+	
+	/**
+	 * 自提优惠
+	 */
+	private Float liftfee;
+
+	/**
+	 * 下单时间
+	 */
+	private Date uptime;
+
+	/**
+	 * 支付方式
+	 */
+	private String payway;
+	
+	@TableField(exist = false)
+	private String paywayName;
+
+	/**
+	 * 支付状态
+	 */
+	private String paystatus;
+	
+	@TableField(exist = false)
+	private String paystatusName;
+
+	/**
+	 * 支付时间
+	 */
+	private Date paytime;
+
+	/**
+	 * 用户配货地址id
+	 */
+	private Integer addressid;
+
+	/**
+	 * 运费
+	 */
+	private Float freight;
+
+	/**
+	 * 发货方式
+	 */
+	private String carrytype;
+
+	/**
+	 * 发货时间
+	 */
+	private Date carrytime;
+
+	/**
+	 * 派送员
+	 */
+	private String carrymember;
+
+	/**
+	 * 发货状态
+	 */
+	private String carrystatus;
+	
+	
+	@TableField(exist = false)
+	private String carrystatusName;
+
+	/**
+	 * 订单状态
+	 */
+	private String orderstatus;
+	
+	@TableField(exist = false)
+	private String orderstatusName;
+
+	@TableField(exist = false)
+	private int goodsCount;
+	
+	@TableField(exist = false)
+	private String pic;
+	
+	@TableField(exist = false)
+	private String uName;
+	
+	public String getuName() {
+		return uName;
+	}
+
+	public void setuName(String uName) {
+		this.uName = uName;
+	}
+
+	public String getPic() {
+		return pic;
+	}
+
+	public void setPic(String pic) {
+		this.pic = pic;
+	}
+
+	public String getPaywayName() {
+		return paywayName;
+	}
+
+	public void setPaywayName(String paywayName) {
+		this.paywayName = paywayName;
+	}
+
+	public String getPaystatusName() {
+		return paystatusName;
+	}
+
+	public void setPaystatusName(String paystatusName) {
+		this.paystatusName = paystatusName;
+	}
+
+	public String getCarrystatusName() {
+		return carrystatusName;
+	}
+
+	public void setCarrystatusName(String carrystatusName) {
+		this.carrystatusName = carrystatusName;
+	}
+
+	public String getOrderstatusName() {
+		return orderstatusName;
+	}
+
+	public void setOrderstatusName(String orderstatusName) {
+		this.orderstatusName = orderstatusName;
+	}
+
+	public int getGoodsCount() {
+		return goodsCount;
+	}
+
+	public void setGoodsCount(int goodsCount) {
+		this.goodsCount = goodsCount;
+	}
+
+	public static long getSerialversionuid() {
+		return serialVersionUID;
+	}
+
+	/**
+	 * 订单操作员id
+	 */
+	private Integer uid;
+
+	/**
+	 * 订单状态操作时间
+	 */
+	private Date optime;
+	
+	
+	@TableField(exist = false)
+	private ShopUseraddress useraddress;
+	
+	@TableField(exist = false)
+	private String ids;
+	
+	public Float getLiftfee() {
+		return liftfee;
+	}
+
+	public void setLiftfee(Float liftfee) {
+		this.liftfee = liftfee;
+	}
+
+	public String getIds() {
+		return ids;
+	}
+
+	public void setIds(String ids) {
+		this.ids = ids;
+	}
+
+	public ShopUseraddress getUseraddress() {
+		return useraddress;
+	}
+
+	public void setUseraddress(ShopUseraddress useraddress) {
+		this.useraddress = useraddress;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getOrdernum() {
+		return ordernum;
+	}
+
+	public void setOrdernum(String ordernum) {
+		this.ordernum = ordernum;
+	}
+
+	public String getOpenid() {
+		return openid;
+	}
+
+	public void setOpenid(String openid) {
+		this.openid = openid;
+	}
+
+	public Float getTmoney() {
+		return tmoney;
+	}
+
+	public void setTmoney(Float tmoney) {
+		this.tmoney = tmoney;
+	}
+
+	public Date getUptime() {
+		return uptime;
+	}
+
+	public void setUptime(Date uptime) {
+		this.uptime = uptime;
+	}
+
+	public String getPayway() {
+		return payway;
+	}
+
+	public void setPayway(String payway) {
+		this.payway = payway;
+	}
+
+	public String getPaystatus() {
+		return paystatus;
+	}
+
+	public void setPaystatus(String paystatus) {
+		this.paystatus = paystatus;
+	}
+
+	public Date getPaytime() {
+		return paytime;
+	}
+
+	public void setPaytime(Date paytime) {
+		this.paytime = paytime;
+	}
+
+	public Integer getAddressid() {
+		return addressid;
+	}
+
+	public void setAddressid(Integer addressid) {
+		this.addressid = addressid;
+	}
+
+	public Float getFreight() {
+		return freight;
+	}
+
+	public void setFreight(Float freight) {
+		this.freight = freight;
+	}
+
+	public String getCarrytype() {
+		return carrytype;
+	}
+
+	public void setCarrytype(String carrytype) {
+		this.carrytype = carrytype;
+	}
+
+	public Date getCarrytime() {
+		return carrytime;
+	}
+
+	public void setCarrytime(Date carrytime) {
+		this.carrytime = carrytime;
+	}
+
+	public String getCarrymember() {
+		return carrymember;
+	}
+
+	public void setCarrymember(String carrymember) {
+		this.carrymember = carrymember;
+	}
+
+	public String getCarrystatus() {
+		return carrystatus;
+	}
+
+	public void setCarrystatus(String carrystatus) {
+		this.carrystatus = carrystatus;
+	}
+
+	public String getOrderstatus() {
+		return orderstatus;
+	}
+
+	public void setOrderstatus(String orderstatus) {
+		this.orderstatus = orderstatus;
+	}
+
+	public Integer getUid() {
+		return uid;
+	}
+
+	public void setUid(Integer uid) {
+		this.uid = uid;
+	}
+
+	public Date getOptime() {
+		return optime;
+	}
+
+	public void setOptime(Date optime) {
+		this.optime = optime;
+	}
+
+}

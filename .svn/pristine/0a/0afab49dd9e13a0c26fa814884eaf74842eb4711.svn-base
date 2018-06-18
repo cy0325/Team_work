@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.nwnu.system.mapper.ShopOrderMapper">
+	<!--开启二级缓存-->
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+
+	<resultMap id="BaseResultMap" type="org.nwnu.system.entity.ShopOrder">
+		<id column="id" property="id" />
+		<result column="ordernum" property="ordernum" />
+		<result column="openid" property="openid" />
+		<result column="tmoney" property="tmoney" />
+		<result column="uptime" property="uptime" />
+		<result column="payway" property="payway" />
+		<result column="paystatus" property="paystatus" />
+		<result column="paytime" property="paytime" />
+		<result column="addressid" property="addressid" />
+		<result column="liftfee" property="liftfee" />
+		<result column="freight" property="freight" />
+		<result column="carrytype" property="carrytype" />
+		<result column="carrytime" property="carrytime" />
+		<result column="carrymember" property="carrymember" />
+		<result column="carrystatus" property="carrystatus" />
+		<result column="orderstatus" property="orderstatus" />
+		<result column="uid" property="uid" />
+		<result column="optime" property="optime" />
+	</resultMap>
+
+    <!-- 通用查询结果列-->
+    <sql id="Base_Column_List">
+        id, ordernum, openid, tmoney, uptime, payway, paystatus, paytime, addressid, freight, liftfee, carrytype, carrytime, carrymember, carrystatus, orderstatus, uid, optime
+    </sql> 
+    
+    <select id="getCode"  resultType="string">
+     SELECT   right(concat('0000',rtrim(max(ordernum) + 1)), 4) AS codestr
+      FROM      shop_order
+  	</select>
+  	
+  	<select id="getOrderByNum" resultMap="BaseResultMap" parameterType="string">
+  		SELECT * FROM shop_order 
+  		WHERE ordernum = #{num}
+  	</select>
+</mapper>

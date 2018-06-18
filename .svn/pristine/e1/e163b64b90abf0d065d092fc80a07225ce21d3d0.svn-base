@@ -1,0 +1,27 @@
+package org.nwnu.system.service;
+
+import java.math.BigDecimal;
+import java.util.List;
+
+import org.nwnu.system.entity.OrderInfo;
+import org.nwnu.system.entity.ShopOrder;
+
+import com.baomidou.mybatisplus.service.IService;
+
+/**
+ * <p>
+ * 客户订单 服务类
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+public interface ShopOrderService extends IService<ShopOrder> {
+	
+	String getOrderCode();
+	
+	Integer createOrder(List<Integer>gidList, List<Integer>countList, Integer addressId, 
+			String carrytype, String openid, OrderInfo info);
+	
+	ShopOrder payStatus(ShopOrder order) throws Exception;
+}

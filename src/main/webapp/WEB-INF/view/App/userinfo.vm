@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>天鲜易购-我的信息</title>
+
+	<!--CSS-->
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loaders.min.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/loading.css"/>
+	<link href="/static/app/css/mui.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/static/app/css/base.css"/>
+    <link rel="stylesheet" type="text/css" href="/static/app/css/style.css"/>
+
+</head>
+<!--loading页开始-->
+<div class="loading">
+	<div class="loader">
+        <div class="loader-inner pacman">
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+	</div>
+</div>
+<!--loading页结束-->
+<body>
+	<header class="top-header">
+			<a class="icona" href="javascript:history.go(-1)">
+					<img src="/static/app/images/left.png"/>
+				</a>
+			<h3>我的资料</h3>
+	</header>
+	
+	<div class="container">
+		<ul class="self-data">
+			<li>
+				<a href="javascript: void 0;">
+					<p>头像</p>
+					<figure><img src="$!user.weipic"/></figure>
+				</a>
+			</li>
+			<li>
+				<a href="javascript: void 0;">
+					<p>昵称</p>
+					<small>$!user.weiname</small>
+				</a>
+			</li>
+			<li>
+				<a href="javascript: void 0;">
+					<p>电话</p>
+                    <small>$!user.tel</small>
+				</a>
+			</li>
+			<li>
+				<a href="javascript: void 0;">
+					<p>真实姓名</p>
+                    <small>$!user.realname</small>
+				</a>
+			</li>
+			<li>
+				<a href="javascript: void 0;">
+					<p>店铺名称</p>
+                    <small>$!user.storename</small>
+				</a>
+			</li>
+			<li>
+				<a href="javascript: void 0;">
+					<p>地址</p>
+                    <small>$!user.address</small>
+				</a>
+			</li>
+		</ul>
+	</div>
+</body>
+
+<script src="/static/app/js/fastclick.js"></script>
+<script src="/static/app/js/jquery.min.js" type="text/javascript" charset="utf-8"></script>
+<script type="text/javascript">
+    $(window).load(function(){
+        $(".loading").addClass("loader-chanage").fadeOut(300);
+    })
+</script>
+
+</html>

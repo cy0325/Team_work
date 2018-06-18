@@ -1,0 +1,118 @@
+package org.nwnu.system.entity;
+
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableName;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * <p>
+ * 商品优惠
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-21
+ */
+
+@TableName("goods_pref")
+public class GoodsPref implements Serializable, Comparable<GoodsPref>{
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
+
+	/**
+	 * 主键
+	 */
+	private Integer id;
+	
+	/**
+	 * 主键
+	 */
+	private Integer gid;
+
+	/**
+	 * 商品数量下限
+	 */
+	private Integer num;
+
+	/**
+	 * 价格
+	 */
+	private Float price;
+
+	/**
+	 * 操作员id
+	 */
+	private Integer uid;
+
+	/**
+	 * 操作时间
+	 */
+	private Date uptime;
+	
+	@TableField(exist = false)
+	private String uName;
+
+	public String getuName() {
+		return uName;
+	}
+
+	public void setuName(String uName) {
+		this.uName = uName;
+	}
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public Integer getGid() {
+		return gid;
+	}
+
+	public void setGid(Integer gid) {
+		this.gid = gid;
+	}
+
+	public Integer getNum() {
+		return num;
+	}
+
+	public void setNum(Integer num) {
+		this.num = num;
+	}
+
+	public Float getPrice() {
+		return price;
+	}
+
+	public void setPrice(Float price) {
+		this.price = price;
+	}
+
+	public Integer getUid() {
+		return uid;
+	}
+
+	public void setUid(Integer uid) {
+		this.uid = uid;
+	}
+
+	public Date getUptime() {
+		return uptime;
+	}
+
+	public void setUptime(Date uptime) {
+		this.uptime = uptime;
+	}
+
+	@Override
+	public int compareTo(GoodsPref o) {
+		// TODO Auto-generated method stub
+		return this.getNum().compareTo(o.getNum());
+	}
+
+}

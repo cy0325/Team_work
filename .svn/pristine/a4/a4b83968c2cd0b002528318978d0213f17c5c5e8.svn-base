@@ -1,0 +1,115 @@
+package org.nwnu.front.controller;
+
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+
+import net.sf.ehcache.search.aggregator.Count;
+
+import org.nwnu.base.controller.BaseController;
+import org.nwnu.pub.util.Const;
+import org.nwnu.pub.util.CookiesUtil;
+import org.nwnu.system.entity.GoodsDetail;
+import org.nwnu.system.entity.GoodsPref;
+import org.nwnu.system.entity.ShopGoodsdiscuss;
+import org.nwnu.system.entity.ShopUser;
+import org.nwnu.system.entity.SysDict;
+import org.nwnu.system.service.GoodsDetailService;
+import org.nwnu.system.service.GoodsPrefService;
+import org.nwnu.system.service.ShopCartService;
+import org.nwnu.system.service.ShopGoodsdiscussService;
+import org.nwnu.system.service.ShopUserService;
+import org.nwnu.system.service.SysDictService;
+import org.nwnu.system.service.impl.GoodsPrefServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import com.baomidou.mybatisplus.mapper.EntityWrapper;
+import com.mysql.fabric.xmlrpc.base.Array;
+
+
+@Controller
+@RequestMapping("/App")
+public class GoodsController extends BaseController{
+	
+	@Autowired
+	private GoodsDetailService this_GoodsDetailService;
+	
+	@Autowired
+	private SysDictService this_SysDictService;
+	
+	@Autowired
+	private ShopGoodsdiscussService this_ShopGoodsdiscussService;
+	
+	@Autowired
+	private ShopUserService this_ShopUserService;
+	
+	@Autowired
+	private ShopCartService this_ShopCartService;
+	
+	@Autowired
+	private HttpServletRequest request;
+	
+	@Autowired
+	private GoodsPrefService this_GoodsPrefService;
+	
+	/**
+	 * 商品详情
+	 * @param modelAndView
+	 * @param id
+	 * @return
+	 * @throws ParseException
+	 */
+	@RequestMapping("/detail")
+	public ModelAndView detail(ModelAndView modelAndView,
+			@RequestParam(required = true, value = "id") Integer id) throws ParseException{
+		GoodsDetail good = this_GoodsDetailService.selectById(id);
+		//商品规格从系统字典中获得
+		SysDict sysDict = this_SysDictService.selectById(good.getSpec());
+		good.setSpecStr(sysDict.getDictvalue());
+		// 商品评论
+		List<ShopGoodsdiscuss> shopGoodsdiscusseList = this_ShopGoodsdiscussService
+				.selectList(new EntityWrapper<ShopGoodsdiscuss>().eq("gid", id));
+		if(!shopGoodsdiscusseList.isEmpty()){
+			for(ShopGoodsdiscuss sd : shopGoodsdiscusseList){
+				if (sd.getSuid() == 0) {
+					sd.setUserName("匿名用户");
+				}else{
+					ShopUser user = this_ShopUserService.selectById(sd.getSuid());
+					sd.setUserName(user.getWeiname());
+					sd.setUserImg(user.getWeipic());
+				}
+				sd.setDate(recover(sd.getDistime().toString()));
+			}
+			modelAndView.addObject("sdList", shopGoodsdiscusseList);
+		}
+		int count = 0; 
+		Cookie cookie = CookiesUtil.getCookieByName(request, Const.COOKIES_SHOP_USER_ID);
+		if (cookie != null) {
+			Integer suid = Integer.parseInt(cookie.getValue());
+			//Integer suid = 4;
+			count = this_ShopCartService.selectCartGoodsCount(suid);
+			modelAndView.addObject("login_flag", 1);
+		}else{
+			count = 0;
+			modelAndView.addObject("login_flag", 0);
+		}
+		List<GoodsPref> goodsPrefList = this_GoodsPrefService.selectList(
+				new EntityWrapper<GoodsPref>().eq("gid", id).orderBy("id", false));
+		if (goodsPrefList.size() != 0) {
+			modelAndView.addObject("goodPrefList", goodsPrefList);
+		}
+		modelAndView.addObject("cartCount", count);
+		modelAndView.addObject("good", good);
+		return modelAndView;
+	}
+	
+
+
+}

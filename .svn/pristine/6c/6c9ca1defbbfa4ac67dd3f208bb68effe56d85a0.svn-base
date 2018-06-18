@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.nwnu.system.mapper.GoodsActivityMapper">
+	<!--开启二级缓存-->
+	<cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+
+	<resultMap id="BaseResultMap" type="org.nwnu.system.entity.GoodsActivity">
+		<id column="id" property="id" />
+		<result column="name" property="name" />
+		<result column="pic" property="pic" />
+		<result column="pic_2" property="pic2" />
+		<result column="intro" property="intro" />
+		<result column="status" property="status" />
+		<result column="uid" property="uid" />
+		<result column="uptime" property="uptime" />
+	</resultMap>
+
+    <!-- 通用查询结果列-->
+    <sql id="Base_Column_List">
+        id, name, pic, pic_2 AS pic2, intro, status, uid, uptime
+    </sql>
+</mapper>

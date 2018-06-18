@@ -1,0 +1,32 @@
+#override("content")
+<article class="page-container">
+	<div class="cl pd-5 bg-1 bk-gray"> 
+		<span class="btn-upload form-group">
+		  <input class="input-text upload-url radius" type="text" name="fileurl" id="fileurl" readonly>
+		  <a href="javascript:BrowseServer();" class="btn btn-primary radius">浏览文件</a>		  
+		</span>
+	</div>	
+</div>
+#end
+#override("js")
+<script type="text/javascript" src="/static/assets/ckfinder/ckfinder.js"></script>
+<script type="text/javascript">
+	/**
+	 * 通过ckfinder独立上传文件或图片
+	 */
+	//初始化ckfinder
+	function BrowseServer() {
+	   var finder = new CKFinder();
+	   finder.skin = 'bootstrap';
+	  //  finder.basePath = '<%=request.getContextPath()%>/ckfinder/'; 
+	    finder.selectActionFunction = SetFileField; //当选中图片时执行的函数
+	    finder.popup();//调用窗口       
+	}
+	    //文件选中时执行
+	    //fileUrl所选中文件的路径
+	function SetFileField(fileUrl) {
+	    $("#fileurl").val(fileUrl);
+	}
+</script>
+#end
+#extends("/Home/Layout.vm")

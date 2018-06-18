@@ -1,0 +1,20 @@
+package org.nwnu.system.service.impl;
+
+import org.nwnu.system.entity.WexinMenu;
+import org.nwnu.system.mapper.WexinMenuMapper;
+import org.nwnu.system.service.WexinMenuService;
+import com.baomidou.mybatisplus.service.impl.ServiceImpl;
+import org.springframework.stereotype.Service;
+
+/**
+ * <p>
+ * 微信菜单 服务实现类
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+@Service
+public class WexinMenuServiceImpl extends ServiceImpl<WexinMenuMapper, WexinMenu> implements WexinMenuService {
+	
+}

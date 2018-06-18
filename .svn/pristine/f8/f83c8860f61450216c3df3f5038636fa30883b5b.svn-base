@@ -1,0 +1,128 @@
+首次登陆用户名：18119424380 121212
+
+一、系统相关配置
+	数据库 123.56.141.146 root EWCULxslH1
+
+二、系统开发具体内容
+	/----------------------------------------后台----------------------------------------------
+	管理员管理(已完成)
+		权限管理
+		角色管理
+		管理员列表
+		
+	商品管理
+		商品分类
+		商品详情
+		商品优惠 type-->a-商品比率优惠   b-商品邮费优惠
+		活动商品
+	
+	订单管理(shop_order、shop_orderdetail、shop_user、shop_useraddress数据配合完成)
+		订单出货 carrystatus(a未发货 b已发货)--检索、 carrytype(a 配货 b自提)--检索、 excel导出
+		订单缴费 orderstatus(a未支付 b已支付)--检索、 payway(a微信支付、b货到付款)--显示、 excel导出
+		订单状态 orderstatus(a完成 b取消 c退款)--检索、 excel导出
+		订单查询 uptime--检索、 carrytime--检索、 ordernum--查询 excel导出
+	
+	用户管理
+		用户列表(不做)
+		消费记录
+	
+	微信管理
+		微信菜单管理
+		微信消息推送
+	
+	系统管理
+		素材管理(不做)
+		数据字典
+	
+	系统统计(shop_order、shop_orderdetail数据配合完成)
+		商品销量统计
+		订单完成度统计
+		销售绩效统计
+	-------------------------------------------------------------------------------------------/
+	
+	/----------------------------------------前台-----------------------------------------------/
+
+前台购物车接口
+
+	1、/cart/list.do 	购物车List列表
+
+	2、/cart/add.do?goodId=1&count=1 购物车添加商品、更新购物车某个产品数量 ---------------->OK
+
+	3、/cart/update.do?goodId=1&count=1 更新购物车某个产品数量
+
+	4、/cart/delete_good.do?goodIds=1,3 移除购物车某个产品------去结算该产品时要删除该商品
+
+	5、/cart/select.do?goodId=1 购物车选中某个商品
+
+	6、/cart/un_select.do?goodId=2 购物车取消选中某个商品
+
+	7、/cart/select_all.do 购物车全选
+
+	8、/cart/un_select_all.do 购物车取消全选
+
+	9、/cart/get_cart_product_count.do 查询在购物车里的产品数量
+
+	11、/cart/toInsCreate.do?goodId=1 去立即结算(立即购买)--先将商品加入购物车--去调用第10个接口
+
+	12、/cart/updateCarrytype.do?cartIds=1&status=a 修改商品发货方式
+
+
+去结算前台逻辑
+	
+	shop_address
+
+		1、是否有默认地址
+
+			--1、否 填写收货地址
+
+			--2、有 选择默认
+
+		2、相关接口
+
+			--1、/shopAddress/add.do------------------->OK
+
+			--2、/shopAddress/del.do
+
+			--3、/shopAddress/update.do
+
+			--4、/shopAddress/list.do
+
+	shop_order
+
+		1、后台生成订单编号返回前台
+
+		2、后台计算总金额返回前台
+
+		2、用户填写支付方式
+
+			--1、微信支付 不做短信验证 ---->payway--a  已支付---->paystatus--b
+
+			--2、货到付款 做短信验证   ---->payway--b  未支付---->paystatus--a
+
+		3、用户填写发货方式
+
+			--1、自提 后台不处理运费  ---->carrytype--b
+
+			--2、配送 将运费加到总金额中 ---->carrytype--a
+
+		4、后台发货状态
+
+			--未发货--a
+
+		前台相关接口
+
+
+			5、/order/create.do?cartIds=1&addressId=1&payway=b&carrytype=a 购买订单 --OK
+
+			6、/order/list.do 获取订单列表
+
+			7、/order/cancel.do?ordernum=1480515829406 取消订单
+
+			8、/order/detail.do?orderNo=1480515829406 获取订单详情
+
+
+	shop_orderdetail
+
+		1、将订单表的订单编号，商品等信息完善在此表中
+
+	

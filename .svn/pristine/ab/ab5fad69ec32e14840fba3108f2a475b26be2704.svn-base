@@ -1,0 +1,30 @@
+
+# 数据库连接
+validationQuery=SELECT 1
+
+jdbc_url=jdbc:mysql://127.0.0.1:3306/marketplus?useUnicode=true&characterEncoding=UTF-8
+
+jdbc_username=root
+#jdbc_password=EWCULxslH1
+jdbc_password=
+
+#jdbc_url=jdbc:mysql://210.26.111.59:3306/averweb?useUnicode=true&characterEncoding=UTF-8
+
+#jdbc_username=averweb
+#jdbc_password=nwnu_aver_121
+
+#jdbc_url=jdbc:mysql://127.0.0.1:3306/averweb?useUnicode=true&characterEncoding=UTF-8
+
+#jdbc_username=root
+#jdbc_password=fx1212
+#c3p0
+#jdbc.maxPoolSize=50
+#jdbc.minPoolSize=10
+#jdbc.maxStatements=100
+#jdbc.testConnection=true
+
+# generatorConfig\u4E2D\u53D8\u91CF\u8BBE\u7F6E
+#mapper.plugin = tk.mybatis.mapper.generator.MapperPlugin
+#mapper.Mapper = tk.mybatis.mapper.common.Mapper
+
+

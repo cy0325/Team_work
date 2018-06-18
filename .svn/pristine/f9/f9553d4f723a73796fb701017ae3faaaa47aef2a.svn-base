@@ -1,0 +1,143 @@
+package org.nwnu.system.entity;
+
+import com.baomidou.mybatisplus.annotations.TableField;
+import com.baomidou.mybatisplus.annotations.TableName;
+
+import java.io.Serializable;
+import java.util.Date;
+
+/**
+ * <p>
+ * 市场活动
+ * </p>
+ *
+ * @author Answer
+ * @since 2017-08-12
+ */
+
+@TableName("goods_activity")
+public class GoodsActivity implements Serializable {
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
+
+	/**
+	 * 主键
+	 */
+	private Integer id;
+
+	/**
+	 * 活动名称
+	 */
+	private String name;
+
+	/**
+	 * 活动图片
+	 */
+	private String pic;
+
+	/**
+	 * 活动图片2
+	 */
+	@TableField(value="pic_2")
+	private String pic2;
+
+	/**
+	 * 简介
+	 */
+	private String intro;
+
+	/**
+	 * 是否开启
+	 */
+	private String status;
+
+	/**
+	 * 操作员id
+	 */
+	private Integer uid;
+	
+	/**
+	 * 操作时间
+	 */
+	private Date uptime;
+
+	/**
+	 * 操作员名字
+	 */
+	@TableField(exist = false)
+	private String uName;
+
+
+	public Integer getId() {
+		return id;
+	}
+
+	public void setId(Integer id) {
+		this.id = id;
+	}
+
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
+	public String getPic() {
+		return pic;
+	}
+
+	public void setPic(String pic) {
+		this.pic = pic;
+	}
+
+	public String getPic2() {
+		return pic2;
+	}
+
+	public void setPic2(String pic2) {
+		this.pic2 = pic2;
+	}
+
+	public String getIntro() {
+		return intro;
+	}
+
+	public void setIntro(String intro) {
+		this.intro = intro;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public Integer getUid() {
+		return uid;
+	}
+
+	public void setUid(Integer uid) {
+		this.uid = uid;
+	}
+	
+	public String getUName(){
+		return uName;
+	}
+	
+	public void setUName(String uName){
+		this.uName=uName;
+	}
+
+	public Date getUptime() {
+		return uptime;
+	}
+
+	public void setUptime(Date uptime) {
+		this.uptime = uptime;
+	}
+
+}
